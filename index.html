@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Eightfold — fall seven, rise eight</title>
+  <meta name="description" content="A paper-craft habit tracker for the eighth try. Fall seven times, rise eight: tick a habit and it becomes a fold; a thousand folds make a wish.">
+  <meta name="theme-color" content="#E6E5E1">
+  <script>document.documentElement.classList.add('js'); setTimeout(function () { if (!window.__oz) document.documentElement.classList.add('js-failed'); }, 3000);</script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/styles/tokens.css">
+  <link rel="stylesheet" href="/src/styles/paper.css">
+  <link rel="stylesheet" href="/src/styles/landing.css">
+</head>
+<body>
+  <header class="bar">
+    <a class="wordmark" href="./" aria-label="Eightfold home"><span data-mark></span>eightfold</a>
+    <nav class="bar-links" aria-label="Sections">
+      <a href="#why">Why</a>
+      <a href="#keeps">What it keeps</a>
+      <a href="#year">The year</a>
+      <a href="#new">What's new</a>
+    </nav>
+    <a class="btn bar-cta" href="app.html">Open the tracker</a>
+  </header>
+
+  <main>
+    <!-- HERO: the live thing. Tick today's six habits and the square folds into a crane. -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <h1 id="hero-title" class="reveal">Fall seven, rise eight.</h1>
+        <p class="lede reveal">Eightfold is a habit tracker for anyone who has started over more times than they can count. Tick a habit and it becomes a fold. Tick them all and you have a crane. A thousand cranes make a wish.</p>
+        <div class="hero-actions reveal">
+          <a class="btn" href="app.html">Open the tracker</a>
+          <a class="btn btn--quiet" href="#why">Why the name?</a>
+        </div>
+      </div>
+
+      <div class="stage" data-stage>
+        <div class="stage-sky sheet-wrap tilt" style="--r:-1.5deg">
+          <div class="sheet sheet--sora halftone" data-tear="trbl" data-amp="9" data-seed="11"></div>
+        </div>
+        <div class="stage-sun boil" style="--r:4deg" aria-hidden="true"></div>
+        <svg class="speedlines" viewBox="0 0 600 600" aria-hidden="true" data-speedlines></svg>
+        <div class="cloud cloud--a boil" aria-hidden="true" data-cloud></div>
+        <div class="cloud cloud--b boil" style="--r:-3deg" aria-hidden="true" data-cloud></div>
+        <canvas class="stage-canvas" aria-label="A paper crane that folds itself as you tick today's habits" role="img"></canvas>
+        <span class="sfx stage-sfx boil" style="--r:-8deg" aria-hidden="true">パタパタ</span>
+
+        <div class="today sheet-wrap sheet-wrap--high tilt" style="--r:1.2deg">
+          <div class="sheet today-sheet" data-tear="b" data-amp="6" data-seed="5">
+            <span class="tape" style="top:-14px;left:38%;transform:rotate(-3deg)"></span>
+            <h2 class="today-title">Try it with today's six</h2>
+            <ul class="today-list" data-demo-list></ul>
+            <p class="today-count" aria-live="polite" data-demo-count>No folds yet. Tap a habit you've done.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHY: the story, told with the sheet itself as the prop. -->
+    <section class="why" id="why" aria-labelledby="why-title">
+      <div class="why-text">
+        <h2 id="why-title" class="reveal">Seven falls, then a spreadsheet.</h2>
+        <p class="reveal">For most of my life I started habits and dropped them: a few weeks of running, a burst of DSA, then nothing. It hardly mattered until life got harder and the missing discipline started to show. So I'm starting again. Fall seven times, rise eight. This is the eighth, and that's the name.</p>
+        <p class="reveal">Since January the eighth try has lived in a Google Sheet called <em>oze's Habit Tracker v2</em>: thirteen tabs, a checkbox for every habit on every day, and a wall of COUNTIFs holding it together like sticky tape on a paper model. It worked. It also looked like a tax return.</p>
+        <p class="reveal">So I'm folding it into something lighter: the same habits and the same numbers, nothing to babysit, and a crane at the end of every good day. Every tick is a fold, and a missed day is only a fall. You get up, you fold again.</p>
+        <dl class="tickets" data-why-numbers></dl>
+      </div>
+
+      <div class="why-collage">
+        <figure class="book cutout sheet-wrap tilt reveal" style="--r:-3deg">
+          <img src="/img/thousand-cranes-book.jpg" width="1400" height="934" alt="An open woodblock-printed book from 1797 showing a crane feeding beside children under a plum tree" loading="lazy">
+          <figcaption>A Thousand Cranes and How to Fold Them, the oldest origami book, 1797.</figcaption>
+        </figure>
+        <div class="sheet-scrap sheet-wrap sheet-wrap--high tilt reveal" style="--r:4deg" aria-hidden="true">
+          <div class="sheet" data-tear="trbl" data-amp="8" data-seed="21">
+            <span class="tape" style="top:-12px;left:-18px;transform:rotate(-38deg)"></span>
+            <div class="fx-bar"><b>fx</b> =COUNTIF(J37:AN37, TRUE) / I37</div>
+            <table class="scrap-grid" data-scrap></table>
+          </div>
+        </div>
+        <span class="sfx why-sfx boil" style="--r:-6deg" aria-hidden="true">ビリッ</span>
+      </div>
+    </section>
+
+    <!-- KEEPS: the accordion-folded zine of every feature the sheet had. -->
+    <section class="keeps" id="keeps" aria-labelledby="keeps-title">
+      <div class="keeps-head">
+        <h2 id="keeps-title" class="reveal">The whole sheet, minus the formulas.</h2>
+        <p class="reveal" data-keeps-lede>Every number from the old tabs is still here, worked out from your ticks the moment you make them.</p>
+        <figure class="keeps-page cutout sheet-wrap tilt reveal" style="--r:3deg">
+          <img src="/img/senbazuru-page.jpg" width="961" height="1400" alt="A page from the 1797 folding book with a line drawing of a paper crane and its folding square" loading="lazy">
+        </figure>
+      </div>
+      <div class="zine-viewport">
+        <ol class="zine" data-zine></ol>
+      </div>
+    </section>
+
+    <!-- YEAR: the annual tab as a paper mountain range. -->
+    <section class="year" id="year" aria-labelledby="year-title">
+      <div class="year-head">
+        <h2 id="year-title" class="reveal" data-year-title>The year so far.</h2>
+        <p class="reveal" data-year-lede></p>
+      </div>
+      <div class="range sheet-wrap">
+        <div class="range-sky sheet sheet--sora" data-tear="t" data-amp="10" data-seed="31">
+          <figure class="range-print cutout sheet-wrap tilt" style="--r:2deg">
+            <img src="/img/multitudes-of-cranes.jpg" width="1400" height="1070" alt="A woodblock print of a long flight of cranes crossing a red sun" loading="lazy">
+          </figure>
+          <svg class="range-svg" viewBox="0 0 1200 420" preserveAspectRatio="none" role="img" aria-label="Monthly success rates as paper mountains" data-range></svg>
+        </div>
+        <ol class="range-labels" data-range-labels></ol>
+      </div>
+    </section>
+
+    <!-- NEW: what the paper version adds. -->
+    <section class="new" id="new" aria-labelledby="new-title">
+      <h2 id="new-title" class="reveal">Things a spreadsheet can't do.</h2>
+      <div class="new-collage">
+        <article class="piece piece--wish sheet-wrap reveal">
+          <div class="sheet sheet--ai" data-tear="trbl" data-amp="7" data-seed="41">
+            <figure class="wish-photo cutout tilt" style="--r:-2deg">
+              <img src="/img/crane-strings-kyoto.jpg" width="931" height="1400" alt="Thousands of paper cranes on strings hanging at a shrine in Kyoto" loading="lazy">
+            </figure>
+            <div class="wish-body">
+              <h3>A thousand cranes by New Year's Eve</h3>
+              <p data-wish-text>Every tick folds one crane. Legend says a thousand of them grant a wish.</p>
+              <div class="wish-meter" data-wish-meter><span></span></div>
+              <p class="wish-figure" data-wish-figure></p>
+            </div>
+          </div>
+        </article>
+
+        <article class="piece piece--day sheet-wrap reveal tilt" style="--r:-1deg">
+          <div class="sheet" data-tear="trbl" data-amp="6" data-seed="43">
+            <h3>Your day, in order</h3>
+            <p>Your habits already had times in their names. Eightfold lays them out from morning to night, shows what's next and nudges you when one is due.</p>
+            <ol class="dayline" data-dayline></ol>
+          </div>
+        </article>
+
+        <article class="piece piece--streak sheet-wrap reveal tilt" style="--r:1.5deg">
+          <div class="sheet sheet--washi" data-tear="trbl" data-amp="6" data-seed="47">
+            <figure class="streak-print cutout">
+              <img src="/img/crane-flying-over-wave.jpg" width="1400" height="947" alt="A Hiroshige woodblock print of a red-crowned crane diving over a breaking wave" loading="lazy">
+            </figure>
+            <h3>Streaks that survive the 1st</h3>
+            <p data-streak-text>In the sheet every streak reset with the new tab. Here a run that starts on the 28th keeps counting on the 1st.</p>
+          </div>
+        </article>
+
+        <article class="piece piece--perfect sheet-wrap reveal tilt" style="--r:-2deg">
+          <div class="sheet sheet--yamabuki" data-tear="trbl" data-amp="6" data-seed="53">
+            <span class="sfx perfect-sfx" aria-hidden="true">パーフェクト!</span>
+            <h3>Perfect days get confetti</h3>
+            <p data-perfect-text>Tick every habit in a day and the crane takes off.</p>
+            <button class="btn btn--ink" type="button" data-confetti>Throw some</button>
+          </div>
+        </article>
+
+        <article class="piece piece--later sheet-wrap reveal tilt" style="--r:1deg">
+          <div class="sheet sheet--sakura" data-tear="trbl" data-amp="6" data-seed="59">
+            <h3>Next on the folding table</h3>
+            <ul class="later">
+              <li>Nudges that arrive with the app closed</li>
+              <li>Android and iOS apps</li>
+              <li>Sync between phone and laptop</li>
+              <li>A weekly recap you can share</li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="closing" aria-labelledby="closing-title">
+      <figure class="closing-print cutout sheet-wrap tilt reveal" style="--r:-2deg">
+        <img src="/img/pines-and-cranes.jpg" width="1223" height="1400" alt="A woodblock print of cranes flying past seaside pine trees" loading="lazy">
+      </figure>
+      <div class="closing-copy">
+        <h2 id="closing-title" class="reveal" data-closing-title>Pick up where you left off.</h2>
+        <p class="reveal">All ten months of the sheet are already folded in. Nothing to import, nothing to copy.</p>
+        <a class="btn reveal" href="app.html">Open the tracker</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="foot-row">
+      <p>Made by oze, folded out of oze's Habit Tracker v2.</p>
+      <p class="credits">Pictures: “A Thousand Cranes and How to Fold Them” and “Hiden Senbazuru Orikata” by Shimokōbe Shūsui, 1797 (The Met; Wikimedia Commons). “Multitudes of Cranes” by Bokushin, 1863, and “Crane flying over wave” by Utagawa Hiroshige (Art Institute of Chicago). “Sea-Side Landscape with Pine Trees and Flying Cranes” by Kubo Shunman (The Met). Crane strings at Azumamaro-jinja, Kyoto, by DimiTalen (CC0). All public domain.</p>
+    </div>
+    <p class="foot-mark" aria-hidden="true">eightfold</p>
+  </footer>
+
+  <script type="module" src="/src/landing.js"></script>
+</body>
+</html>

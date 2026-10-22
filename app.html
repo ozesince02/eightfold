@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Eightfold tracker</title>
+  <meta name="description" content="Your habits, folded: the month grid, goals, streaks, weekly and daily scores, and the year.">
+  <meta name="theme-color" content="#E6E5E1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/styles/tokens.css">
+  <link rel="stylesheet" href="/src/styles/paper.css">
+  <link rel="stylesheet" href="/src/styles/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="wordmark" href="./" title="About Eightfold"><span data-mark></span>eightfold</a>
+    <nav class="views" aria-label="Views">
+      <a href="#/month" data-view="month">Month</a>
+      <a href="#/year" data-view="year">Year</a>
+      <a href="#/habits" data-view="habits">Habits</a>
+    </nav>
+    <p class="cranes-chip" data-cranes-chip></p>
+  </header>
+
+  <main class="canvas" id="view" tabindex="-1">
+    <noscript><p>Eightfold needs JavaScript to fold anything.</p></noscript>
+  </main>
+
+  <!-- The crane lives outside the re-rendered view so its WebGL scene survives every update. -->
+  <div class="crane-widget" data-stage hidden>
+    <canvas aria-label="Today's crane: it folds a little more with every habit you tick" role="img"></canvas>
+  </div>
+
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
+
+  <script type="module" src="/src/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Keep text files with LF endings everywhere, so diffs stay clean on Windows and in deploys.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary

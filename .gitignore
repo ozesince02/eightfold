@@ -1,0 +1,28 @@
+# Dependencies (reinstall with `npm install`)
+node_modules/
+
+# Build output (rebuild with `npm run build`)
+dist/
+
+# Design inspector and browser-test output
+.taste-skill/
+.playwright-cli/
+
+# Local tool settings (paths on this machine)
+.claude/
+
+# Secrets: Supabase and email keys will live in env files, never in git
+.env
+.env.*
+!.env.example
+
+# Logs and OS clutter
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
