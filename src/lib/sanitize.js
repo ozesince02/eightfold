@@ -85,6 +85,14 @@ export function cleanState(input) {
   if (isObject(input.prefs)) {
     out.prefs = { percentView: VIEWS.includes(input.prefs.percentView) ? input.prefs.percentView : 'days' };
   }
+  if (isObject(input.meta)) {
+    const time = (v) => (Number.isFinite(v) && v > 0 ? v : undefined);
+    out.meta = {
+      firstUsedAt: time(input.meta.firstUsedAt),
+      lastBackupAt: time(input.meta.lastBackupAt),
+      backupSnoozedUntil: time(input.meta.backupSnoozedUntil),
+    };
+  }
   if (isObject(input.reminders)) {
     const r = input.reminders;
     const off = {};

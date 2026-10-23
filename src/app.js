@@ -26,7 +26,7 @@ const icon = {
 $$('[data-mark]').forEach((el) => { el.innerHTML = craneMark(); });
 
 let now = today();
-let ui = { swatchFor: null, pct: null };
+let ui = { swatchFor: null, pct: null, protection: null };
 let stage = null;
 let lastProgress = -1;
 
@@ -126,6 +126,7 @@ function monthView(key, year) {
   if (timed.length) blocks.push(dayPanel(key, s, color));
 
   return `<div class="title-row"><h1>${monthName(m)} ${y}</h1><p class="finding">${finding}</p>${nav}</div>
+    ${backupBar()}
     <div class="board">${blocks.join('')}</div>`;
 }
 
@@ -457,6 +458,14 @@ function habitsView(key) {
         <section class="panel" aria-labelledby="backup-h">
           <div class="panel-head"><h2 id="backup-h">Backup</h2></div>
           <p class="note">Everything lives in this browser. Save a copy now and then, or move it to another device.</p>
+          <ul class="safety">
+            <li><b>Last backup:</b> ${lastBackupText()}</li>
+            <li><b>Storage:</b> ${{
+              persistent: 'protected. This browser won\'t clear your data on its own.',
+              'best-effort': 'not protected yet. The browser may clear it if the disk runs low. Ticking a habit asks it to keep the data.',
+              unknown: 'this browser doesn\'t say whether it keeps data permanently.',
+            }[ui.protection || 'unknown']}</li>
+          </ul>
           <div class="backup-actions" style="margin-top:14px">
             <button class="btn btn--quiet" type="button" data-export>Save a backup</button>
             <label class="btn btn--quiet" for="import-file">Load a backup</label>
@@ -523,7 +532,41 @@ function toast(text) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
 }
 
+// ---------- Keeping data safe ----------
+// The nudge exists only while data lives on this one device (store.backupDue is 0 once synced).
+function backupBar() {
+  const days = store.backupDue();
+  if (!days) return '';
+  const since = store.meta().lastBackupAt ? `${days} days since your last backup` : `${days} days of folds and no backup yet`;
+  return `<section class="backup-bar sheet-wrap" aria-labelledby="backup-bar-h">
+    <div class="backup-bar-sheet">
+      <div><h2 id="backup-bar-h">Save a backup</h2><p>${since}. Your folds live only in this browser.</p></div>
+      <div class="backup-bar-actions">
+        <button class="btn btn--ink" type="button" data-export>Save a backup</button>
+        <button class="seg-link" type="button" data-backup-later>Remind me tomorrow</button>
+      </div>
+    </div>
+  </section>`;
+}
+
+function lastBackupText() {
+  const at = store.meta().lastBackupAt;
+  if (!at) return 'never.';
+  const days = Math.floor((Date.now() - at) / 86400000);
+  const when = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long' }).format(new Date(at));
+  return days === 0 ? `today, ${when}.` : days === 1 ? `yesterday, ${when}.` : `${days} days ago, ${when}.`;
+}
+
+// Asks the browser to keep the data permanently, once per visit, after a real click.
+let protectionAsked = false;
+function protectData() {
+  if (protectionAsked || ui.protection === 'persistent') return;
+  protectionAsked = true;
+  store.protect().then((p) => { ui.protection = p; scheduleRender(); });
+}
+
 function toggle(btn) {
+  protectData();
   const [id, dayStr] = btn.dataset.toggle.split(':');
   const day = Number(dayStr);
   const key = route().key;
@@ -568,11 +611,16 @@ view.addEventListener('click', (e) => {
     return;
   }
   if (e.target.closest('[data-export]')) {
+    store.markBackedUp();
     const blob = new Blob([store.exportJSON()], { type: 'application/json' });
     const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `eightfold-backup-${monthKey(now.y, now.m)}-${String(now.d).padStart(2, '0')}.json` });
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    return toast('Backup saved.');
+    return toast('Backup saved to your downloads. Keep it somewhere safe.');
+  }
+  if (e.target.closest('[data-backup-later]')) {
+    store.snoozeBackup(1);
+    return toast('Okay, tomorrow.');
   }
   const pv = e.target.closest('[data-pct-view]');
   if (pv) { ui.pct = pv.dataset.pctView; return render(); }
@@ -654,7 +702,12 @@ view.addEventListener('keydown', (e) => {
   target?.focus();
 });
 
-store.subscribe(scheduleRender);
+store.subscribe((state, info) => {
+  if (info?.saveFailed) toast('This browser refused to save. Your last change may be lost; save a backup now.');
+  scheduleRender();
+});
+store.startClock();
+store.protection().then((p) => { ui.protection = p; scheduleRender(); });
 // "#/habits/2026-10#reminders" opens the view and scrolls to that panel.
 function scrollToAnchor() {
   const anchor = location.hash.split('#')[2];

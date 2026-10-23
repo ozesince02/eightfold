@@ -5,6 +5,14 @@ Dates are when the work landed.
 
 ## Unreleased
 
+### Added
+- **Your data is safer in the browser.** After your first tick of a visit, Eightfold asks the
+  browser to keep its data permanently; the Backup panel shows whether it's protected and when you
+  last saved a backup.
+- **Weekly backup nudge:** a slip at the top of the month after 7 days without a backup, with
+  "Remind me tomorrow". It disappears once accounts and sync exist. (D-012)
+- If the browser ever refuses to save a change, you're told straight away.
+
 ### Security
 - Backups are checked field by field before loading; a damaged or crafted file is refused with a
   plain reason and nothing changes. Stored data gets the same checks every time the app opens, and

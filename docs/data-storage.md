@@ -99,6 +99,30 @@ store.js  ── same API as today: get, toggle, addHabit, updateHabit, setPref,
 - **Signing in for the first time** uploads the local data to the new account (the same path a
   JSON backup import uses today).
 
+### Sync behaviour (agreed 24 October 2026)
+- **Online:** every change is written to Supabase within a second of being made, and other devices
+  see it live through Supabase Realtime (a subscription on the user's own rows).
+- **Offline:** changes are saved on the device at once and queued. The queue is sent when the browser
+  reports it's back online (the `online` event), when the app is opened, and on a short retry timer.
+- **The screen never waits for the network.** A small status shows "Saved", "Saving…" or
+  "Offline: will sync".
+- **Backup nudges stop once data is synced.** The weekly "save a backup" slip exists only because
+  the data lives in one browser; the synced adapter reports `mode: 'synced'` and `store.backupDue()`
+  returns 0. The Save and Load backup buttons stay, for people who want their own copy.
+- **Signed out or no account:** the app keeps working exactly as today, local only, with the nudge.
+
+## What phase 1 put in place (24 October 2026)
+
+- **The adapter seam:** [src/lib/adapters/local.js](../src/lib/adapters/local.js) is now the only
+  code that touches `localStorage`. `store.js` calls `load`, `save`, `keepAside`, `protection` and
+  `protect` on it, so a Supabase adapter can be added beside it.
+- **Persistent storage:** after the first tick of a visit, the app asks the browser to keep the data
+  permanently (`navigator.storage.persist()`); the Backup panel shows whether it's protected.
+- **Failed saves are reported:** if the browser refuses to save (storage full or blocked), a toast
+  says so once instead of the change disappearing silently.
+- **Weekly backup nudge** in local mode, with "Remind me tomorrow"; the Backup panel shows when the
+  last backup was made.
+
 ## Data model (Postgres)
 
 ```sql
@@ -168,7 +192,7 @@ Not stored: streaks, percentages, weekly and yearly scores. They stay computed b
 
 ## Phases
 
-1. **Now, no backend.** Ask the browser to keep the data permanently
+1. **Now, no backend. Done 24 Oct 2026** (see above). Ask the browser to keep the data permanently
    (`navigator.storage.persist()`), and nudge for a backup weekly. Move the store's internals behind
    the adapter interface without changing behaviour.
 2. **Accounts for family and friends.** Git repository and Cloudflare Pages deploys, a domain,

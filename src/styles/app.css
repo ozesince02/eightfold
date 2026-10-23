@@ -232,6 +232,20 @@ td.is-today .cell:not([aria-pressed="true"]) { outline: 2px solid var(--sumi); o
 .choice input:checked + i::after { content: ''; position: absolute; inset: 7px; border-radius: 50%; background: var(--washi); }
 .choice input:focus-visible + i { outline: 3px solid var(--ai); outline-offset: 2px; }
 
+/* Backup nudge: a slip across the top of the month, only while data lives in one browser */
+.backup-bar { margin: 0 0 24px; filter: var(--lift); }
+.backup-bar-sheet {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap;
+  background: var(--yamabuki); padding: 16px 22px;
+  clip-path: polygon(0 0, 100% 0, 99.4% 50%, 100% 100%, 0 100%, .6% 50%);
+}
+.backup-bar h2 { font-size: 18px; }
+.backup-bar p { font-size: 15px; margin-top: 2px; }
+.backup-bar-actions { display: flex; align-items: center; gap: 16px; }
+.backup-bar .seg-link { color: var(--sumi); }
+.safety { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; font-size: 14px; color: var(--sumi-2); }
+.safety b { color: var(--sumi); }
+
 .today-foot a { color: var(--ai); font-weight: 700; text-underline-offset: 3px; }
 .rem-lead { display: grid; gap: 4px; margin-top: 18px; font-size: 13px; font-weight: 700; color: var(--sumi-2); }
 .rem-lead select {

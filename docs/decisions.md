@@ -137,3 +137,13 @@ Accepted · 24 Oct 2026
   database, and an audit log of what was found and fixed.
 - **Cost:** some inline convenience is gone (the boot snippet is a file now), and new external
   services need a deliberate CSP change.
+
+## D-012 Local data safety, and backups only while unsynced
+Accepted · 24 Oct 2026
+
+- **Decision:** storage goes through an adapter (`src/lib/adapters/local.js`). The app asks the
+  browser for persistent storage after a real click (Firefox may show a prompt, so never on load),
+  reports a refused save once, and nudges for a JSON backup every 7 days with a one-day snooze.
+- **The user's rule:** once data is on Supabase, changes sync in real time, or as soon as there is a
+  network, and the backup nudge goes away. The nudge is tied to `adapter.mode === 'local'`.
+- **Checks:** `scripts/check-backup.mjs`.

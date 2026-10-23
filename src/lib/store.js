@@ -1,11 +1,14 @@
-// The whole tracker lives in one object in localStorage. No formulas: every number
-// on screen is computed from `months[key].checks` by stats.js.
+// The whole tracker lives in one state object, kept by an adapter (localStorage today).
+// No formulas: every number on screen is computed from `months[key].checks` by stats.js.
 import { SEED_MONTHS, HABIT_COLORS } from '../data/seed.js';
 import { monthKey, parseKey, shiftMonth, daysIn } from './dates.js';
 import { cleanState, parseBackup, isId, safeColor, safeTime, safeName, LIMITS } from './sanitize.js';
+import { localAdapter, STORE_KEY } from './adapters/local.js';
 
-export const STORE_KEY = 'eightfold:v1';
-const LEGACY_KEY = 'orizuru:v1'; // the app's working name before it became Eightfold
+export { STORE_KEY };
+const adapter = localAdapter;
+const DAY = 86400000;
+export const BACKUP_EVERY_DAYS = 7;
 const PALETTE = ['#C8302C', '#24496B', '#8EA46B', '#E9B33F', '#C9A57A', '#A9CBD6', '#E8C3BC', '#6E8C8A', '#B98A5E', '#D98E73'];
 
 function fromSeed() {
@@ -22,23 +25,27 @@ function fromSeed() {
 // Stored data is validated like an imported file: it may have been edited by hand or by
 // another script on this origin. Data that can't be read is kept aside, never thrown away.
 function read() {
-  let raw = null;
-  try { raw = localStorage.getItem(STORE_KEY) ?? localStorage.getItem(LEGACY_KEY); } catch { /* storage blocked */ }
+  const raw = adapter.load();
   if (!raw) return fromSeed();
   try {
     return cleanState(JSON.parse(raw));
   } catch {
-    try { localStorage.setItem(`${STORE_KEY}:unreadable:${Date.now()}`, raw); } catch { /* storage full */ }
+    adapter.keepAside(raw);
     return fromSeed();
   }
 }
 
 let state = read();
 const listeners = new Set();
+let saveFailed = false;
 
+// A save the browser refused (storage full, blocked, private mode) is reported, not swallowed:
+// listeners get { saveFailed: true } once, and again only after a save succeeds in between.
 function save() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch { /* storage full or blocked */ }
-  listeners.forEach((fn) => fn(state));
+  const ok = adapter.save(JSON.stringify(state));
+  const firstFailure = !ok && !saveFailed;
+  saveFailed = !ok;
+  listeners.forEach((fn) => fn(state, { saveFailed: firstFailure }));
 }
 
 const clampInt = (v, min, max, fallback) => {
@@ -51,6 +58,31 @@ export const DEFAULT_REMINDERS = { enabled: false, lead: 0, off: {}, log: {} };
 export const store = {
   get: () => state,
   subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
+
+  mode: () => adapter.mode,
+  protection: () => adapter.protection(),
+  protect: () => adapter.protect(),
+
+  // Backups matter only while the data lives on one device. meta.firstUsedAt starts the clock
+  // for someone who has never saved a backup.
+  meta() {
+    state.meta = { ...state.meta };
+    return state.meta;
+  },
+  startClock() {
+    if (!this.meta().firstUsedAt) { state.meta.firstUsedAt = Date.now(); save(); }
+  },
+  markBackedUp() { Object.assign(this.meta(), { lastBackupAt: Date.now(), backupSnoozedUntil: undefined }); save(); },
+  snoozeBackup(days = 1) { this.meta().backupSnoozedUntil = Date.now() + days * DAY; save(); },
+  // Days since the last backup when one is due, otherwise 0. Never due once data is synced.
+  backupDue(now = Date.now()) {
+    if (adapter.mode !== 'local') return 0;
+    const { lastBackupAt, firstUsedAt, backupSnoozedUntil } = this.meta();
+    const since = lastBackupAt || firstUsedAt;
+    if (!since || (backupSnoozedUntil && now < backupSnoozedUntil)) return 0;
+    const days = Math.floor((now - since) / DAY);
+    return days >= BACKUP_EVERY_DAYS ? days : 0;
+  },
 
   // Another tab changed the data: take its copy instead of reloading the page.
   reloadFromStorage() {
@@ -183,13 +215,16 @@ export const store = {
   exportJSON: () => JSON.stringify(state, null, 2),
   // Throws a readable error when the file is not a valid backup; nothing changes in that case.
   importJSON(text) {
+    const meta = state.meta;
     state = parseBackup(text);
+    state.meta = { ...meta, lastBackupAt: Date.now() }; // the loaded file is itself a backup
     save();
   },
   resetToSheet() {
-    const reminders = state.reminders;
+    const { reminders, meta } = state;
     state = fromSeed();
     if (reminders) state.reminders = { ...reminders, log: {} };
+    if (meta) state.meta = meta;
     save();
   },
 };

@@ -60,6 +60,8 @@ assert.equal(evil.wish.length, LIMITS.wish, 'wish is capped');
 assert.equal(evil.prefs.percentView, 'days', 'unknown view falls back to days');
 assert.deepEqual(evil.reminders, { enabled: false, lead: 0, off: { dsa: true }, log: { '2026-10-23:german': { firedAt: undefined, snoozeUntil: 5 } } });
 assert.equal('extra' in evil, false, 'unknown keys are dropped');
+const meta = cleanState({ version: 1, months: {}, meta: { firstUsedAt: 1700000000000, lastBackupAt: '<b>', backupSnoozedUntil: -5, other: 1 } }).meta;
+assert.deepEqual(meta, { firstUsedAt: 1700000000000, lastBackupAt: undefined, backupSnoozedUntil: undefined }, 'backup times must be real timestamps');
 assert.equal({}.polluted, undefined, 'no prototype pollution');
 
 // Broken files are refused with a readable reason, and nothing half-loads.
