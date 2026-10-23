@@ -240,10 +240,13 @@ Settled with the user on 23 October 2026.
   points of presence across India.
 - **Supabase project in the Mumbai region** (`ap-south-1`) so the database sits close to the users.
 - Vercel was the runner-up; its free Hobby plan is "restricted to non-commercial personal use only".
-- **Domain:** a custom domain is needed anyway for the email links (see above). Pick one before
-  phase 2.
-- Deploys: connect the repository to Cloudflare Pages, build command `npm run build`, output `dist`.
-  This needs the project in a git repository first.
+- **Domain:** `onemorefold.com`, bought 24 October 2026 (the product name is moving to One More Fold).
+- **Deploys (updated 24 Oct 2026, D-014):** Cloudflare now connects a repository as a *Worker*
+  rather than a Pages project. `wrangler.jsonc` makes it a static-assets Worker serving `dist/`;
+  Cloudflare runs `npm run build`, then `npx wrangler deploy`. Each push to `main` deploys.
+- **On the live site the tracker is `/app`** (not `/app.html`). Supabase's redirect URLs must be:
+  `https://onemorefold.com/app`, the Worker's preview address (`https://*.workers.dev/app`) and
+  `http://localhost:5173/app.html` for development.
 
 ## Sources
 

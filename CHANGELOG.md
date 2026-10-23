@@ -3,6 +3,16 @@
 What changed, for people using the app. Why it changed lives in [docs/decisions.md](docs/decisions.md).
 Dates are when the work landed.
 
+## Unreleased
+
+### Fixed
+- **Deploying to Cloudflare works.** A `wrangler.jsonc` tells Cloudflare to serve the built site
+  instead of guessing from the Vite config (which failed). The tracker lives at `/app`; old
+  `/app.html` links still work. (D-014)
+
+### Added
+- A not-found page in the paper style.
+
 ## 0.6.0 — 24 October 2026
 
 ### Added

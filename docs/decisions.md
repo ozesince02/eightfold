@@ -176,3 +176,18 @@ Accepted · 24 Oct 2026
   progress ("1 of 3 this week"). The grid shows dots on rest days and dashed boxes for any-day habits.
   Reminders skip rest days and stop once a weekly or monthly goal is met.
 - **Checks:** `scripts/check-schedules.mjs` (hand-counted October 2026 cases).
+
+## D-014 Hosting as a Cloudflare Worker serving static files
+Accepted · 24 Oct 2026 · refines D-008's "Cloudflare Pages"
+
+- **Context:** Cloudflare's dashboard now creates a Worker (Workers Builds) when connecting a
+  repository, not a classic Pages project. With no config in the repo, its deploy step
+  (`npx wrangler deploy`) tried to auto-detect the project from `vite.config.js` and failed.
+- **Decision:** `wrangler.jsonc` declares a static-assets Worker that serves `dist/` (built by
+  `npm run build`). No server code. `public/_headers` still sets the security headers (verified on
+  Cloudflare's local runtime), `public/404.html` is the not-found page, and
+  `html_handling: auto-trailing-slash` serves the tracker at `/app` (old `/app.html` links redirect,
+  keeping their query string).
+- **Pinned tooling:** Wrangler is a dev dependency at an exact version at least two weeks old
+  (4.149.0), so Cloudflare installs that rather than whatever is newest, and `npm audit` covers it.
+- **Note:** the Worker name in `wrangler.jsonc` must match the Worker's name in the dashboard.

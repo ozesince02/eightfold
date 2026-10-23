@@ -60,5 +60,7 @@ npm audit
 ```
 
 `npm run dev` serves on http://localhost:5173 (landing) and /app.html (tracker).
+Hosting: Cloudflare Worker serving `dist/` ([wrangler.jsonc](wrangler.jsonc), D-014); on the live site the tracker is `/app`.
+`npm run build && npx wrangler dev` runs the real Cloudflare runtime locally with the production headers.
 `npm run build && node scripts/serve-dist.mjs` serves the production build with the real security
 headers on http://localhost:4173.
