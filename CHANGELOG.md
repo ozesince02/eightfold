@@ -3,7 +3,35 @@
 What changed, for people using the app. Why it changed lives in [docs/decisions.md](docs/decisions.md).
 Dates are when the work landed.
 
-## Unreleased
+## 0.6.0 — 24 October 2026
+
+### Added
+- **Habit schedules.** A habit can repeat every day, on chosen days (say Monday and Wednesday),
+  a number of times a week, once a week, or once a month. Set it under Habits → Repeats; the goal
+  updates to match. (D-013)
+  - The month grid only puts boxes on days a habit is due; other days show a quiet dot and are
+    never counted as misses.
+  - Today shows what's due today, then **This week** and **This month** strips with progress like
+    "1 of 3 this week".
+  - Percentages, goals and runs count in the habit's own units: days, weeks or months.
+  - Reminders skip rest days and stop once a weekly or monthly goal is met.
+- Arrow keys in the grid hop over rest days.
+
+### Changed
+- In the Days view the grid's columns are now "Due" and "% due", since a weekly habit is counted in weeks.
+
+### Fixed
+- On phones, the habit editor squeezed Time and From day into a 40px column; it now uses three even columns.
+
+### Docs
+- `main` now changes only through pull requests ([CLAUDE.md](CLAUDE.md), D-010).
+
+### Tooling
+- GitHub Actions CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs `npm ci`, `npm run check`,
+  `npm run build` and `npm audit` on every pull request and every push to `main`. Read-only
+  permissions; actions pinned to commit SHAs.
+
+## 0.5.0 — 24 October 2026
 
 ### Added
 - **Your data is safer in the browser.** After your first tick of a visit, Eightfold asks the

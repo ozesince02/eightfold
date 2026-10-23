@@ -114,6 +114,30 @@
 .cell[aria-pressed="true"]::after { content: ''; position: absolute; right: 0; top: 0; width: 38%; height: 38%; background: var(--white-paper); clip-path: polygon(0 0, 100% 100%, 0 100%); opacity: .85; }
 .cell.future { background: transparent; outline: 1px solid var(--washi-3); outline-offset: -1px; }
 .cell.future:hover { background: var(--washi); }
+/* Schedules (D-013): a rest day has no box, just a quiet dot; weekly and monthly boxes are paler,
+   because any day can count and an empty one isn't a miss. */
+.cell.rest { background: transparent; cursor: default; display: grid; place-items: center; }
+.cell.rest::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--washi-3); }
+.cell.rest:hover { transform: none; }
+.cell.flex:not([aria-pressed="true"]) { background: var(--washi); outline: 1px dashed var(--washi-3); outline-offset: -1px; }
+.habit-grid td.sum small { font-size: 13px; color: var(--sumi-2); margin-left: 1px; }
+/* Schedule controls in the habit editor */
+.edit-schedule { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 14px; padding-left: 52px; }
+.edit-schedule label { display: grid; gap: 4px; font-size: 13px; font-weight: 700; color: var(--sumi-2); }
+.edit-schedule select, .add-form select {
+  font: inherit; font-size: 16px; font-weight: 500; color: var(--sumi); min-height: 44px; padding: 8px 10px;
+  border: 1px solid var(--washi-3); border-radius: 4px; background: var(--washi);
+}
+.edit-schedule .tpw input { width: 76px; }
+.edit-schedule .note { flex: 1 1 220px; margin: 0 0 10px; font-size: 13px; }
+.wd-chips { display: flex; gap: 4px; }
+.wd-chips button {
+  width: 40px; height: 44px; border: 0; border-radius: 6px; background: var(--washi-2); font-weight: 700; cursor: pointer;
+  transition: background-color .15s, transform .2s var(--ease-paper);
+}
+.wd-chips button:hover { background: var(--washi-3); }
+.wd-chips button[aria-pressed="true"] { background: var(--c, var(--sumi)); color: var(--white-paper); }
+.strip-h { font-family: var(--text); font-weight: 700; font-size: 14px; color: var(--sumi-2); margin: 16px 0 6px; letter-spacing: 0; }
 .cell.na { background: transparent; cursor: default; background-image: repeating-linear-gradient(135deg, transparent 0 4px, var(--washi-3) 4px 5px); }
 .cell.na:hover { transform: none; }
 td.is-today .cell:not([aria-pressed="true"]) { outline: 2px solid var(--sumi); outline-offset: -2px; }
@@ -193,7 +217,7 @@ td.is-today .cell:not([aria-pressed="true"]) { outline: 2px solid var(--sumi); o
 .swatches { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 0 0; grid-column: 1 / -1; }
 .swatches button { width: 30px; height: 30px; border: 0; border-radius: 4px; background: var(--c); cursor: pointer; }
 .swatches button[aria-pressed="true"] { outline: 3px solid var(--sumi); outline-offset: 2px; }
-.add-form { display: grid; grid-template-columns: minmax(0, 1fr) 120px 96px 96px auto; gap: 12px; align-items: end; }
+.add-form { display: grid; grid-template-columns: minmax(0, 1fr) 120px 150px 96px 96px auto; gap: 12px; align-items: end; }
 .side-stack { display: grid; gap: 24px; align-content: start; }
 .wish-form { display: grid; gap: 10px; }
 .wish-form textarea { min-height: 88px; resize: vertical; }
@@ -305,8 +329,11 @@ td.is-today .cell:not([aria-pressed="true"]) { outline: 2px solid var(--sumi); o
   .range-labels { font-size: 12px; }
   .range-labels b { font-size: 13px; }
   .range-labels .long, .range-labels .pct { display: none; }
-  .edit-row { grid-template-columns: 40px minmax(0, 1fr); }
-  .edit-row label.wide, .edit-row .row-actions { grid-column: 1 / -1; }
+  .edit-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .edit-row .swatch-btn { grid-column: 1; }
+  .edit-schedule { padding-left: 0; }
+  .edit-row label.wide { grid-column: 2 / -1; }
+  .edit-row .row-actions { grid-column: 1 / -1; }
   .edit-row label.third { grid-column: span 1; }
   .add-form { grid-template-columns: 1fr 1fr; }
   .add-form label:first-child, .add-form .btn { grid-column: 1 / -1; }

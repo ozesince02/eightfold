@@ -34,8 +34,13 @@ data, storage, rendering, auth or headers. Say plainly when something is a risk.
 | `chore/` | Dependencies, tooling, config | `chore/upgrade-vite` |
 
 - Lower-case, words joined by hyphens, short.
-- Branch from an up-to-date `main`; push the branch; merge into `main` only when the user agrees
-  and `npm run check` and `npm run build` pass.
+- Branch from an up-to-date `main`; push the branch.
+- **`main` changes only through a pull request.** Open a PR into `main` with what changed, why, and
+  how it was tested (`gh pr create`; the GitHub CLI is installed and signed in). Merge it only when
+  the user agrees and the CI checks pass. Delete the branch after merging.
+- CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs `npm ci`, `npm run check`,
+  `npm run build` and `npm audit` on every PR and push to `main`. Keep its permissions read-only and
+  its actions pinned to commit SHAs; when bumping an action, update the SHA and the tag comment.
 - Commit messages: a short summary line, a blank line, then why. Small, focused commits.
 
 ## When you change something

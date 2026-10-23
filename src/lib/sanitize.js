@@ -4,6 +4,7 @@
 //   2. Escape on the way out: free text goes through esc() before it touches HTML.
 
 import { daysIn } from './dates.js';
+import { CADENCES } from './schedule.js';
 
 export const LIMITS = {
   backupBytes: 5 * 1024 * 1024, // a decade of ticks is well under 1 MB
@@ -36,6 +37,18 @@ const isObject = (o) => o !== null && typeof o === 'object' && !Array.isArray(o)
 
 class BackupError extends Error {}
 
+// A habit's schedule (D-013). Daily habits carry no extra keys, so older data stays as it was.
+export function cleanSchedule(h) {
+  const cadence = CADENCES.includes(h?.cadence) ? h.cadence : 'daily';
+  if (cadence === 'weekdays') {
+    const days = Array.isArray(h.weekdays) ? [...new Set(h.weekdays.map((d) => int(d, 1, 7, 0)).filter(Boolean))].sort((a, b) => a - b) : [];
+    return days.length ? { cadence, weekdays: days } : {};
+  }
+  if (cadence === 'times_per_week') return { cadence, timesPerWeek: int(h.timesPerWeek, 1, 7, 3) };
+  if (cadence === 'weekly' || cadence === 'monthly') return { cadence };
+  return {};
+}
+
 // Returns a clean copy of an Eightfold state object, or throws BackupError with a plain reason.
 // Unknown keys are dropped; bad values are corrected or dropped, never passed through.
 export function cleanState(input) {
@@ -59,7 +72,7 @@ export function cleanState(input) {
       if (!name) continue;
       seen.add(h.id);
       ids.add(h.id);
-      habits.push({ id: h.id, name, goal: int(h.goal, 0, 31, 20), time: safeTime(h.time), start: int(h.start, 1, last, 1) });
+      habits.push({ id: h.id, name, goal: int(h.goal, 0, 31, 20), time: safeTime(h.time), start: int(h.start, 1, last, 1), ...cleanSchedule(h) });
     }
     const checks = {};
     const srcChecks = isObject(src.checks) ? src.checks : {};

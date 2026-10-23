@@ -2,7 +2,8 @@
 // No formulas: every number on screen is computed from `months[key].checks` by stats.js.
 import { SEED_MONTHS, HABIT_COLORS } from '../data/seed.js';
 import { monthKey, parseKey, shiftMonth, daysIn } from './dates.js';
-import { cleanState, parseBackup, isId, safeColor, safeTime, safeName, LIMITS } from './sanitize.js';
+import { cleanState, parseBackup, isId, safeColor, safeTime, safeName, cleanSchedule, LIMITS } from './sanitize.js';
+import { defaultGoal } from './schedule.js';
 import { localAdapter, STORE_KEY } from './adapters/local.js';
 
 export { STORE_KEY };
@@ -167,14 +168,18 @@ export const store = {
     save();
   },
 
-  addHabit(key, { name, goal = 20, time = '', start = 1 }) {
+  // schedule: { cadence, weekdays, timesPerWeek } (D-013). A non-daily schedule sets its own goal.
+  addHabit(key, { name, goal = 20, time = '', start = 1, cadence = 'daily', weekdays, timesPerWeek }) {
     const clean = safeName(name);
     const month = this.ensureMonth(key);
     if (!clean || month.habits.length >= LIMITS.habitsPerMonth) return null;
     const { y, m } = parseKey(key);
     const base = clean.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'habit';
     const slug = `${base}-${Date.now().toString(36).slice(-4)}`;
-    month.habits.push({ id: slug, name: clean, goal: clampInt(goal, 0, 31, 20), time: safeTime(time), start: clampInt(start, 1, daysIn(y, m), 1) });
+    const habit = { id: slug, name: clean, goal: clampInt(goal, 0, 31, 20), time: safeTime(time), start: clampInt(start, 1, daysIn(y, m), 1) };
+    Object.assign(habit, cleanSchedule({ cadence, weekdays: cadence === 'weekdays' && !weekdays?.length ? [1, 2, 3, 4, 5] : weekdays, timesPerWeek }));
+    if (habit.cadence) habit.goal = defaultGoal(habit, y, m);
+    month.habits.push(habit);
     month.checks[slug] = month.checks[slug] || [];
     this.color(slug);
     save();
@@ -187,6 +192,16 @@ export const store = {
     const { y, m } = parseKey(key);
     if ('name' in patch && safeName(patch.name)) habit.name = safeName(patch.name);
     if ('time' in patch) habit.time = safeTime(patch.time);
+    // A schedule change replaces the old schedule and recalculates the goal; the goal can still be
+    // edited afterwards. Choosing "on chosen days" with none picked starts with Monday to Friday.
+    if ('cadence' in patch || 'weekdays' in patch || 'timesPerWeek' in patch) {
+      const next = { ...habit, ...patch };
+      if (next.cadence === 'weekdays' && !next.weekdays?.length) next.weekdays = [1, 2, 3, 4, 5];
+      if (next.cadence === 'times_per_week' && !next.timesPerWeek) next.timesPerWeek = 3;
+      delete habit.cadence; delete habit.weekdays; delete habit.timesPerWeek;
+      Object.assign(habit, cleanSchedule(next));
+      habit.goal = defaultGoal(habit, y, m);
+    }
     if ('goal' in patch) habit.goal = clampInt(patch.goal, 0, 31, habit.goal);
     if ('start' in patch) habit.start = clampInt(patch.start, 1, daysIn(y, m), habit.start);
     save();

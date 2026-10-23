@@ -39,7 +39,7 @@ never each other's misses, and habit names only if you choose to share them. Rem
 time. Data side: [data-storage.md](data-storage.md), "Sharing".
 - Later still: a family circle with one shared thousand-crane wish.
 
-### Weekly and monthly goals, and habits on chosen days (23 Oct 2026, from the user)
+### Weekly and monthly goals, and habits on chosen days (23 Oct 2026, from the user) — built 24 Oct 2026, D-013
 Daily habits are short-term goals; weekly and monthly ones are the long-term goals. And some habits
 only belong on certain days.
 - **Habit cadence:**

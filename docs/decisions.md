@@ -125,6 +125,7 @@ Accepted · 24 Oct 2026
   `docs/`, `refactor/` or `chore/` branches (conventions in [CLAUDE.md](../CLAUDE.md)) and merges
   into `main` once checks and the build pass and the user agrees.
 - **Why:** hosting from a branch that only receives finished, checked work keeps the live app stable.
+- **Update, 24 Oct 2026:** `main` changes only through pull requests, merged when the user agrees.
 
 ## D-011 Security and reliability before features
 Accepted · 24 Oct 2026
@@ -147,3 +148,31 @@ Accepted · 24 Oct 2026
 - **The user's rule:** once data is on Supabase, changes sync in real time, or as soon as there is a
   network, and the backup nudge goes away. The nudge is tied to `adapter.mode === 'local'`.
 - **Checks:** `scripts/check-backup.mjs`.
+
+## D-013 Habit schedules: chosen days, times a week, weekly and monthly
+Accepted · 24 Oct 2026
+
+- **Context:** the user wants long-term goals (weekly, monthly) beside daily ones, and habits that
+  belong only on some days ("Monday and Wednesday"), shown gracefully in the data and the UI.
+- **Decision:** each month's habit has a cadence (`src/lib/schedule.js`):
+  - **Every day** (`daily`, the default; existing data has no cadence key and stays daily).
+  - **On chosen days** (`weekdays`, 1 = Monday ... 7 = Sunday). Other days are rest days: no box,
+    never a miss, and they neither break nor extend a run.
+  - **Times a week** (`times_per_week`, N from 1 to 7). Any day counts. Weeks are the app's weeks from
+    the 1st; a short last week (29th–31st) asks for round(N × days ÷ 7), at least 1.
+  - **Once a week** (`weekly`) and **once a month** (`monthly`), on any day.
+- **How they count:**
+  - Units follow the schedule: days, weeks, or the month.
+  - Days view: done against what was due so far. The current day, week or month only counts once it's done, so it's
+    never a miss before it ends.
+  - Goal view: completed units against the goal. Extra ticks in a week don't count past its target.
+  - Changing a schedule resets the goal to what the schedule implies (Mon/Wed/Fri in October is 13,
+    three a week is 13, once a week is 5). The goal stays editable.
+  - A day's score counts habits due that day plus weekly and monthly ticks made that day, so a
+    weekly habit never makes a day look worse.
+  - Streaks walk back in the habit's unit and across months while the schedule's unit stays the same.
+  - Raw ticks still all count as folds (cranes).
+- **In the app:** Today lists what's due today, then "This week" and "This month" strips with
+  progress ("1 of 3 this week"). The grid shows dots on rest days and dashed boxes for any-day habits.
+  Reminders skip rest days and stop once a weekly or monthly goal is met.
+- **Checks:** `scripts/check-schedules.mjs` (hand-counted October 2026 cases).

@@ -1,13 +1,13 @@
 {
   "name": "eightfold",
   "private": true,
-  "version": "0.4.0",
+  "version": "0.6.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "node scripts/check-stats.mjs && node scripts/check-reminders.mjs && node scripts/check-seed.mjs && node scripts/check-security.mjs && node scripts/check-backup.mjs",
+    "check": "node scripts/check-stats.mjs && node scripts/check-reminders.mjs && node scripts/check-seed.mjs && node scripts/check-security.mjs && node scripts/check-backup.mjs && node scripts/check-schedules.mjs",
     "serve:dist": "node scripts/serve-dist.mjs",
     "images": "node scripts/resize-images.mjs",
     "icons": "node scripts/make-icons.mjs"

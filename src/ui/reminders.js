@@ -4,7 +4,8 @@
 import { gsap } from 'gsap';
 import { store } from '../lib/store.js';
 import { monthKey, minutesOf } from '../lib/dates.js';
-import { currentStreak } from '../lib/stats.js';
+import { streakOf, runWords } from '../lib/stats.js';
+import { unitOf } from '../lib/schedule.js';
 import { dueReminders, nextReminder, settingsOf, logKey, SNOOZE_MINUTES } from '../lib/reminders-core.js';
 import { sfxPop } from './paper.js';
 import { esc, isId, isDate } from '../lib/sanitize.js';
@@ -20,13 +21,14 @@ export function permissionState() {
 
 function message({ habit, late }, lead) {
   const today = new Date();
-  const streak = currentStreak(store.get(), habit.id, { y: today.getFullYear(), m: today.getMonth() + 1, d: today.getDate() });
-  const run = streak ? ` Keep your ${streak}-day run going.` : '';
+  const streak = streakOf(store.get(), habit.id, { y: today.getFullYear(), m: today.getMonth() + 1, d: today.getDate() });
+  const run = streak.n ? ` Keep your ${runWords(streak)} going.` : '';
+  const when = { week: ' this week', month: ' this month' }[unitOf(habit)] || ' today';
   const body = late
-    ? `${habit.name} was due at ${habit.time}. There's still time today.${run}`
+    ? `${habit.name} was due at ${habit.time}. There's still time${when}.${run}`
     : lead
       ? `${habit.name} starts at ${habit.time}, in ${lead} minutes.${run}`
-      : `Time to fold today's ${habit.name}.${run}`;
+      : `Time to fold${when === ' today' ? " today's" : ''} ${habit.name}${when === ' today' ? '' : when}.${run}`;
   return { title: `${habit.name} · ${habit.time}`, body };
 }
 

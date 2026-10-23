@@ -1,5 +1,6 @@
 // When is a habit due? Pure functions of the data and a Date, so they can be tested in Node.
 import { monthKey, minutesOf, pad } from './dates.js';
+import { isFlexible, isDueDay, flexibleOpen } from './schedule.js';
 
 export const LATE_WINDOW = 120; // minutes after the nudge during which a missed one still fires
 export const SNOOZE_MINUTES = 10;
@@ -9,14 +10,19 @@ export const settingsOf = (state) => ({ ...DEFAULTS, ...state.reminders });
 export const dateKey = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 export const logKey = (date, id) => `${dateKey(date)}:${id}`;
 
-// Habits that have a time, are switched on, started by today and are not ticked yet.
+// Habits that have a time, are switched on, are due today by their schedule (D-013) and are not
+// ticked yet. A weekday habit rests on its days off; a weekly or monthly one stops once it's met.
 function candidates(state, date) {
   const r = settingsOf(state);
-  const month = state.months[monthKey(date.getFullYear(), date.getMonth() + 1)];
+  const y = date.getFullYear(), m = date.getMonth() + 1, d = date.getDate();
+  const month = state.months[monthKey(y, m)];
   if (!month) return [];
-  const d = date.getDate();
   return month.habits
-    .filter((h) => h.time && !r.off[h.id] && (h.start || 1) <= d && !month.checks[h.id]?.includes(d))
+    .filter((h) => {
+      const ticks = month.checks[h.id] || [];
+      if (!h.time || r.off[h.id] || (h.start || 1) > d || ticks.includes(d)) return false;
+      return isFlexible(h) ? flexibleOpen(h, ticks, y, m, d) : isDueDay(h, y, m, d);
+    })
     .sort((a, b) => minutesOf(a.time) - minutesOf(b.time));
 }
 
