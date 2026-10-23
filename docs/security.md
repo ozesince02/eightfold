@@ -87,6 +87,13 @@ Not issues, checked: notification text uses plain text APIs; `confirm()` and toa
 CSS selectors built from data use `CSS.escape`; the service worker builds same-origin URLs with
 `URLSearchParams`; no secrets in the repository.
 
+### 24 October 2026 — habit schedules (branch `feature/habit-schedules`)
+
+New input: `cadence`, `weekdays`, `timesPerWeek` on each month's habit. All paths (backup import,
+stored data, add and edit) go through `cleanSchedule()`: cadence from a fixed list, weekdays and
+times a week as integers 1–7. New HTML only shows fixed words, bounded integers or escaped names.
+Security-review skill: no HIGH or MEDIUM findings.
+
 ### Still to do (tracked)
 - Before accounts: Supabase row-level security on every table, the anon key in `.env`, the Supabase
   URL in `connect-src`, auth redirect URLs locked to our domain, rate limits on magic-link email.
