@@ -13,6 +13,10 @@ Dates are when the work landed.
 ### Added
 - A not-found page in the paper style.
 
+### Docs
+- D-015: the product will be renamed **One More Fold** (onemorefold.com) after setup, keeping
+  "fall seven, rise eight" at the heart of the story.
+
 ## 0.6.0 — 24 October 2026
 
 ### Added

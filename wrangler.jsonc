@@ -4,7 +4,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   // Must match the Worker's name in the Cloudflare dashboard.
-  "name": "eightfold",
+  "name": "onemorefold",
   "compatibility_date": "2026-10-01",
   "assets": {
     "directory": "./dist",
