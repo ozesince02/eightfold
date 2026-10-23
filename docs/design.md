@@ -92,6 +92,8 @@ Shadows are allowed **only** on paper lying on paper. Buttons and controls are f
 - **Ranked bars:** name on its own line, bar below, figure right. In Both, two labelled bars.
 - **Forms:** labels above inputs, 44px fields, washi fill, ai focus ring.
 - **Toasts:** sumi slip, bottom centre, 2.4s.
+- **Backup slip** (`.backup-bar`): a yamabuki strip with notched ends above the month board, only
+  when a backup is due and data is local. One primary (sumi) button and a text link to snooze.
 
 ## Charts
 
