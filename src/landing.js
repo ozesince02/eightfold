@@ -1,7 +1,7 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { store, STORE_KEY } from './lib/store.js';
-import { today, monthName, monthShort, minutesOf, monthKey } from './lib/dates.js';
+import { today, monthName, monthShort, minutesOf } from './lib/dates.js';
 import { yearStats, percent } from './lib/stats.js';
 import { tearAll, craneMark, sfxPop, confetti, rng, inkOn } from './ui/paper.js';
 import { hills, mountains } from './ui/charts.js';
@@ -9,6 +9,7 @@ import { featuredMonth, bestCrossingRun, dateLabel, daysLeftInYear } from './ui/
 import { createCraneStage } from './three/stage.js';
 import { startReminders } from './ui/reminders.js';
 import { esc } from './lib/sanitize.js';
+import { DEMO_HABITS } from './data/demo.js';
 
 gsap.registerPlugin(ScrollTrigger);
 window.__oz = true;
@@ -49,16 +50,15 @@ if (lines) {
 }
 
 // ---------- The live thing: fold today's habits into a crane ----------
-const demoHabits = [...(state.months[monthKey(now.y, now.m)] || feat.month).habits]
-  .sort((a, b) => minutesOf(a.time) - minutesOf(b.time))
-  .slice(0, 6);
+// Generic tasks, not anyone's real habits (D-016).
+const demoHabits = DEMO_HABITS;
 const demoDone = new Set();
 const list = $('[data-demo-list]');
 const count = $('[data-demo-count]');
 const words = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'];
 
 list.innerHTML = demoHabits.map((h) => `
-  <li><button class="tag" type="button" aria-pressed="false" data-id="${h.id}" style="--c:${color(h.id)}">
+  <li><button class="tag" type="button" aria-pressed="false" data-id="${h.id}" style="--c:${h.color}">
     <span class="tag-box" aria-hidden="true"></span>
     <span class="tag-time">${esc(h.time) || '—'}</span>
     <span class="tag-name">${esc(h.name)}</span>

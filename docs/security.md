@@ -101,6 +101,12 @@ vulnerable dependency or a failing security check blocks a merge. Supply-chain c
 contents: read`, `persist-credentials: false`, actions pinned to full commit SHAs, `npm ci` from the
 lockfile.
 
+### Accepted risks (owner's decision, 24 Oct 2026, D-016)
+
+- The repository is public, and its history contains the owner's January–October 2026 habit data
+  (names, times, ticks). The owner judged this harmless. Revisit before any sensitive habit is added.
+- Until accounts ship, onemorefold.com shows that data to any visitor with nothing saved.
+
 ### Still to do (tracked)
 - Before accounts: Supabase row-level security on every table, the anon key in `.env`, the Supabase
   URL in `connect-src`, auth redirect URLs locked to our domain, rate limits on magic-link email.
