@@ -79,6 +79,10 @@ Set by Cloudflare Pages from [public/_headers](../public/_headers). Test locally
 | 5 | High (dev only) | `npm audit`: esbuild (Vite dev server) and sharp (image script) vulnerabilities | Vite 8, sharp 0.35; dev server bound to `localhost` | `npm audit`: 0 vulnerabilities |
 | 6 | Low | Corrupted or tampered stored data was either trusted or dropped | Validated on load; unreadable data kept aside, not deleted | Unit test via `cleanState` |
 
+Independent review of the branch with the security-review skill: no HIGH or MEDIUM findings. One LOW
+suggestion applied: the local preview server (`scripts/serve-dist.mjs`) now refuses sibling folders
+like `dist-x/` and malformed URL encoding.
+
 Not issues, checked: notification text uses plain text APIs; `confirm()` and toasts use text;
 CSS selectors built from data use `CSS.escape`; the service worker builds same-origin URLs with
 `URLSearchParams`; no secrets in the repository.

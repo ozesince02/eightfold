@@ -2,7 +2,7 @@
 // production headers can be tested locally before deploying. Usage: npm run build && node scripts/serve-dist.mjs
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { extname, join, normalize } from 'node:path';
+import { extname, join, normalize, sep } from 'node:path';
 
 const root = join(import.meta.dirname, '..', 'dist');
 const port = Number(process.env.PORT || 4173);
@@ -24,10 +24,12 @@ const rules = parseHeaders(await readFile(join(root, '_headers'), 'utf8'));
 const matches = (rule, path) => rule.path === '/*' || rule.path === path;
 
 createServer(async (req, res) => {
-  let path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+  let path;
+  try { path = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch { res.writeHead(400).end(); return; }
   if (path.endsWith('/')) path += 'index.html';
   const file = normalize(join(root, path));
-  if (!file.startsWith(root)) { res.writeHead(403).end(); return; }
+  // Only files inside dist/ (the trailing separator keeps a sibling like "dist-x" out).
+  if (!file.startsWith(root + sep)) { res.writeHead(403).end(); return; }
   try {
     const body = await readFile(file);
     const headers = { 'Content-Type': types[extname(file)] || 'application/octet-stream' };
