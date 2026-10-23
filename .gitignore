@@ -15,6 +15,12 @@ dist/
 .env
 .env.*
 !.env.example
+# Wrangler's local secrets file
+.dev.vars
+.dev.vars.*
+
+# Wrangler's local runtime state (wrangler dev)
+.wrangler/
 
 # Logs and OS clutter
 *.log
