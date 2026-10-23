@@ -2,26 +2,58 @@
 
 A paper-collage habit tracker ("fall seven times, rise eight"). Static site: Vite, plain JavaScript,
 Three.js, GSAP. Landing page `index.html`, tracker `app.html`. Data in localStorage (`eightfold:v1`).
+Repository: https://github.com/ozesince02/eightfold
+
+## Priorities
+
+**Security and reliability first, features second.** Every change follows the rules in
+[docs/security.md](docs/security.md): validate everything coming in (`src/lib/sanitize.js`), escape
+everything going into HTML (`esc()`), no inline scripts or new third-party origins without updating
+the CSP, no secrets in git, `npm audit` at 0. Run the security-review skill on branches that touch
+data, storage, rendering, auth or headers. Say plainly when something is a risk.
 
 ## Read before working
 
-- [docs/design.md](docs/design.md): the design system. Read it before any UI change; follow it.
+- [docs/security.md](docs/security.md): threat model, rules, audit log.
+- [docs/design.md](docs/design.md): the design system. Read it before any UI change.
 - [docs/decisions.md](docs/decisions.md): why things are the way they are (D-001...).
 - [docs/data-storage.md](docs/data-storage.md): the plan for accounts and cloud data.
 - [docs/vision.md](docs/vision.md): future ideas.
+
+## Branches
+
+`main` is what gets hosted (Cloudflare Pages). Never commit to it directly.
+
+| Prefix | For | Example |
+| --- | --- | --- |
+| `feature/` | New behaviour | `feature/habit-schedules` |
+| `fix/` | A bug, normal priority | `fix/year-label-overlap` |
+| `hotfix/` | Urgent fix for what's live, especially security | `hotfix/security-hardening` |
+| `docs/` | Documentation only | `docs/storage-decisions` |
+| `refactor/` | Same behaviour, better code | `refactor/store-adapter` |
+| `chore/` | Dependencies, tooling, config | `chore/upgrade-vite` |
+
+- Lower-case, words joined by hyphens, short.
+- Branch from an up-to-date `main`; push the branch; merge into `main` only when the user agrees
+  and `npm run check` and `npm run build` pass.
+- Commit messages: a short summary line, a blank line, then why. Small, focused commits.
 
 ## When you change something
 
 - Add a line to [CHANGELOG.md](CHANGELOG.md) (what changed, for users).
 - Add or update a decision in docs/decisions.md when a choice would surprise a later reader.
 - Add new ideas the user mentions to docs/vision.md.
+- Add to the audit log in docs/security.md when you find or fix a security issue.
 - Every percentage on screen must say what it counts (D-006).
 
 ## Checks
 
 ```bash
-node scripts/check-stats.mjs && node scripts/check-reminders.mjs && node scripts/check-seed.mjs
+npm run check      # stats, reminders, seed and security checks
 npm run build
+npm audit
 ```
 
 `npm run dev` serves on http://localhost:5173 (landing) and /app.html (tracker).
+`npm run build && node scripts/serve-dist.mjs` serves the production build with the real security
+headers on http://localhost:4173.

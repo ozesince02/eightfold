@@ -116,3 +116,24 @@ Accepted · 23 Oct 2026
 - **Migration:** data saved under the old key `orizuru:v1` is read automatically and saved under
   `eightfold:v1`. The 3D model is still called an orizuru in code comments: that's the Japanese
   word for a paper crane.
+
+## D-010 Git workflow: main is production, work on prefixed branches
+Accepted · 24 Oct 2026
+
+- **Decision:** the repository lives at github.com/ozesince02/eightfold. `main` is what Cloudflare
+  Pages hosts and is never committed to directly. Work happens on `feature/`, `fix/`, `hotfix/`,
+  `docs/`, `refactor/` or `chore/` branches (conventions in [CLAUDE.md](../CLAUDE.md)) and merges
+  into `main` once checks and the build pass and the user agrees.
+- **Why:** hosting from a branch that only receives finished, checked work keeps the live app stable.
+
+## D-011 Security and reliability before features
+Accepted · 24 Oct 2026
+
+- **Context:** the app will hold family and friends' personal data. The user set the priority:
+  "features are secondary but reliability is primary".
+- **Decision:** every change follows [security.md](security.md): validate input through
+  `src/lib/sanitize.js`, escape output, a strict Content-Security-Policy and security headers
+  (`public/_headers`), no secrets in git, `npm audit` at zero, row-level security once there's a
+  database, and an audit log of what was found and fixed.
+- **Cost:** some inline convenience is gone (the boot snippet is a file now), and new external
+  services need a deliberate CSP change.
