@@ -5,6 +5,10 @@ Dates are when the work landed.
 
 ## Unreleased
 
+### Changed
+- The landing page's "Try it with today's six" now uses six generic tasks (make your bed, walk outside,
+  read ten pages...) instead of real habits. (D-016)
+
 ### Fixed
 - **Deploying to Cloudflare works.** A `wrangler.jsonc` tells Cloudflare to serve the built site
   instead of guessing from the Vite config (which failed). The tracker lives at `/app`; old
@@ -16,6 +20,7 @@ Dates are when the work landed.
 ### Docs
 - D-015: the product will be renamed **One More Fold** (onemorefold.com) after setup, keeping
   "fall seven, rise eight" at the heart of the story.
+- D-016: what personal data is public for now, and the accepted risk of a public repository.
 
 ## 0.6.0 — 24 October 2026
 

@@ -215,3 +215,20 @@ Proposed · 24 Oct 2026 · to do once accounts and hosting are set up
   redirects the old URL, but then: update the local `origin` remote, check that the Cloudflare
   Worker's Git connection still builds (reconnect it if not), and update links in the docs.
   Renaming the local folder on the Desktop is optional and done last.
+
+## D-016 What personal data is public, for now
+Accepted · 24 Oct 2026 · revisit when accounts ship
+
+- **Context:** with the site live on onemorefold.com, the app falls back to the January–October
+  sheet data (`src/data/seed.js`) for any visitor with nothing saved, and the landing page quotes
+  the owner's habits, times and numbers. The GitHub repository is public, so the data is also in
+  its history.
+- **Decisions by the owner:**
+  - **Live tracker:** left as is until accounts exist. When accounts ship, new visitors and new
+    accounts start empty; the owner's history moves into the owner's account only.
+  - **Landing page:** the goal is the real story and headline totals (ticks, months, the year's
+    mountains, perfect days) with no habit names, times or day-by-day grids. **Step one (24 Oct):**
+    the "Try it with today's six" demo uses six generic tasks (`src/data/demo.js`). The rest of the
+    page keeps its current detail until the owner asks to change it.
+  - **Repository:** stays public. The owner judged that a list of habits worked on can't be used
+    maliciously. Recorded as an accepted risk in [security.md](security.md).
