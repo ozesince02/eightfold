@@ -94,6 +94,13 @@ stored data, add and edit) go through `cleanSchedule()`: cadence from a fixed li
 times a week as integers 1–7. New HTML only shows fixed words, bounded integers or escaped names.
 Security-review skill: no HIGH or MEDIUM findings.
 
+### 24 October 2026 — CI
+
+GitHub Actions runs the checks, build and `npm audit` on every PR and push to `main`, so a
+vulnerable dependency or a failing security check blocks a merge. Supply-chain care: `permissions:
+contents: read`, `persist-credentials: false`, actions pinned to full commit SHAs, `npm ci` from the
+lockfile.
+
 ### Still to do (tracked)
 - Before accounts: Supabase row-level security on every table, the anon key in `.env`, the Supabase
   URL in `connect-src`, auth redirect URLs locked to our domain, rate limits on magic-link email.

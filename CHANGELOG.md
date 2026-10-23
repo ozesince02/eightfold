@@ -26,6 +26,11 @@ Dates are when the work landed.
 ### Docs
 - `main` now changes only through pull requests ([CLAUDE.md](CLAUDE.md), D-010).
 
+### Tooling
+- GitHub Actions CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs `npm ci`, `npm run check`,
+  `npm run build` and `npm audit` on every pull request and every push to `main`. Read-only
+  permissions; actions pinned to commit SHAs.
+
 ## 0.5.0 — 24 October 2026
 
 ### Added
