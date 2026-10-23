@@ -211,3 +211,7 @@ Proposed · 24 Oct 2026 · to do once accounts and hosting are set up
   - *Make Your Bed*: start with one small task, done today.
   - *Ikigai*: steady, unhurried practice as a way of living.
 - **Ask the user to review the new "why" copy** before merging the rename.
+- **Rename the GitHub repository too:** `ozesince02/eightfold` → `ozesince02/onemorefold`. GitHub
+  redirects the old URL, but then: update the local `origin` remote, check that the Cloudflare
+  Worker's Git connection still builds (reconnect it if not), and update links in the docs.
+  Renaming the local folder on the Desktop is optional and done last.
