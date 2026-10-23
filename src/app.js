@@ -1,7 +1,8 @@
 import { gsap } from 'gsap';
 import { store, STORE_KEY } from './lib/store.js';
 import { today, monthKey, parseKey, shiftMonth, monthName, monthShort, dayLong, minutesOf, weekday, daysIn } from './lib/dates.js';
-import { monthStats, yearStats, currentStreak, percent, pct, VIEWS, VIEW_LABELS, rankHabits, rateOf, summarise } from './lib/stats.js';
+import { monthStats, yearStats, streakOf, runWords, percent, pct, VIEWS, VIEW_LABELS, rankHabits, rateOf, summarise } from './lib/stats.js';
+import { habitWeeks, weekOf, describe, CADENCES, CADENCE_LABELS, WEEKDAY_SHORT, cadenceOf } from './lib/schedule.js';
 import { craneMark, sfxPop, confetti } from './ui/paper.js';
 import { hills, mountains, ring } from './ui/charts.js';
 import { daysLeftInYear } from './ui/insights.js';
@@ -132,42 +133,67 @@ function monthView(key, year) {
 
 function todayPanel(key, s, color) {
   const d = now.d;
-  const habits = s.habits.filter((h) => h.cells[d - 1] !== null).sort((a, b) => minutesOf(a.time) - minutesOf(b.time));
-  const done = habits.filter((h) => h.cells[d - 1]).length;
+  const byTime = (a, b) => minutesOf(a.time) - minutesOf(b.time);
+  // Due today: daily habits and weekday habits on their days. Weekly and monthly goals get their own strips.
+  const dueToday = s.habits.filter((h) => h.due[d - 1] === 'due').sort(byTime);
+  const thisWeek = s.habits.filter((h) => h.due[d - 1] === 'flex' && h.unit === 'week').sort(byTime);
+  const thisMonth = s.habits.filter((h) => h.due[d - 1] === 'flex' && h.unit === 'month').sort(byTime);
+  const day = s.perDay[d - 1];
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
-  const next = habits.find((h) => !h.cells[d - 1] && h.time && minutesOf(h.time) >= nowMin);
+  const open = (h) => !h.cells[d - 1] && (h.unit === 'day' || flexibleProgress(h, d).open);
+  const next = [...dueToday, ...thisWeek, ...thisMonth].filter((h) => open(h) && h.time && minutesOf(h.time) >= nowMin).sort(byTime)[0];
   const state = store.get();
-  const rows = habits.map((h) => {
-    const on = h.cells[d - 1];
-    const streak = currentStreak(state, h.id, now);
-    return `<li><button class="tag${h === next ? ' is-next' : ''}" type="button" aria-pressed="${on}" data-toggle="${h.id}:${d}" data-focus="tag:${h.id}" style="--c:${color(h.id)}">
+  const tag = (h, note) => {
+    const run = streakOf(state, h.id, now);
+    const right = note || (run.n ? runWords(run) : h === next ? 'next' : '');
+    return `<li><button class="tag${h === next ? ' is-next' : ''}" type="button" aria-pressed="${h.cells[d - 1]}" data-toggle="${h.id}:${d}" data-focus="tag:${h.id}" style="--c:${color(h.id)}">
       <span class="tag-box" aria-hidden="true"></span>
-      <span class="tag-time">${h.time || '—'}</span>
+      <span class="tag-time">${esc(h.time) || '—'}</span>
       <span class="tag-name">${esc(h.name)}</span>
-      <span class="tag-streak">${streak ? `${streak}-day run` : h === next ? 'next' : ''}</span>
+      <span class="tag-streak">${right}</span>
     </button></li>`;
-  }).join('');
-  const foot = done === habits.length ? 'Every habit folded today. A whole crane.'
-    : next ? `Next up: ${esc(next.name)} at ${next.time}.` : `${habits.length - done} still open today.`;
+  };
+  const strip = (title, list) => (list.length
+    ? `<h3 class="strip-h">${title}</h3><ul class="today-list">${list.map((h) => tag(h, flexibleProgress(h, d).words)).join('')}</ul>` : '');
+  const allDone = day.goal > 0 && day.done === day.goal && dueToday.length > 0;
+  const foot = allDone ? 'Everything due today is folded. A whole crane.'
+    : next ? `Next up: ${esc(next.name)} at ${esc(next.time)}.` : dueToday.length ? `${day.goal - day.done} still open today.` : 'Nothing has a fixed slot today.';
   const rem = store.reminders();
   const nudge = nextReminder(state, new Date());
   const remLine = !rem.enabled
     ? `<a href="#/habits/${key}#reminders">Turn on reminders</a>`
     : nudge ? `Next nudge at ${clock(nudge.at)} for ${esc(nudge.habit.name)}.` : 'No more nudges today.';
   return `<section class="panel span-5" aria-labelledby="today-h">
-    <div class="panel-head"><h2 id="today-h">${dayLong(now.y, now.m, d)} ${d} ${monthName(now.m)}</h2><p>${done} of ${habits.length} done</p></div>
-    <ul class="today-list">${rows}</ul>
+    <div class="panel-head"><h2 id="today-h">${dayLong(now.y, now.m, d)} ${d} ${monthName(now.m)}</h2><p>${day.done} of ${day.goal} done</p></div>
+    ${dueToday.length ? `<ul class="today-list">${dueToday.map((h) => tag(h)).join('')}</ul>` : '<p class="note">No habit is due on a fixed day today.</p>'}
+    ${strip('This week', thisWeek)}
+    ${strip('This month', thisMonth)}
     <p class="today-foot">${foot} ${remLine}</p>
   </section>`;
 }
+
+// Where a weekly or monthly habit stands today: "1 of 3 this week", "done this month".
+function flexibleProgress(h, d) {
+  if (h.unit === 'month') {
+    const day = h.cells.findIndex(Boolean) + 1;
+    return day ? { open: false, words: `done on the ${day}${ordinal(day)}` } : { open: true, words: 'not yet this month' };
+  }
+  const w = weekOf(habitWeeks(h, now.y, now.m), d);
+  if (!w) return { open: false, words: '' };
+  const got = h.cells.slice(w.from - 1, w.to).filter(Boolean).length;
+  return got >= w.target ? { open: false, words: 'done this week' } : { open: true, words: `${got} of ${w.target} this week` };
+}
+const ordinal = (n) => (n % 100 >= 11 && n % 100 <= 13 ? 'th' : { 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th');
 
 // ---------- Percentages: days so far, goal, or both side by side ----------
 // ui.pct is what the screen shows now; the saved default is where it starts.
 const pctView = () => ui.pct || store.prefs().percentView;
 const shown = (v) => (v === 'both' ? ['days', 'goal'] : [v]);
+// Units follow the schedule: days, weeks or the month (D-013).
+const units = (n, unit) => `${unit}${n === 1 ? '' : 's'}`;
 const figure = (h, which) => (which === 'days'
-  ? { value: h.daysPct, has: h.daysSoFar > 0, words: `${h.doneSoFar} of ${h.daysSoFar} day${h.daysSoFar === 1 ? '' : 's'}`, label: 'Days' }
-  : { value: h.goalPct, has: h.goal > 0, words: `${h.done} of ${h.goal} goal days`, label: 'Goal' });
+  ? { value: h.daysPct, has: h.daysSoFar > 0, words: `${h.doneSoFar} of ${h.daysSoFar} ${units(h.daysSoFar, h.unit || 'day')}`, label: 'Days' }
+  : { value: h.goalPct, has: h.goal > 0, words: `${h.credit ?? h.done} of ${h.goal} goal ${units(h.goal, h.unit || 'day')}`, label: 'Goal' });
 const pctText = (f) => (f.has ? percent(f.value) : '—');
 
 function viewSwitch() {
@@ -237,8 +263,10 @@ function figuresPanel(s) {
 
 function liveRun(s) {
   if (!s.isCurrent) return `<div><p class="big">${s.weeks.reduce((a, w) => Math.max(a, w.done), 0)}</p><p class="label">ticks in the best week</p></div>`;
-  const r = s.habits.map((h) => ({ h, n: currentStreak(store.get(), h.id, now) })).sort((a, b) => b.n - a.n)[0];
-  return `<div><p class="big">${r.n}<small> days</small></p><p class="label">longest run going: ${esc(r.h.name)}</p></div>`;
+  // Runs are compared within their own unit; a 3-week run is shown as weeks, not turned into days.
+  const r = s.habits.map((h) => ({ h, run: streakOf(store.get(), h.id, now) })).sort((a, b) => b.run.n - a.run.n)[0];
+  const unit = `${r.run.unit}${r.run.n === 1 ? '' : 's'}`;
+  return `<div><p class="big">${r.run.n}<small> ${unit}</small></p><p class="label">longest run going: ${esc(r.h.name)}</p></div>`;
 }
 
 function gridPanel(key, s, color) {
@@ -253,8 +281,8 @@ function gridPanel(key, s, color) {
   const cols = {
     days: [
       ['Done', 'Days ticked', (h) => `<td class="sum">${h.done}</td>`],
-      ['Days', 'Days so far (today counts once it is ticked)', (h) => `<td class="sum">${h.daysSoFar}</td>`],
-      ['% days', 'Ticks against the days so far', (h) => pctCell(h, 'days')],
+      ['Due', 'Due so far: days, or weeks and months for weekly and monthly habits. Today counts once it is ticked', (h) => `<td class="sum">${h.daysSoFar}</td>`],
+      ['% due', 'Done against what was due so far', (h) => pctCell(h, 'days')],
     ],
     goal: [
       ['Done', 'Days ticked', (h) => `<td class="sum">${h.done}</td>`],
@@ -264,7 +292,7 @@ function gridPanel(key, s, color) {
     ],
     both: [
       ['Done', 'Days ticked', (h) => `<td class="sum">${h.done}</td>`],
-      ['% days', 'Ticks against the days so far', (h) => pctCell(h, 'days')],
+      ['% due', 'Done against what was due so far', (h) => pctCell(h, 'days')],
       ['Goal', 'Monthly goal in days', (h) => `<td class="sum">${h.goal}</td>`],
       ['% goal', 'Ticks against the goal', (h) => pctCell(h, 'goal')],
     ],
@@ -277,18 +305,24 @@ function gridPanel(key, s, color) {
   const head3 = `<tr><th></th>${days.map((d) => `<th scope="col" class="${d === todayCol ? 'is-today' : ''}${isWeekend(d) ? ' weekend' : ''}">${d}</th>`).join('')}<th colspan="${nSum}"></th></tr>`;
 
   const rows = s.habits.map((h) => {
-    const streak = s.isCurrent ? currentStreak(state, h.id, now) : null;
+    const run = s.isCurrent ? streakOf(state, h.id, now) : null;
     const cells = h.cells.map((c, i) => {
       const d = i + 1;
       const label = `${h.name}, ${d} ${monthShort(m)}`;
       if (c === null) return `<td><span class="cell na" title="Not tracked yet on this day"></span></td>`;
+      // A weekday habit's day off: no box, not a miss. (A tick left from an older schedule still shows.)
+      if (h.due[i] === 'rest' && !c) return `<td class="${d === todayCol ? 'is-today' : ''}"><span class="cell rest" title="Rest day: ${esc(h.name)} isn't due"></span></td>`;
       const future = s.isCurrent ? d > now.d : s.lastDay === 0;
-      return `<td class="${d === todayCol ? 'is-today' : ''}"><button class="cell${future ? ' future' : ''}" type="button" aria-pressed="${c}" aria-label="${esc(label)}" data-toggle="${h.id}:${d}" data-focus="cell:${h.id}:${d}" data-r="${h.id}" data-d="${d}"></button></td>`;
+      const kind = h.due[i] === 'flex' ? ' flex' : '';
+      return `<td class="${d === todayCol ? 'is-today' : ''}"><button class="cell${kind}${future ? ' future' : ''}" type="button" aria-pressed="${c}" aria-label="${esc(label)}" data-toggle="${h.id}:${d}" data-focus="cell:${h.id}:${d}" data-r="${h.id}" data-d="${d}"></button></td>`;
     }).join('');
+    const sched = cadenceOf(h) === 'daily' ? '' : `${esc(describe(h))} · `;
+    const runCell = run === null ? '<td class="sum muted">—</td>'
+      : `<td class="sum" title="${runWords(run)}">${run.n}${run.unit === 'day' || !run.n ? '' : `<small>${run.unit === 'week' ? 'wk' : 'mo'}</small>`}</td>`;
     return `<tr style="--c:${color(h.id)}">
-      <th class="h-name" scope="row"><div class="h-name-inner"><i></i><b title="${esc(h.name)}">${esc(h.name)}</b><small>${h.time ? `${h.time} · ` : ''}goal ${h.goal}</small></div></th>
+      <th class="h-name" scope="row"><div class="h-name-inner"><i></i><b title="${esc(h.name)}">${esc(h.name)}</b><small>${h.time ? `${esc(h.time)} · ` : ''}${sched}goal ${h.goal}</small></div></th>
       ${cells}${cols.map(([, , cell]) => cell(h)).join('')}
-      <td class="sum${streak === null ? ' muted' : ''}">${streak === null ? '—' : streak}</td><td class="sum">${h.longest}</td></tr>`;
+      ${runCell}<td class="sum">${h.longest}</td></tr>`;
   }).join('');
 
   const doneRow = `<tr><th scope="row">Done</th>${s.perDay.map((d) => `<td>${d.past || d.done ? d.done : ''}</td>`).join('')}<td colspan="${nSum}"></td></tr>`;
@@ -304,7 +338,7 @@ function gridPanel(key, s, color) {
         <tfoot>${doneRow}${barRow}</tfoot>
       </table>
     </div>
-    <div class="grid-legend"><span><i style="background:var(--ai)"></i>Day's score</span><span><i style="background:var(--shu)"></i>Perfect day</span><span><i style="outline:1px solid var(--washi-3);outline-offset:-1px"></i>Still to come</span><span>% days counts today once it's ticked</span>${pctView() === 'days' ? '' : '<span>Left shows +n once a goal is passed</span>'}</div>
+    <div class="grid-legend"><span><i style="background:var(--ai)"></i>Day's score</span><span><i style="background:var(--shu)"></i>Perfect day</span><span><i style="outline:1px solid var(--washi-3);outline-offset:-1px"></i>Still to come</span><span>% due counts today once it's ticked; dots are rest days</span>${pctView() === 'days' ? '' : '<span>Left shows +n once a goal is passed</span>'}</div>
   </section>`;
 }
 
@@ -418,13 +452,14 @@ function habitsView(key) {
       <button class="swatch-btn" type="button" data-swatch="${h.id}" aria-label="Colour for ${esc(h.name)}" aria-expanded="${ui.swatchFor === h.id}"></button>
       <label class="wide">Habit<input data-edit="${h.id}" data-field="name" value="${esc(h.name)}" required></label>
       <label class="third">Time<input data-edit="${h.id}" data-field="time" type="time" value="${esc(h.time || '')}"></label>
-      <label class="third">Goal (days)<input data-edit="${h.id}" data-field="goal" type="number" min="0" max="${days}" value="${h.goal}"></label>
+      <label class="third">Goal (${{ week: 'weeks', month: 'months' }[unitOfHabit(h)] || 'days'})<input data-edit="${h.id}" data-field="goal" type="number" min="0" max="${days}" value="${h.goal}"></label>
       <label class="third">From day<input data-edit="${h.id}" data-field="start" type="number" min="1" max="${days}" value="${h.start || 1}"></label>
       <div class="row-actions">
         <button class="icon-btn" type="button" data-move="${h.id}:-1" aria-label="Move ${esc(h.name)} up" ${i === 0 ? 'disabled' : ''}>${icon.up}</button>
         <button class="icon-btn" type="button" data-move="${h.id}:1" aria-label="Move ${esc(h.name)} down" ${i === month.habits.length - 1 ? 'disabled' : ''}>${icon.down}</button>
         <button class="icon-btn danger" type="button" data-remove="${h.id}">Remove</button>
       </div>
+      ${scheduleEditor(h)}
       ${ui.swatchFor === h.id ? `<div class="swatches" role="group" aria-label="Paper colours">${PAPERS.map((p) => `<button type="button" style="--c:${p}" data-color="${h.id}:${p}" aria-pressed="${p.toLowerCase() === c.toLowerCase()}" aria-label="${p}"></button>`).join('')}</div>` : ''}
     </div>`;
   }).join('');
@@ -439,6 +474,7 @@ function habitsView(key) {
         <form class="panel panel--washi add-form" data-add style="margin-top:24px">
           <label>New habit<input name="name" required placeholder="Stretch for ten minutes"></label>
           <label>Time<input name="time" type="time"></label>
+          <label>Repeats<select name="cadence">${CADENCES.map((c) => `<option value="${c}">${CADENCE_LABELS[c]}</option>`).join('')}</select></label>
           <label>Goal (days)<input name="goal" type="number" min="0" max="${days}" value="20"></label>
           <label>From day<input name="start" type="number" min="1" max="${days}" value="${key === monthKey(now.y, now.m) ? now.d : 1}"></label>
           <button class="btn" type="submit">Add habit</button>
@@ -478,6 +514,35 @@ function habitsView(key) {
 }
 
 const clock = (mins) => `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
+
+// ---------- Schedules (D-013) ----------
+const unitOfHabit = (h) => ({ times_per_week: 'week', weekly: 'week', monthly: 'month' }[cadenceOf(h)] || 'day');
+
+function scheduleEditor(h) {
+  const c = cadenceOf(h);
+  const days = c === 'weekdays'
+    ? `<div class="wd-chips" role="group" aria-label="Days ${esc(h.name)} is due">${WEEKDAY_SHORT.map((label, i) => {
+      const on = (h.weekdays || []).includes(i + 1);
+      return `<button type="button" data-wd="${h.id}:${i + 1}" aria-pressed="${on}" aria-label="${label}">${label[0]}${label === 'Thu' || label === 'Sun' || label === 'Sat' ? label[1] : ''}</button>`;
+    }).join('')}</div>` : '';
+  const times = c === 'times_per_week'
+    ? `<label class="tpw">Times<input data-edit="${h.id}" data-field="timesPerWeek" type="number" min="1" max="7" value="${h.timesPerWeek || 3}"></label>` : '';
+  return `<div class="edit-schedule">
+    <label>Repeats<select data-edit="${h.id}" data-field="cadence">${CADENCES.map((v) => `<option value="${v}" ${v === c ? 'selected' : ''}>${CADENCE_LABELS[v]}</option>`).join('')}</select></label>
+    ${days}${times}
+    <p class="note">${scheduleNote(h)}</p>
+  </div>`;
+}
+
+function scheduleNote(h) {
+  return {
+    daily: 'Due every day.',
+    weekdays: 'Only the chosen days get a box; the others are rest days, never misses.',
+    times_per_week: 'Any days count. Each week (from the 1st) asks for this many; a short last week asks for a share.',
+    weekly: 'Once in each week, on any day.',
+    monthly: 'Once in the month, on any day.',
+  }[cadenceOf(h)] + ' Changing this resets the goal to match.';
+}
 
 function percentagesPanel() {
   const def = store.prefs().percentView;
@@ -622,6 +687,19 @@ view.addEventListener('click', (e) => {
     store.snoozeBackup(1);
     return toast('Okay, tomorrow.');
   }
+  const wd = e.target.closest('[data-wd]');
+  if (wd) {
+    const [id, dayStr] = wd.dataset.wd.split(':');
+    const key = route().key;
+    const habit = store.month(key)?.habits.find((x) => x.id === id);
+    if (!habit) return;
+    const day = Number(dayStr);
+    const current = habit.weekdays || [];
+    const next = current.includes(day) ? current.filter((x) => x !== day) : [...current, day];
+    if (!next.length) return toast('A habit on chosen days needs at least one day.');
+    store.updateHabit(key, id, { weekdays: next });
+    return;
+  }
   const pv = e.target.closest('[data-pct-view]');
   if (pv) { ui.pct = pv.dataset.pctView; return render(); }
   if (e.target.closest('[data-pct-default]')) {
@@ -678,7 +756,7 @@ view.addEventListener('submit', (e) => {
   if (form.matches('[data-add]')) {
     const data = Object.fromEntries(new FormData(form));
     if (!data.name.trim()) return;
-    const added = store.addHabit(route().key, { name: data.name, time: data.time, goal: data.goal, start: data.start });
+    const added = store.addHabit(route().key, { name: data.name, time: data.time, goal: data.goal, start: data.start, cadence: data.cadence });
     toast(added ? `Added ${data.name.trim()}.` : 'That habit could not be added. A month holds up to 50 habits.');
     requestAnimationFrame(() => $('[data-add] input[name="name"]')?.focus());
   }
@@ -696,9 +774,19 @@ view.addEventListener('keydown', (e) => {
   const rows = [...new Set($$('.cell[data-r]', view).map((c) => c.dataset.r))];
   let r = rows.indexOf(cell.dataset.r);
   let d = Number(cell.dataset.d);
-  if (e.key === 'ArrowLeft') d--; if (e.key === 'ArrowRight') d++;
-  if (e.key === 'ArrowUp') r--; if (e.key === 'ArrowDown') r++;
-  const target = $(`.cell[data-r="${rows[r]}"][data-d="${d}"]`, view);
+  const find = (row, day) => $(`.cell[data-r="${CSS.escape(row || '')}"][data-d="${day}"]`, view);
+  let target = null;
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    // Skip rest days, which have no box to land on.
+    const step = e.key === 'ArrowLeft' ? -1 : 1;
+    for (let dd = d + step; dd >= 1 && dd <= 31 && !target; dd += step) target = find(rows[r], dd);
+  } else {
+    const step = e.key === 'ArrowUp' ? -1 : 1;
+    // Nearest box in the next row that has one on or near this day.
+    for (let rr = r + step; rr >= 0 && rr < rows.length && !target; rr += step) {
+      for (let off = 0; off <= 6 && !target; off++) target = find(rows[rr], d - off) || find(rows[rr], d + off);
+    }
+  }
   target?.focus();
 });
 

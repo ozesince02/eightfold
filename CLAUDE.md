@@ -34,8 +34,10 @@ data, storage, rendering, auth or headers. Say plainly when something is a risk.
 | `chore/` | Dependencies, tooling, config | `chore/upgrade-vite` |
 
 - Lower-case, words joined by hyphens, short.
-- Branch from an up-to-date `main`; push the branch; merge into `main` only when the user agrees
-  and `npm run check` and `npm run build` pass.
+- Branch from an up-to-date `main`; push the branch.
+- **`main` changes only through a pull request.** Open a PR into `main` with what changed, why, and
+  how it was tested. Merge it only when the user agrees and `npm run check`, `npm run build` and
+  `npm audit` pass. Delete the branch after merging.
 - Commit messages: a short summary line, a blank line, then why. Small, focused commits.
 
 ## When you change something

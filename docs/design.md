@@ -88,7 +88,13 @@ Shadows are allowed **only** on paper lying on paper. Buttons and controls are f
 - **Tags** (`.tag`): today's habits. Square box, time, name, run. Ticked box takes the habit colour
   with a white dog-ear fold. The next habit is a sakura row.
 - **Cells** (`.cell`): grid squares. Ticked = habit colour + dog-ear. Future = outline. Before a
-  habit started = hatched. Today = 2px sumi outline.
+  habit started = hatched. Today = 2px sumi outline. Rest day of a chosen-days habit = no box,
+  a 4px washi-3 dot (`.cell.rest`), never a miss. Any-day habits (times a week, weekly, monthly) =
+  pale washi box with a dashed outline (`.cell.flex`).
+- **Today strips:** below today's due list, "This week" and "This month" headings (`.strip-h`,
+  14px text face, not display) with the same tags; the right side shows progress instead of a run.
+- **Schedule editor:** a "Repeats" select under each habit; chosen days are seven 40×44px chips
+  (M T W Th F Sa Su) filled with the habit's colour when on.
 - **Ranked bars:** name on its own line, bar below, figure right. In Both, two labelled bars.
 - **Forms:** labels above inputs, 44px fields, washi fill, ai focus ring.
 - **Toasts:** sumi slip, bottom centre, 2.4s.
@@ -105,7 +111,8 @@ Shadows are allowed **only** on paper lying on paper. Buttons and controls are f
 
 ## Percentages (see D-006)
 
-- **Days:** ticks ÷ days so far (today counts once ticked). The default.
+- **Days:** done ÷ due so far (today counts once ticked). The default. Units follow the schedule
+  (D-013): days, weeks or the month; columns read "Due" and "% due".
 - **Goal:** ticks ÷ the habit's monthly goal. Can pass 100% for one habit; month totals cap each habit at its goal.
 - **Both:** days first, goal second, always labelled.
 - Use `figure(h, 'days' | 'goal')` in app.js for the number and its words; never format a percentage

@@ -1,5 +1,6 @@
 // Everything the sheet's formulas used to do, as plain functions of the data.
 import { daysIn, weekday, sheetWeeks, monthKey, shiftMonth } from './dates.js';
+import { cadenceOf, isFlexible, isDueDay, unitOf, habitWeeks, defaultGoal } from './schedule.js';
 
 export const pct = (a, b) => (b > 0 ? a / b : 0);
 
@@ -16,40 +17,73 @@ export function monthStats(month, y, m, now) {
   const isFuture = now && (y > now.y || (y === now.y && m > now.m));
   const lastDay = isFuture ? 0 : isCurrent ? now.d : days;
 
+  // A day is "over" once it's before today (or the month is past). Today is not over, so an
+  // unticked today is never counted as a miss.
+  const over = (d) => d <= lastDay && !(isCurrent && d === now.d);
+
   const habits = (month?.habits || []).map((h) => {
     const set = new Set(month.checks[h.id] || []);
-    const cells = Array.from({ length: days }, (_, i) => (i + 1 < (h.start || 1) ? null : set.has(i + 1)));
+    const start = h.start || 1;
+    const cadence = cadenceOf(h);
+    const flexible = isFlexible(h);
+    // cells: null before the habit started, otherwise ticked or not.
+    // due:   'due' (a fixed day), 'rest' (a weekday habit's day off), 'flex' (any day counts), null.
+    const cells = Array.from({ length: days }, (_, i) => (i + 1 < start ? null : set.has(i + 1)));
+    const due = cells.map((c, i) => (c === null ? null : flexible ? 'flex' : isDueDay(h, y, m, i + 1) ? 'due' : 'rest'));
     const done = cells.filter(Boolean).length;
-    let run = 0, longest = 0;
-    for (const c of cells) { run = c ? run + 1 : 0; longest = Math.max(longest, run); }
-    // Days so far: every tracked day up to yesterday, plus today once it is ticked.
-    // Today is not over, so an unticked today is not counted as a miss yet.
-    let doneSoFar = 0, daysSoFar = 0;
-    cells.forEach((c, i) => {
-      const d = i + 1;
-      if (c === null || d > lastDay) return;
-      if (isCurrent && d === now.d && !c) return;
-      daysSoFar++;
-      if (c) doneSoFar++;
-    });
+
+    // Units: days for daily and weekday habits, weeks for weekly ones, the month for monthly.
+    // dueSoFar/doneSoFar feed the Days view; credit (units completed this month) feeds the Goal view.
+    let dueSoFar = 0, doneSoFar = 0, credit = 0, longest = 0;
+    if (!flexible) {
+      let run = 0;
+      due.forEach((k, i) => {
+        if (k !== 'due') return; // rest days neither break nor extend a run
+        const d = i + 1;
+        if (cells[i]) { credit++; run++; longest = Math.max(longest, run); } else if (over(d)) run = 0;
+        if (over(d) || cells[i]) { dueSoFar++; if (cells[i]) doneSoFar++; }
+      });
+    } else if (cadence === 'monthly') {
+      credit = Math.min(1, done);
+      const monthOver = lastDay === days && !isCurrent;
+      dueSoFar = monthOver ? 1 : credit;
+      doneSoFar = credit;
+      longest = credit;
+    } else {
+      let run = 0;
+      for (const w of habitWeeks(h, y, m)) {
+        const ticks = cells.slice(w.from - 1, w.to).filter(Boolean).length;
+        const got = Math.min(ticks, w.target);
+        credit += got;
+        const weekOver = over(w.to);
+        if (weekOver) { dueSoFar += w.target; doneSoFar += got; } else if (w.from <= lastDay) { dueSoFar += got; doneSoFar += got; }
+        if (ticks >= w.target) { run++; longest = Math.max(longest, run); } else if (weekOver) run = 0;
+      }
+    }
     return {
       ...h,
+      cadence,
+      unit: unitOf(h),
       cells,
+      due,
       done,
-      possible: cells.filter((c) => c !== null).length,
-      left: h.goal - done,
-      progress: pct(done, h.goal),
-      goalPct: pct(done, h.goal),
+      credit,
+      possible: flexible ? defaultGoal(h, y, m) : due.filter((k) => k === 'due').length,
+      left: h.goal - credit,
+      progress: pct(credit, h.goal),
+      goalPct: pct(credit, h.goal),
       doneSoFar,
-      daysSoFar,
-      daysPct: pct(doneSoFar, daysSoFar),
+      daysSoFar: dueSoFar,
+      daysPct: pct(doneSoFar, dueSoFar),
       longest,
     };
   });
 
+  // A day's score counts the habits due that day, plus flexible habits ticked that day,
+  // so a weekly habit never makes a day look worse.
   const perDay = Array.from({ length: days }, (_, i) => {
     const day = i + 1;
-    const live = habits.filter((h) => h.cells[i] !== null);
+    const live = habits.filter((h) => h.due[i] === 'due' || (h.due[i] === 'flex' && h.cells[i]));
     const done = live.filter((h) => h.cells[i]).length;
     return { day, weekday: weekday(y, m, day), done, goal: live.length, left: live.length - done, pct: pct(done, live.length), past: day <= lastDay };
   });
@@ -65,7 +99,7 @@ export function monthStats(month, y, m, now) {
   const possible = habits.reduce((s, h) => s + h.possible, 0);
   const target = habits.reduce((s, h) => s + (h.goal || 0), 0);
   // A habit past its goal counts as its goal, so one overachiever can't hide the rest.
-  const goalMet = habits.reduce((s, h) => s + Math.min(h.done, h.goal || 0), 0);
+  const goalMet = habits.reduce((s, h) => s + Math.min(h.credit, h.goal || 0), 0);
   const doneSoFar = habits.reduce((s, h) => s + h.doneSoFar, 0);
   const daysSoFar = habits.reduce((s, h) => s + h.daysSoFar, 0);
   const perfectDays = perDay.filter((d) => d.goal > 0 && d.done === d.goal).length;
@@ -90,27 +124,78 @@ export function rankHabits(habits, view) {
   return [...habits].sort((a, b) => primaryPct(b, view) - primaryPct(a, view) || b.done - a.done);
 }
 
-// Current streak for one habit, walking back across months while the habit exists.
-// If today is not ticked yet, the streak still counts up to yesterday: it is alive until midnight.
+// Current streak for one habit, walking back across months while the habit keeps the same kind
+// of schedule. The unit follows the schedule: days (rest days skipped), weeks or months.
+// The current day, week or month is never a miss yet: if it isn't done, the streak counts up to
+// the one before it.
 export function currentStreak(state, id, now) {
-  let { y, m } = now;
-  let d = now.d;
-  const ticked = (yy, mm, dd) => state.months[monthKey(yy, mm)]?.checks[id]?.includes(dd);
-  const exists = (yy, mm) => state.months[monthKey(yy, mm)]?.habits.some((h) => h.id === id);
-  if (!ticked(y, m, d)) d -= 1;
-  let streak = 0;
-  for (let guard = 0; guard < 800; guard++) {
-    if (d < 1) {
-      ({ y, m } = shiftMonth(y, m, -1));
-      if (!exists(y, m)) break;
-      d = daysIn(y, m);
-    }
-    if (!ticked(y, m, d)) break;
-    streak++;
-    d--;
-  }
-  return streak;
+  return streakOf(state, id, now).n;
 }
+
+export function streakOf(state, id, now) {
+  const habitAt = (y, m) => state.months[monthKey(y, m)]?.habits.find((h) => h.id === id);
+  const ticks = (y, m) => state.months[monthKey(y, m)]?.checks[id] || [];
+  const first = habitAt(now.y, now.m);
+  if (!first) return { n: 0, unit: 'day' };
+  const unit = unitOf(first);
+  let n = 0;
+
+  if (unit === 'day') {
+    let { y, m } = now;
+    let d = now.d;
+    for (let guard = 0; guard < 800; guard++) {
+      if (d < 1) {
+        ({ y, m } = shiftMonth(y, m, -1));
+        d = daysIn(y, m);
+      }
+      const h = habitAt(y, m);
+      if (!h || unitOf(h) !== 'day' || d < (h.start || 1)) break;
+      const isToday = y === now.y && m === now.m && d === now.d;
+      if (isDueDay(h, y, m, d)) {
+        if (ticks(y, m).includes(d)) n++;
+        else if (!isToday) break;
+      }
+      d--;
+    }
+    return { n, unit };
+  }
+
+  if (unit === 'month') {
+    let { y, m } = now;
+    for (let guard = 0; guard < 120; guard++) {
+      const h = habitAt(y, m);
+      if (!h || unitOf(h) !== 'month') break;
+      const isNow = y === now.y && m === now.m;
+      if (ticks(y, m).length) n++;
+      else if (!isNow) break;
+      ({ y, m } = shiftMonth(y, m, -1));
+    }
+    return { n, unit };
+  }
+
+  // Weeks: walk this month's weeks backwards from the current one, then earlier months.
+  let { y, m } = now;
+  let fromDay = now.d;
+  for (let guard = 0; guard < 60; guard++) {
+    const h = habitAt(y, m);
+    if (!h || unitOf(h) !== 'week') break;
+    const list = ticks(y, m);
+    const weeks = habitWeeks(h, y, m).filter((w) => w.from <= fromDay).reverse();
+    let broke = false;
+    for (const w of weeks) {
+      const got = list.filter((t) => t >= w.from && t <= w.to).length;
+      const isCurrentWeek = y === now.y && m === now.m && now.d >= w.from && now.d <= w.to;
+      if (got >= w.target) n++;
+      else if (!isCurrentWeek) { broke = true; break; }
+    }
+    if (broke) break;
+    ({ y, m } = shiftMonth(y, m, -1));
+    fromDay = daysIn(y, m);
+  }
+  return { n, unit };
+}
+
+export const runWords = ({ n, unit }) => `${n}-${unit} run`;
 
 // The "Annual Progress Tracker" tab, plus the crane count.
 export function yearStats(state, year, now) {
