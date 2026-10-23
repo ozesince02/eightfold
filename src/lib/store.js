@@ -1,7 +1,8 @@
 // The whole tracker lives in one object in localStorage. No formulas: every number
 // on screen is computed from `months[key].checks` by stats.js.
 import { SEED_MONTHS, HABIT_COLORS } from '../data/seed.js';
-import { monthKey, parseKey, shiftMonth } from './dates.js';
+import { monthKey, parseKey, shiftMonth, daysIn } from './dates.js';
+import { cleanState, parseBackup, isId, safeColor, safeTime, safeName, LIMITS } from './sanitize.js';
 
 export const STORE_KEY = 'eightfold:v1';
 const LEGACY_KEY = 'orizuru:v1'; // the app's working name before it became Eightfold
@@ -18,15 +19,18 @@ function fromSeed() {
   return { version: 1, wish: '', colors: { ...HABIT_COLORS }, months };
 }
 
+// Stored data is validated like an imported file: it may have been edited by hand or by
+// another script on this origin. Data that can't be read is kept aside, never thrown away.
 function read() {
+  let raw = null;
+  try { raw = localStorage.getItem(STORE_KEY) ?? localStorage.getItem(LEGACY_KEY); } catch { /* storage blocked */ }
+  if (!raw) return fromSeed();
   try {
-    const raw = localStorage.getItem(STORE_KEY) ?? localStorage.getItem(LEGACY_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && parsed.version === 1 && parsed.months) return parsed;
-    }
-  } catch { /* private mode or corrupt data: fall back to the sheet */ }
-  return fromSeed();
+    return cleanState(JSON.parse(raw));
+  } catch {
+    try { localStorage.setItem(`${STORE_KEY}:unreadable:${Date.now()}`, raw); } catch { /* storage full */ }
+    return fromSeed();
+  }
 }
 
 let state = read();
@@ -36,6 +40,11 @@ function save() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch { /* storage full or blocked */ }
   listeners.forEach((fn) => fn(state));
 }
+
+const clampInt = (v, min, max, fallback) => {
+  const n = Math.round(Number(v));
+  return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
+};
 
 export const DEFAULT_REMINDERS = { enabled: false, lead: 0, off: {}, log: {} };
 
@@ -54,7 +63,9 @@ export const store = {
     state.prefs = { percentView: 'days', ...state.prefs };
     return state.prefs;
   },
-  setPref(key, value) { this.prefs()[key] = value; save(); },
+  setPref(key, value) {
+    if (key === 'percentView' && ['days', 'goal', 'both'].includes(value)) { this.prefs().percentView = value; save(); }
+  },
 
   // Reminder settings: on/off, minutes of warning, habits switched off, and what fired today.
   reminders() {
@@ -99,7 +110,10 @@ export const store = {
   },
 
   toggle(key, id, day, value) {
+    const { y, m } = parseKey(key);
+    if (!isId(id) || !Number.isInteger(day) || day < 1 || day > daysIn(y, m)) return false;
     const month = this.ensureMonth(key);
+    if (!month.habits.some((h) => h.id === id)) return false;
     const list = month.checks[id] || (month.checks[id] = []);
     const has = list.includes(day);
     const want = value === undefined ? !has : value;
@@ -113,14 +127,22 @@ export const store = {
     if (!state.colors[id]) {
       state.colors[id] = PALETTE[Object.keys(state.colors).length % PALETTE.length];
     }
-    return state.colors[id];
+    return safeColor(state.colors[id]);
   },
-  setColor(id, color) { state.colors[id] = color; save(); },
+  setColor(id, color) {
+    if (!isId(id) || safeColor(color, null) === null) return;
+    state.colors[id] = color;
+    save();
+  },
 
-  addHabit(key, { name, goal = 20, time = '', start = 1, id }) {
+  addHabit(key, { name, goal = 20, time = '', start = 1 }) {
+    const clean = safeName(name);
     const month = this.ensureMonth(key);
-    const slug = id || (name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'habit') + '-' + Date.now().toString(36).slice(-4);
-    month.habits.push({ id: slug, name, goal: Number(goal) || 0, time, start: Number(start) || 1 });
+    if (!clean || month.habits.length >= LIMITS.habitsPerMonth) return null;
+    const { y, m } = parseKey(key);
+    const base = clean.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'habit';
+    const slug = `${base}-${Date.now().toString(36).slice(-4)}`;
+    month.habits.push({ id: slug, name: clean, goal: clampInt(goal, 0, 31, 20), time: safeTime(time), start: clampInt(start, 1, daysIn(y, m), 1) });
     month.checks[slug] = month.checks[slug] || [];
     this.color(slug);
     save();
@@ -130,9 +152,11 @@ export const store = {
   updateHabit(key, id, patch) {
     const habit = state.months[key]?.habits.find((h) => h.id === id);
     if (!habit) return;
-    Object.assign(habit, patch);
-    if ('goal' in patch) habit.goal = Number(patch.goal) || 0;
-    if ('start' in patch) habit.start = Math.max(1, Number(patch.start) || 1);
+    const { y, m } = parseKey(key);
+    if ('name' in patch && safeName(patch.name)) habit.name = safeName(patch.name);
+    if ('time' in patch) habit.time = safeTime(patch.time);
+    if ('goal' in patch) habit.goal = clampInt(patch.goal, 0, 31, habit.goal);
+    if ('start' in patch) habit.start = clampInt(patch.start, 1, daysIn(y, m), habit.start);
     save();
   },
 
@@ -154,13 +178,12 @@ export const store = {
     save();
   },
 
-  setWish(text) { state.wish = text; save(); },
+  setWish(text) { state.wish = String(text ?? '').slice(0, LIMITS.wish); save(); },
 
   exportJSON: () => JSON.stringify(state, null, 2),
+  // Throws a readable error when the file is not a valid backup; nothing changes in that case.
   importJSON(text) {
-    const parsed = JSON.parse(text);
-    if (!parsed || parsed.version !== 1 || typeof parsed.months !== 'object') throw new Error('This file is not an Eightfold backup.');
-    state = parsed;
+    state = parseBackup(text);
     save();
   },
   resetToSheet() {

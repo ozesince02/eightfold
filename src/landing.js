@@ -8,6 +8,7 @@ import { hills, mountains } from './ui/charts.js';
 import { featuredMonth, bestCrossingRun, dateLabel, daysLeftInYear } from './ui/insights.js';
 import { createCraneStage } from './three/stage.js';
 import { startReminders } from './ui/reminders.js';
+import { esc } from './lib/sanitize.js';
 
 gsap.registerPlugin(ScrollTrigger);
 window.__oz = true;
@@ -59,8 +60,8 @@ const words = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six'];
 list.innerHTML = demoHabits.map((h) => `
   <li><button class="tag" type="button" aria-pressed="false" data-id="${h.id}" style="--c:${color(h.id)}">
     <span class="tag-box" aria-hidden="true"></span>
-    <span class="tag-time">${h.time || '—'}</span>
-    <span class="tag-name">${h.name}</span>
+    <span class="tag-time">${esc(h.time) || '—'}</span>
+    <span class="tag-name">${esc(h.name)}</span>
   </button></li>`).join('');
 
 const stage = createCraneStage($('.stage-canvas'), {
@@ -100,7 +101,7 @@ $('[data-why-numbers]').innerHTML = [
 // The torn spreadsheet scrap uses the sheet's own TRUE/FALSE cells.
 const scrapHabits = fs.habits.slice(0, 4);
 $('[data-scrap]').innerHTML = `<tr><th></th>${Array.from({ length: 6 }, (_, i) => `<th>${String.fromCharCode(74 + i)}</th>`).join('')}</tr>` +
-  scrapHabits.map((h) => `<tr><td>${h.name}</td>${h.cells.slice(0, 6).map((c) => `<td class="${c ? 't' : 'f'}">${c ? 'TRUE' : 'FALSE'}</td>`).join('')}</tr>`).join('');
+  scrapHabits.map((h) => `<tr><td>${esc(h.name)}</td>${h.cells.slice(0, 6).map((c) => `<td class="${c ? 't' : 'f'}">${c ? 'TRUE' : 'FALSE'}</td>`).join('')}</tr>`).join('');
 
 // ---------- Keeps: the zine ----------
 const top = fs.top[0];
@@ -111,16 +112,16 @@ const weekLine = fs.weeks.filter((w) => w.done > 0).slice(0, 2).map((w) => `week
 const panels = [
   ['The month on one page', 'Every habit down the side, every day across, one tap to tick.',
     `<div class="mini-grid" style="grid-template-columns:repeat(${fs.days},minmax(0,1fr))">${fs.habits.map((h) => h.cells.map((c, i) => `<i class="${c ? 'on' : ''}${fs.isCurrent && i + 1 === now.d ? ' is-today' : ''}" style="--c:${color(h.id)}"></i>`).join('')).join('')}</div>`],
-  ['A goal for each habit', `${goalHabit.name} wants ${goalHabit.goal} days in ${mName}. Each habit shows what's done and what's left.`,
-    `<div class="goal-bars">${fs.habits.slice(0, 5).map((h) => `<div class="goal-bar" style="--c:${color(h.id)}"><span>${h.name}</span><span>${h.done}/${h.goal}</span><div class="goal-track"><div class="goal-fill" style="width:${Math.min(100, h.progress * 100)}%"></div></div></div>`).join('')}</div>`],
-  ['Streaks, current and longest', `${best.name} ran ${best.longest} days in a row in ${mName}. Your current run counts until midnight.`,
-    `<div class="chain" style="--c:${color(best.id)}">${'<i></i>'.repeat(best.longest)}</div><p class="chain-label">${best.longest} days, ${best.name}</p>`],
+  ['A goal for each habit', `${esc(goalHabit.name)} wants ${goalHabit.goal} days in ${mName}. Each habit shows what's done and what's left.`,
+    `<div class="goal-bars">${fs.habits.slice(0, 5).map((h) => `<div class="goal-bar" style="--c:${color(h.id)}"><span>${esc(h.name)}</span><span>${h.done}/${h.goal}</span><div class="goal-track"><div class="goal-fill" style="width:${Math.min(100, h.progress * 100)}%"></div></div></div>`).join('')}</div>`],
+  ['Streaks, current and longest', `${esc(best.name)} ran ${best.longest} days in a row in ${mName}. Your current run counts until midnight.`,
+    `<div class="chain" style="--c:${color(best.id)}">${'<i></i>'.repeat(best.longest)}</div><p class="chain-label">${best.longest} days, ${esc(best.name)}</p>`],
   ['Five weeks at a glance', `Weeks count from the 1st, like the sheet did: ${weekLine}.`,
     `<div class="weeks">${fs.weeks.map((w) => `<div class="week"><span>Week ${w.index}</span><div class="week-track"><div class="week-fill" style="width:${w.pct * 100}%"></div></div><span>${w.done}/${w.possible}</span></div>`).join('')}</div>`],
   ['Every day\'s score', 'The daily line the sheet drew as a chart, here as paper hills.',
     hills(fs.perDay.map((d) => (d.past ? d.pct : null)), { width: 320, height: 150, today: fs.isCurrent ? now.d : null })],
-  ['The habits, ranked', `${top.name} leads ${mName} at ${percent(top.progress)} of its goal.`,
-    `<ol class="ranked">${fs.top.slice(0, 6).map((h) => `<li style="--c:${color(h.id)};color:${inkOn(color(h.id))}"><span>${h.name}</span><span>${percent(h.progress)}</span></li>`).join('')}</ol>`],
+  ['The habits, ranked', `${esc(top.name)} leads ${mName} at ${percent(top.progress)} of its goal.`,
+    `<ol class="ranked">${fs.top.slice(0, 6).map((h) => `<li style="--c:${color(h.id)};color:${inkOn(color(h.id))}"><span>${esc(h.name)}</span><span>${percent(h.progress)}</span></li>`).join('')}</ol>`],
   ['The whole year', 'Each month\'s success rate, January to December, on one ridge.',
     `<svg class="mini-range" viewBox="0 0 320 150" aria-hidden="true">${mountains(year.months, { width: 320, height: 150, mini: true })}</svg>`],
 ];
@@ -146,7 +147,7 @@ $('[data-wish-figure]').textContent = `${year.cranes} of 1,000`;
 const dayHabits = [...feat.month.habits].filter((h) => h.time).sort((a, b) => minutesOf(a.time) - minutesOf(b.time));
 const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
 const next = dayHabits.find((h) => minutesOf(h.time) >= nowMin);
-$('[data-dayline]').innerHTML = dayHabits.map((h) => `<li class="${h === next ? 'next' : ''}" style="--c:${color(h.id)}"><time>${h.time}</time><i></i><span>${h.name}${h === next ? '<em>next</em>' : ''}</span></li>`).join('');
+$('[data-dayline]').innerHTML = dayHabits.map((h) => `<li class="${h === next ? 'next' : ''}" style="--c:${color(h.id)}"><time>${esc(h.time)}</time><i></i><span>${esc(h.name)}${h === next ? '<em>next</em>' : ''}</span></li>`).join('');
 
 const run = bestCrossingRun(state, now.y, now);
 if (run) {

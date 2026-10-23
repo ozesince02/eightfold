@@ -29,8 +29,9 @@ npm run build    # static site in dist/
 - [docs/design.md](docs/design.md): the design system
 - [docs/data-storage.md](docs/data-storage.md): accounts and cloud data plan
 - [docs/vision.md](docs/vision.md): ideas for later
+- [docs/security.md](docs/security.md): threat model, rules, audit log
 
-Checks: `node scripts/check-stats.mjs`, `node scripts/check-reminders.mjs`, `node scripts/check-seed.mjs`.
+Checks: `npm run check` (stats, reminders, seed, security). Production build with real security headers: `npm run build && npm run serve:dist`.
 
 ## Toward phone apps
 

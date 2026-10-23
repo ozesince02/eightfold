@@ -5,6 +5,7 @@ import { monthStats, yearStats, currentStreak, percent, pct, VIEWS, VIEW_LABELS,
 import { craneMark, sfxPop, confetti } from './ui/paper.js';
 import { hills, mountains, ring } from './ui/charts.js';
 import { daysLeftInYear } from './ui/insights.js';
+import { esc } from './lib/sanitize.js';
 import { createCraneStage } from './three/stage.js';
 import { startReminders, enableReminders, disableReminders, sendTestReminder, permissionState, nextReminder } from './ui/reminders.js';
 
@@ -15,7 +16,6 @@ const widget = $('.crane-widget');
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const PAPERS = ['#C8302C', '#24496B', '#8EA46B', '#E9B33F', '#C9A57A', '#A9CBD6', '#E8C3BC', '#6E8C8A', '#B98A5E', '#D98E73', '#1E1B18'];
 const NARROW = new Intl.DateTimeFormat('en-GB', { weekday: 'narrow' });
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const icon = {
   prev: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   next: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -349,7 +349,7 @@ function dayPanel(key, s, color) {
   const next = d ? list.find((h) => !h.cells[d - 1] && minutesOf(h.time) >= nowMin) : null;
   return `<section class="panel span-6" aria-labelledby="day-h">
     <div class="panel-head"><h2 id="day-h">Your day, in order</h2><p>${next ? `Next: ${next.time}` : d ? 'Nothing else timed today' : 'The usual times'}</p></div>
-    <ol class="dayline">${list.map((h) => `<li class="${d && h.cells[d - 1] ? 'done' : ''}${h === next ? ' next' : ''}" style="--c:${color(h.id)}"><time>${h.time}</time><i></i><span>${esc(h.name)}</span>${h === next ? '<em>next</em>' : ''}</li>`).join('')}</ol>
+    <ol class="dayline">${list.map((h) => `<li class="${d && h.cells[d - 1] ? 'done' : ''}${h === next ? ' next' : ''}" style="--c:${color(h.id)}"><time>${esc(h.time)}</time><i></i><span>${esc(h.name)}</span>${h === next ? '<em>next</em>' : ''}</li>`).join('')}</ol>
   </section>`;
 }
 
@@ -507,7 +507,7 @@ function remindersPanel(month) {
     </div>
     <label class="rem-lead">When<select data-rem-lead>${leads.map(([v, l]) => `<option value="${v}" ${rem.lead === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
     <fieldset class="rem-list"><legend>Nudge me for</legend>
-      ${timed.map((h) => `<label style="--c:${store.color(h.id)}"><input type="checkbox" data-rem-habit="${h.id}" ${rem.off[h.id] ? '' : 'checked'}><i></i><time>${h.time}</time><span>${esc(h.name)}</span></label>`).join('') || '<p class="note">No habit has a time yet.</p>'}
+      ${timed.map((h) => `<label style="--c:${store.color(h.id)}"><input type="checkbox" data-rem-habit="${h.id}" ${rem.off[h.id] ? '' : 'checked'}><i></i><time>${esc(h.time)}</time><span>${esc(h.name)}</span></label>`).join('') || '<p class="note">No habit has a time yet.</p>'}
     </fieldset>
     <p class="note">${untimed ? `${untimed} habit${untimed === 1 ? ' has' : 's have'} no time, so ${untimed === 1 ? 'it gets' : 'they get'} no nudge. ` : ''}Browsers only send nudges while an Eightfold tab is open; it can sit in the background. A missed nudge still arrives for two hours after its time.</p>
   </section>`;
@@ -630,8 +630,8 @@ view.addEventListener('submit', (e) => {
   if (form.matches('[data-add]')) {
     const data = Object.fromEntries(new FormData(form));
     if (!data.name.trim()) return;
-    store.addHabit(route().key, { name: data.name.trim(), time: data.time, goal: data.goal, start: data.start });
-    toast(`Added ${data.name.trim()}.`);
+    const added = store.addHabit(route().key, { name: data.name, time: data.time, goal: data.goal, start: data.start });
+    toast(added ? `Added ${data.name.trim()}.` : 'That habit could not be added. A month holds up to 50 habits.');
     requestAnimationFrame(() => $('[data-add] input[name="name"]')?.focus());
   }
   if (form.matches('[data-wish]')) {

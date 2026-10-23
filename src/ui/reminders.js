@@ -7,6 +7,7 @@ import { monthKey, minutesOf } from '../lib/dates.js';
 import { currentStreak } from '../lib/stats.js';
 import { dueReminders, nextReminder, settingsOf, logKey, SNOOZE_MINUTES } from '../lib/reminders-core.js';
 import { sfxPop } from './paper.js';
+import { esc, isId, isDate } from '../lib/sanitize.js';
 
 const supported = () => typeof window !== 'undefined' && 'Notification' in window;
 let registration = null;
@@ -30,8 +31,11 @@ function message({ habit, late }, lead) {
 }
 
 // ---------- Acting on a reminder (from the page note or a notification button) ----------
-function apply(act, habitId, date) {
-  if (!habitId || !date) return;
+// trusted: the action came from our own service worker. A URL (opened from a notification while
+// no tab was open) is only obeyed if that reminder really fired, so a crafted link can't tick habits.
+function apply(act, habitId, date, { trusted = false } = {}) {
+  if (!['done', 'snooze'].includes(act) || !isId(habitId) || !isDate(date)) return;
+  if (!trusted && !store.reminders().log[`${date}:${habitId}`]?.firedAt) return;
   const [y, m, d] = date.split('-').map(Number);
   const habit = store.month(monthKey(y, m))?.habits.find((h) => h.id === habitId);
   if (!habit) return;
@@ -56,7 +60,7 @@ function notesHost() {
       const btn = e.target.closest('[data-nudge]');
       if (!btn) return;
       const note = btn.closest('.nudge');
-      if (btn.dataset.nudge !== 'dismiss') apply(btn.dataset.nudge, note.dataset.habit, note.dataset.date);
+      if (btn.dataset.nudge !== 'dismiss') apply(btn.dataset.nudge, note.dataset.habit, note.dataset.date, { trusted: true });
       closeNote(note);
     });
     document.body.appendChild(host);
@@ -81,7 +85,7 @@ function showNote(item, text) {
   note.innerHTML = `
     <span class="tape" style="top:-13px;left:42%;transform:rotate(-4deg)"></span>
     <div class="nudge-sheet">
-      <p class="nudge-time"><i></i>${item.habit.time}</p>
+      <p class="nudge-time"><i></i>${esc(item.habit.time)}</p>
       <h2 class="nudge-title"></h2>
       <p class="nudge-body"></p>
       <div class="nudge-actions">
@@ -164,7 +168,10 @@ export function startReminders({ toast } = {}) {
   if ('serviceWorker' in navigator && window.isSecureContext) {
     navigator.serviceWorker.register('/sw.js').then((reg) => { registration = reg; }).catch(() => {});
     navigator.serviceWorker.addEventListener('message', (e) => {
-      if (e.data?.type === 'eightfold-remind') apply(e.data.act, e.data.habitId, e.data.date);
+      // Only messages from our own service worker are acted on.
+      if (e.source === navigator.serviceWorker.controller && e.data?.type === 'eightfold-remind') {
+        apply(e.data.act, e.data.habitId, e.data.date, { trusted: true });
+      }
     });
   }
   // Opened from a notification button while no tab was open.

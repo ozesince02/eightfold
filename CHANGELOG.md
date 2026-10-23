@@ -5,7 +5,19 @@ Dates are when the work landed.
 
 ## Unreleased
 
+### Security
+- Backups are checked field by field before loading; a damaged or crafted file is refused with a
+  plain reason and nothing changes. Stored data gets the same checks every time the app opens, and
+  data that can't be read is kept aside instead of deleted.
+- Habit names on the landing page are now escaped, so text in a name can never run as code.
+- Security headers and a strict Content-Security-Policy for the hosted site (`public/_headers`).
+- Links that act on a reminder only work for a reminder that actually fired.
+- Development tools upgraded (Vite 8, sharp 0.35): `npm audit` reports 0 vulnerabilities.
+- New [docs/security.md](docs/security.md) with the threat model, rules and audit log;
+  `npm run check` now includes 25 hostile-data checks.
+
 ### Docs
+- Branch conventions and the security-first rule in [CLAUDE.md](CLAUDE.md) (D-010, D-011).
 - Accounts and cloud data decided (D-008, now accepted): Google and email-link sign-in, private
   accounts with opt-in buddies later, Cloudflare Pages hosting with Supabase in Mumbai.
   Details in [docs/data-storage.md](docs/data-storage.md).
