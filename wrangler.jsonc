@@ -1,0 +1,15 @@
+// Cloudflare deploy settings (docs/decisions.md D-014). The site is fully static: `npm run build`
+// writes dist/, and this Worker only serves those files. Without this file Cloudflare tries to
+// guess the setup from vite.config.js and fails.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // Must match the Worker's name in the Cloudflare dashboard.
+  "name": "onemorefold",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    // /app.html is served at /app; the old /app.html links redirect there.
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

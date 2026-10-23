@@ -11,7 +11,8 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil((async () => {
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    const tab = windows.find((c) => new URL(c.url).pathname.endsWith('/app.html')) || windows[0];
+    // The tracker is /app.html in development and /app when hosted (wrangler.jsonc html_handling).
+    const tab = windows.find((c) => /\/app(\.html)?$/.test(new URL(c.url).pathname)) || windows[0];
 
     if (tab) {
       if (act !== 'open') tab.postMessage({ type: 'eightfold-remind', act, habitId, date });
