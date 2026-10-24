@@ -6,7 +6,7 @@ import { yearStats, percent } from './lib/stats.js';
 import { CRANE_GOAL, CRANE_GOAL_TEXT, AUTHOR } from './config.js';
 import { tearAll, craneMark, sfxPop, confetti, rng, inkOn } from './ui/paper.js';
 import { hills, mountains } from './ui/charts.js';
-import { featuredMonth, bestCrossingRun, dateLabel, daysLeftInYear } from './ui/insights.js';
+import { featuredMonth, daysLeftInYear } from './ui/insights.js';
 import { createCraneStage } from './three/stage.js';
 import { startReminders } from './ui/reminders.js';
 import { esc, safeColor } from './lib/sanitize.js';
@@ -127,7 +127,7 @@ const panels = [
     `<div class="mini-grid" style="grid-template-columns:repeat(${fs.days},minmax(0,1fr))">${fs.habits.map((h) => h.cells.map((c, i) => `<i class="${c ? 'on' : ''}${fs.isCurrent && i + 1 === now.d ? ' is-today' : ''}" style="--c:${color(h.id)}"></i>`).join('')).join('')}</div>`],
   ['A goal for each habit', `${esc(goalHabit.name)} wants ${goalHabit.goal} days in ${mName}. Each habit shows what's done and what's left.`,
     `<div class="goal-bars">${fs.habits.slice(0, 5).map((h) => `<div class="goal-bar" style="--c:${color(h.id)}"><span>${esc(h.name)}</span><span>${h.done}/${h.goal}</span><div class="goal-track"><div class="goal-fill" style="width:${Math.min(100, h.progress * 100)}%"></div></div></div>`).join('')}</div>`],
-  ['Streaks, current and longest', `${esc(best.name)} ran ${best.longest} days in a row in ${mName}. Your current run counts until midnight.`,
+  ['Streaks, current and longest', `${esc(best.name)} ran ${best.longest} days in a row in ${mName}. A run keeps counting past the 1st of the month, and today's counts until midnight.`,
     `<div class="chain" style="--c:${color(best.id)}">${'<i></i>'.repeat(best.longest)}</div><p class="chain-label">${best.longest} days, ${esc(best.name)}</p>`],
   ['Five weeks at a glance', `Weeks count from the 1st, like the sheet did: ${weekLine}.`,
     `<div class="weeks">${fs.weeks.map((w) => `<div class="week"><span>Week ${w.index}</span><div class="week-track"><div class="week-fill" style="width:${w.pct * 100}%"></div></div><span>${w.done}/${w.possible}</span></div>`).join('')}</div>`],
@@ -162,10 +162,19 @@ const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
 const next = dayHabits.find((h) => minutesOf(h.time) >= nowMin);
 $('[data-dayline]').innerHTML = dayHabits.map((h) => `<li class="${h === next ? 'next' : ''}" style="--c:${color(h.id)}"><time>${esc(h.time)}</time><i></i><span>${esc(h.name)}${h === next ? '<em>next</em>' : ''}</span></li>`).join('');
 
-const run = bestCrossingRun(state, now.y, now);
-if (run) {
-  $('[data-streak-text]').textContent = `In oze's sheet, ${run.name.toLowerCase()} ran from ${dateLabel(run.from)} to ${dateLabel(run.to)}: ${run.length} days. The sheet split it into streaks of ${new Intl.ListFormat('en-GB').format(run.parts.map(String))}. Here it's one.`;
-}
+// Schedules (D-013): three made-up habits, each on a different kind of week.
+// tick: done; due: due and not yet done; open: any day counts; rest: not due, never a miss.
+const WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const schedules = [
+  { name: 'Gym', rule: 'Mon, Wed, Fri', c: 'var(--ai)', days: ['tick', 'rest', 'tick', 'rest', 'due', 'rest', 'rest'], note: '2 of 3 this week' },
+  { name: 'Swim', rule: '3 times a week', c: 'var(--matcha)', days: ['tick', 'open', 'open', 'tick', 'open', 'open', 'open'], note: '2 of 3 this week' },
+  { name: 'Call home', rule: 'Once a week', c: 'var(--shu)', days: ['open', 'open', 'tick', 'open', 'open', 'open', 'open'], note: 'Done this week' },
+];
+const dayWord = { tick: 'done', due: 'due', open: 'any day', rest: 'rest day' };
+$('[data-sched]').innerHTML = schedules.map((s) => `<li style="--c:${s.c}">
+  <span class="sched-name">${esc(s.name)}</span><span class="sched-rule">${esc(s.rule)}</span>
+  <span class="sched-week" aria-hidden="true">${s.days.map((d, i) => `<i class="${d}" title="${WEEK[i]}: ${dayWord[d]}"></i>`).join('')}</span>
+  <span class="sched-note">${esc(s.note)}</span></li>`).join('');
 const perfectYear = year.months.reduce((s, x) => s + (x.perfectDays || 0), 0);
 $('[data-perfect-text]').textContent = `Tick every habit in a day and the crane takes off. oze's ${mName} had ${fs.perfectDays} by the 22nd; the year, ${perfectYear}.`;
 $('[data-confetti]').addEventListener('click', (e) => { confetti(); sfxPop(e.clientX, e.clientY - 10, 'パーフェクト!'); });

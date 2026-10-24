@@ -10,9 +10,6 @@ export function featuredMonth(state, now) {
   return { y, m, month, stats: monthStats(month, y, m, now) };
 }
 
-// The best run of any habit that crossed from one month into the next,
-// which the sheet would have split into two streaks.
-export const bestCrossingRun = (state, year, now) => bestRun(state, year, now, (months) => months.size > 1);
 // The longest run of ticked days in a row in the year, for the look back when folding it.
 export const longestRun = (state, year, now) => bestRun(state, year, now, () => true);
 
