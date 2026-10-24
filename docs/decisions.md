@@ -322,6 +322,12 @@ Accepted · 24 Oct 2026
 - **Refused rows** (bad data or a limit) are dropped one by one so they can't block the queue, and
   the person is told. Network errors retry with backoff up to a minute.
 - **Signing out** stops syncing and clears the queue; the folds stay in the browser.
+- **Shared browsers:** the browser remembers which account it last synced with. If someone else
+  signs in, the earlier person's folds are kept aside on the device and the tracker starts from the
+  new account: they are never uploaded to it or merged into it.
+- **Nothing is replaced without a copy:** before "Keep both", before "Use only my account's", and
+  before the account's copy replaces local rows the account refused, the browser's data is kept
+  aside under a dated key.
 - **New visitors start empty (D-016).** The tracker no longer falls back to the sheet's data, and
   "Reset to the sheet" is gone. The landing page still tells the sheet's story from `seedState()`.
 - **Tested** by `scripts/check-sync.mjs`: the real engine against the real schema and RLS, with

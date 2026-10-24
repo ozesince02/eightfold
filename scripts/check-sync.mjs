@@ -79,14 +79,15 @@ function device(name, initial, saved = { value: {} }) {
   };
   let online = true;
   let last = { state: 'off' };
+  const messages = [];
   const sync = createSync({
     store,
     storage: { read: () => structuredClone(saved.value), write: (v) => { saved.value = structuredClone(v); } },
     online: () => online,
-    onStatus: (s) => { last = s; },
+    onStatus: (s) => { last = s; if (s.message) messages.push(s.message); },
     timers: { setTimeout: () => 0, clearTimeout: () => {} }, // the test flushes and pulls by hand
   });
-  return { name, store, sync, saved, aside, status: () => last, goOffline: () => { online = false; }, goOnline: () => { online = true; } };
+  return { name, store, sync, saved, aside, messages, status: () => last, goOffline: () => { online = false; }, goOnline: () => { online = true; } };
 }
 
 const rowsOf = (state) => Object.fromEntries(Object.entries(stateToRows(state)).map(([k, v]) => [k, v.row]));
@@ -180,6 +181,7 @@ const merged = await accountState(OWNER);
 assert.deepEqual(merged.months['2025-12'].checks.walk, [1, 2, 3], 'keep both adds the tablet\'s month to the account');
 assert.ok(merged.months['2026-10'].checks.german.includes(24), 'and keeps the account\'s ticks');
 assertSame(tablet, { store: { get: () => merged } }, 'the tablet matches the account');
+assert.equal(tablet.aside.length, 1, 'keep both also keeps the browser’s copy as it was');
 
 const library = device('library', { version: 1, months: { '2026-10': { habits: [{ id: 'x', name: 'Mine', goal: 1, time: '', start: 1 }], checks: { x: [1] } } }, colors: {}, years: {} });
 await library.sync.start(api(OWNER), OWNER);
@@ -215,8 +217,30 @@ assert.equal((await accountState(OWNER)).months['2026-10'].habits.some((h) => h.
 const before = rowsOf(laptop.store.get());
 laptop.sync.stop();
 assert.equal(laptop.status().state, 'off');
-assert.deepEqual(laptop.saved.value, {}, 'the queue is cleared');
+assert.deepEqual(laptop.saved.value, { lastUser: OWNER }, 'the queue is cleared; the browser remembers whose folds these are');
 assert.deepEqual(rowsOf(laptop.store.get()), before, 'the folds stay in this browser');
+
+// 11. A shared browser: someone else signs in after the owner signed out. The owner's folds must
+// not reach their account, and aren't shown; they're kept aside on the device.
+const THIRD = '00000000-0000-4000-8000-0000000000c3';
+await addUser(THIRD);
+await laptop.sync.start(api(THIRD), THIRD);
+assert.equal(await count(THIRD, 'ticks'), 0, 'nothing of the owner’s was uploaded to the new account');
+assert.equal(await count(THIRD, 'habit_months'), 0, 'not even a habit');
+assert.deepEqual(Object.keys(laptop.store.get().months), [], 'the browser now shows the new account (empty)');
+assert.equal(laptop.aside.length, 1, 'the owner’s folds are kept aside, not deleted');
+
+// 12. A queued row the database refuses (here planted in storage) is dropped and reported, and
+// doesn't hold up the rest of the queue.
+const planted = { value: { user: OWNER, linked: true, ops: {
+  'habits|Bad Slug': { op: 'upsert', table: 'habits', row: { slug: 'Bad Slug', color: '#000000' } },
+  'years|2031': { op: 'upsert', table: 'years', row: { year: 2031, wish: 'still sent', folded_at: null } },
+} } };
+const odd = device('odd', await accountState(OWNER), planted);
+await odd.sync.start(api(OWNER), OWNER);
+assert.ok(odd.messages.some((m) => /1 change couldn.t be saved/.test(m)), 'the refused change is reported');
+assert.equal((await accountState(OWNER)).years[2031]?.wish, 'still sent', 'the rest of the queue went through');
+assert.deepEqual(odd.saved.value.ops, {}, 'and the queue is empty');
 
 await db.close();
 console.log('sync: all checks pass');

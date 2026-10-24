@@ -8,7 +8,7 @@ import { stateToRows, rowsToState, diffRows, hasData, mergeStates, TABLES, UPSER
 import { cleanState } from '../sanitize.js';
 import { STORE_KEY } from '../../config.js';
 
-export const SYNC_KEY = `${STORE_KEY}:sync`; // { user, linked, ops }: survives reloads and going offline
+export const SYNC_KEY = `${STORE_KEY}:sync`; // { user, linked, ops } or { lastUser }: survives reloads and offline
 const PAGE = 1000; // the Data API returns at most 1,000 rows per request
 const CHUNK = 500;
 const FLUSH_DELAY = 500;
@@ -77,6 +77,7 @@ export function createSync({ store, storage, onStatus = () => {}, online = () =>
   let flushTimer = null;
   let retryTimer = null;
   let retryDelay = 5000;
+  let refused = false; // rows the account refused: keep a local copy before the account's replaces it
   let status = { state: 'off', pending: 0 };
 
   const setStatus = (state, message) => {
@@ -125,20 +126,27 @@ export function createSync({ store, storage, onStatus = () => {}, online = () =>
       if (!online()) { setStatus('offline'); return false; }
       setStatus('syncing');
       let dropped = 0;
+      // The session this flush started in. If the person changes mid-flush, stop: rows are
+      // never sent under someone else's id.
+      const me = uid;
+      const myApi = api;
+      const sameSession = () => { if (uid !== me || api !== myApi) throw new Error('session changed'); };
       const done = (entries) => { for (const [k, o] of entries) if (ops[k] === o) delete ops[k]; persist(); };
       try {
         for (const table of UPSERT_ORDER) {
           const items = Object.entries(ops).filter(([, o]) => o.op === 'upsert' && o.table === table);
           for (let i = 0; i < items.length; i += CHUNK) {
+            sameSession();
             const chunk = items.slice(i, i + CHUNK);
-            const rows = chunk.map(([, o]) => (table === 'profiles' ? { id: uid, ...o.row } : { user_id: uid, ...o.row }));
+            const rows = chunk.map(([, o]) => (table === 'profiles' ? { ...o.row, id: me } : { ...o.row, user_id: me }));
             try {
-              await api.upsert(table, rows);
+              await myApi.upsert(table, rows);
             } catch (err) {
               if (!err.rejected) throw err;
               // One bad row mustn't hold up the rest: send one by one and drop what's refused.
               for (let j = 0; j < chunk.length; j++) {
-                try { await api.upsert(table, [rows[j]]); } catch (e) { if (!e.rejected) throw e; dropped++; }
+                sameSession();
+                try { await myApi.upsert(table, [rows[j]]); } catch (e) { if (!e.rejected) throw e; dropped++; refused = true; }
               }
             }
             done(chunk);
@@ -157,8 +165,9 @@ export function createSync({ store, storage, onStatus = () => {}, online = () =>
           }
           for (const { match, entries } of groups.values()) {
             for (let i = 0; i < entries.length; i += CHUNK) {
+              sameSession();
               const chunk = entries.slice(i, i + CHUNK);
-              await api.remove(table, match, last, chunk.map(([, o]) => o.row[last]));
+              await myApi.remove(table, match, last, chunk.map(([, o]) => o.row[last]));
               done(chunk);
             }
           }
@@ -204,7 +213,10 @@ export function createSync({ store, storage, onStatus = () => {}, online = () =>
       if (!online()) { setStatus('offline'); return; }
       const remote = await fetchAccount();
       if (Object.keys(ops).length) return; // a change arrived while fetching; the next pull gets it
-      if (!sameRows(stateToRows(remote), stateToRows(store.get()))) applyRemote(remote);
+      if (!sameRows(stateToRows(remote), stateToRows(store.get()))) {
+        if (refused) { store.keepAsideCopy(); refused = false; }
+        applyRemote(remote);
+      }
       base = stateToRows(store.get());
       setStatus('synced');
     })().catch(() => { setStatus(online() ? 'error' : 'offline'); scheduleRetry(); });
@@ -243,18 +255,40 @@ export function createSync({ store, storage, onStatus = () => {}, online = () =>
     }
   }
 
+  function end() {
+    timers.clearTimeout(flushTimer);
+    timers.clearTimeout(retryTimer);
+    channel?.close();
+    channel = null;
+    api = null;
+    linked = false;
+    ops = {};
+    remoteForChoice = null;
+    refused = false;
+    uid = null;
+  }
+
   return {
     status: () => status,
 
     // Signed in: start syncing as this person.
     async start(newApi, userId) {
       if (uid === userId && api) return;
+      if (api) end(); // a different person without a sign-out in between: reset first
       api = newApi;
       uid = userId;
       const saved = storage.read() || {};
       const mine = saved.user === userId;
       linked = mine && saved.linked === true;
       ops = mine && saved.ops ? saved.ops : {};
+      // This browser last synced with someone else (a shared device): their folds must never be
+      // uploaded to or merged into this account. Park them and start from this account's.
+      const previous = saved.user || saved.lastUser;
+      if (previous && previous !== userId) {
+        store.keepAsideCopy();
+        store.replaceState({ version: 1, months: {}, colors: {}, years: {} });
+        onStatus({ ...status, message: "This browser had another account's folds. They're kept aside, not shown or shared." });
+      }
       base = stateToRows(store.get());
       channel = api.channel?.(() => { pull().catch(() => {}); }) || null;
       await sync();
@@ -267,11 +301,11 @@ export function createSync({ store, storage, onStatus = () => {}, online = () =>
       const remote = remoteForChoice;
       remoteForChoice = null;
       link(stateToRows(remote));
+      store.keepAsideCopy(); // either way, this browser's copy as it was is kept
       if (kind === 'merge') {
         store.replaceState(cleanState(mergeStates(remote, store.get()))); // queued as changes
         await flush();
       } else {
-        store.keepAsideCopy();
         applyRemote(remote);
         setStatus('synced');
       }
@@ -280,18 +314,12 @@ export function createSync({ store, storage, onStatus = () => {}, online = () =>
     flush,
     pull,
 
-    // Signed out: stop syncing. The folds stay in this browser; the queue is cleared.
+    // Signed out: stop syncing. The folds stay in this browser; the queue is cleared, but the
+    // browser remembers whose folds these are, so another account never receives them.
     stop() {
-      timers.clearTimeout(flushTimer);
-      timers.clearTimeout(retryTimer);
-      channel?.close();
-      channel = null;
-      api = null;
-      linked = false;
-      ops = {};
-      remoteForChoice = null;
-      uid = null;
-      storage.write({});
+      const lastUser = uid;
+      end();
+      storage.write(lastUser ? { lastUser } : {});
       setStatus('off');
     },
   };

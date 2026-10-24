@@ -150,7 +150,11 @@ Data from the account is validated with `cleanState()` before use, like a backup
 uses a private channel per person with RLS on `realtime.messages` (topic must be `user:<own id>`);
 the broadcast carries no data. Realtime "Postgres changes" was ruled out because delete events
 skip RLS. Deletes and upserts are scoped to the signed-in user both by the request and by RLS.
-The queue is keyed to the user id, so one person's pending changes are never sent as another's.
+The queue is keyed to the user id, so one person's pending changes are never sent as another's;
+a flush stops if the session changes mid-way, and rows always carry the signed-in id (set last, so
+a tampered queue can't override it). On a shared browser, a different person signing in never
+receives the previous person's folds (kept aside instead; test scenario 11). Found by our own
+review of the branch; the security-review pass then found nothing at confidence 8 or above.
 New visitors no longer see the owner's habits in the tracker (D-016).
 Test: `scripts/check-sync.mjs` (includes a second person who never sees the owner's rows) and
 the channel policies in `check-schema.mjs`.
