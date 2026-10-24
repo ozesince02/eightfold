@@ -8,6 +8,9 @@ Dates are when the work landed.
 ### Changed
 - The landing page's "Try it with today's six" now uses six generic tasks (make your bed, walk outside,
   read ten pages...) instead of real habits. (D-016)
+- The tracker opens months from your first month of habits up to next month, and the arrows stop
+  at those ends. Looking at a month no longer saves an empty copy of it; it's saved once you change
+  something. (D-017)
 
 ### Fixed
 - **Deploying to Cloudflare works.** A `wrangler.jsonc` tells Cloudflare to serve the built site
@@ -16,6 +19,11 @@ Dates are when the work landed.
 
 ### Added
 - A not-found page in the paper style.
+- **Fold the year.** In December and January a slip offers a look back at the year (cranes,
+  perfect days, best month, longest run, most-folded habit), lets you choose which habits come into
+  January, and asks for next year's wish. (D-017)
+- **A wish for each year.** Crane 1,000 of 2027 can be for something new; the year view shows each
+  year's wish. Your current wish stays with 2026. (D-017)
 
 ### Docs
 - D-015: the product will be renamed **One More Fold** (onemorefold.com) after setup, keeping

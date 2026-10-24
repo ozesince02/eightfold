@@ -4,6 +4,7 @@ import { SEED_MONTHS, HABIT_COLORS } from '../data/seed.js';
 import { monthKey, parseKey, shiftMonth, daysIn } from './dates.js';
 import { cleanState, parseBackup, isId, safeColor, safeTime, safeName, cleanSchedule, LIMITS } from './sanitize.js';
 import { defaultGoal } from './schedule.js';
+import { closingHabits } from './years.js';
 import { localAdapter, STORE_KEY } from './adapters/local.js';
 
 export { STORE_KEY };
@@ -20,7 +21,7 @@ function fromSeed() {
       checks: Object.fromEntries(habits.map((h) => [h.id, [...h.days]])),
     };
   }
-  return { version: 1, wish: '', colors: { ...HABIT_COLORS }, months };
+  return { version: 1, colors: { ...HABIT_COLORS }, months, years: {} };
 }
 
 // Stored data is validated like an imported file: it may have been edited by hand or by
@@ -37,6 +38,17 @@ function read() {
 }
 
 let state = read();
+
+function draftMonth(key) {
+  const { y, m } = parseKey(key);
+  let prev = null;
+  for (let back = 1; back <= 12 && !prev; back++) {
+    const p = shiftMonth(y, m, -back);
+    prev = state.months[monthKey(p.y, p.m)];
+  }
+  const habits = prev ? prev.habits.map((h) => ({ ...h, start: 1 })) : [];
+  return { habits, checks: Object.fromEntries(habits.map((h) => [h.id, []])) };
+}
 const listeners = new Set();
 let saveFailed = false;
 
@@ -122,18 +134,14 @@ export const store = {
 
   month(key) { return state.months[key] || null; },
 
-  // A new month starts with last month's habits and an empty grid, the way
-  // copying a tab worked in the sheet, minus the copying.
+  // A month that hasn't been written to yet is shown as a draft: last month's habits and an empty
+  // grid, the way copying a tab worked in the sheet. It's saved only when something changes in it,
+  // so browsing ahead or back never leaves empty months behind (D-017).
+  view(key) { return state.months[key] || draftMonth(key); },
+
   ensureMonth(key) {
     if (state.months[key]) return state.months[key];
-    const { y, m } = parseKey(key);
-    let prev = null;
-    for (let back = 1; back <= 12 && !prev; back++) {
-      const p = shiftMonth(y, m, -back);
-      prev = state.months[monthKey(p.y, p.m)];
-    }
-    const habits = prev ? prev.habits.map((h) => ({ ...h, start: 1 })) : [];
-    state.months[key] = { habits, checks: Object.fromEntries(habits.map((h) => [h.id, []])) };
+    state.months[key] = draftMonth(key);
     save();
     return state.months[key];
   },
@@ -187,7 +195,7 @@ export const store = {
   },
 
   updateHabit(key, id, patch) {
-    const habit = state.months[key]?.habits.find((h) => h.id === id);
+    const habit = this.ensureMonth(key).habits.find((h) => h.id === id);
     if (!habit) return;
     const { y, m } = parseKey(key);
     if ('name' in patch && safeName(patch.name)) habit.name = safeName(patch.name);
@@ -208,16 +216,14 @@ export const store = {
   },
 
   removeHabit(key, id) {
-    const month = state.months[key];
-    if (!month) return;
+    const month = this.ensureMonth(key);
     month.habits = month.habits.filter((h) => h.id !== id);
     delete month.checks[id];
     save();
   },
 
   moveHabit(key, id, delta) {
-    const list = state.months[key]?.habits;
-    if (!list) return;
+    const list = this.ensureMonth(key).habits;
     const i = list.findIndex((h) => h.id === id);
     const j = i + delta;
     if (i < 0 || j < 0 || j >= list.length) return;
@@ -225,7 +231,40 @@ export const store = {
     save();
   },
 
-  setWish(text) { state.wish = String(text ?? '').slice(0, LIMITS.wish); save(); },
+  // One wish per year: crane 1,000 of 2026 is for something, crane 1,000 of 2027 for something else.
+  setWish(y, text) {
+    if (!Number.isInteger(y)) return;
+    state.years = { ...state.years, [y]: { ...state.years?.[y], wish: String(text ?? '').trim().slice(0, LIMITS.wish) } };
+    save();
+  },
+
+  // Fold the year (D-017): mark year y done, set up January of the next year with the habits you
+  // keep, and write next year's wish. If January already has ticks for a habit you let go, that
+  // habit stays (its ticks are never thrown away) and its name is returned.
+  foldYear(y, { keep, wish }) {
+    if (!Number.isInteger(y)) return [];
+    const keepIds = new Set(Array.isArray(keep) ? keep.filter(isId) : []);
+    const janKey = monthKey(y + 1, 1);
+    let jan = state.months[janKey];
+    if (!jan) {
+      const habits = closingHabits(state, y).map((h) => ({ ...h, start: 1 }));
+      jan = state.months[janKey] = { habits, checks: Object.fromEntries(habits.map((h) => [h.id, []])) };
+    }
+    const kept = [];
+    jan.habits = jan.habits.filter((h) => {
+      if (keepIds.has(h.id)) return true;
+      if (jan.checks[h.id]?.length) { kept.push(h.name); return true; }
+      delete jan.checks[h.id];
+      return false;
+    });
+    const years = { ...state.years };
+    years[y] = { ...years[y], foldedAt: Date.now() };
+    const next = String(wish ?? '').trim().slice(0, LIMITS.wish);
+    if (next) years[y + 1] = { ...years[y + 1], wish: next };
+    state.years = years;
+    save();
+    return kept;
+  },
 
   exportJSON: () => JSON.stringify(state, null, 2),
   // Throws a readable error when the file is not a valid backup; nothing changes in that case.

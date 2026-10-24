@@ -130,10 +130,18 @@ store.js  ── same API as today: get, toggle, addHabit, updateHabit, setPref,
 create table profiles (
   id uuid primary key references auth.users on delete cascade,
   display_name text,
-  wish text default '',
   prefs jsonb default '{"percentView":"days"}',
   reminders jsonb default '{}',
   created_at timestamptz default now()
+);
+
+-- One row per year that has a wish or has been folded (D-017).
+create table years (
+  user_id uuid not null references profiles on delete cascade,
+  year smallint not null,
+  wish text not null default '' check (char_length(wish) <= 200),
+  folded_at timestamptz,
+  primary key (user_id, year)
 );
 
 -- A habit is the lasting thing ("German"); its name, goal and time can change month to month.
@@ -181,7 +189,9 @@ create policy "own ticks" on ticks for all
 ```
 
 Today's JSON maps straight onto this: `months["2026-10"].habits[]` becomes `habit_months` rows,
-`checks[id] = [days]` becomes `ticks` rows, and `wish`, `prefs`, `reminders` live on `profiles`.
+`checks[id] = [days]` becomes `ticks` rows, `years["2026"]` becomes a `years` row, and `prefs`,
+`reminders` live on `profiles`. Only months that have been used are stored (D-017), so browsing
+never writes rows.
 
 Every habit imported today becomes `cadence = 'daily'`. The local JSON can gain the same fields
 (`cadence`, `weekdays`, `timesPerWeek` on each month's habit) whenever schedules are built; no
