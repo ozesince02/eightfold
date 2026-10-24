@@ -260,3 +260,26 @@ Accepted · 24 Oct 2026
   it becomes a `years` table (see data-storage.md); `profiles.wish` goes away.
 - **Later:** a year recap and comparisons between years (vision.md) read the same data; nothing
   extra needs storing for them.
+
+## D-018 The accounts database
+Accepted · 24 Oct 2026
+
+- **Context:** sign-in and sync need somewhere to keep each person's data (D-008: Supabase).
+- **Decision:** six tables (`profiles`, `years`, `habits`, `months`, `habit_months`, `ticks`) in
+  one migration, `supabase/migrations/20261024120000_accounts.sql`, run once in the Supabase SQL
+  editor. Details in data-storage.md.
+  - **The app's ids are the keys** (`user_id, slug`) instead of new UUIDs: no mapping table, nothing
+    to keep in step, and a backup file still maps one to one.
+  - **The database enforces the same rules as `sanitize.js`**, plus per-person size limits, because
+    anyone can call the Data API with their own session; the app's checks alone aren't enough.
+  - **Row-level security on every table; `anon` has no grants at all.** Helper functions live in a
+    `private` schema the Data API doesn't expose.
+  - **Reminders stay on the device.** Notification permission and timing belong to each phone or
+    laptop, so they're not synced.
+- **Tested on real Postgres** (PGlite, a dev dependency) in `npm run check`: one user can't read,
+  change, delete or plant another's rows; signed-out visitors can't read anything; bad data and
+  too many rows are refused; deleting an account removes everything. Turning RLS off on a table
+  makes the check fail.
+- **Open (owner's call):** whether anyone can sign up, or only invited people. Recommended for
+  family and friends: turn off "Allow new users to sign up" in Supabase and invite people from the
+  dashboard; the per-person limits cap the damage if sign-up stays open.

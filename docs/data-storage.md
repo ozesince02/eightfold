@@ -1,6 +1,6 @@
 # Data storage, accounts and sessions
 
-Status: **accepted, not built yet.** Written 23 October 2026. Decision record: [decisions.md](decisions.md) D-008.
+Status: **accepted; the database is built (24 October 2026, D-018), sign-in and sync next.** Written 23 October 2026. Decision record: [decisions.md](decisions.md) D-008.
 The three open questions were settled the same day; see [Decided](#decided).
 
 ## Where things stand
@@ -125,80 +125,36 @@ store.js  ── same API as today: get, toggle, addHabit, updateHabit, setPref,
 
 ## Data model (Postgres)
 
-```sql
--- One row per person; created on first sign-in.
-create table profiles (
-  id uuid primary key references auth.users on delete cascade,
-  display_name text,
-  prefs jsonb default '{"percentView":"days"}',
-  reminders jsonb default '{}',
-  created_at timestamptz default now()
-);
+Built 24 October 2026 (D-018): [supabase/migrations/20261024120000_accounts.sql](../supabase/migrations/20261024120000_accounts.sql),
+tested on real Postgres by [scripts/check-schema.mjs](../scripts/check-schema.mjs).
 
--- One row per year that has a wish or has been folded (D-017).
-create table years (
-  user_id uuid not null references profiles on delete cascade,
-  year smallint not null,
-  wish text not null default '' check (char_length(wish) <= 200),
-  folded_at timestamptz,
-  primary key (user_id, year)
-);
+| Table | One row per | Local JSON it comes from |
+| --- | --- | --- |
+| `profiles` | person (made by a trigger at sign-up) | `prefs` |
+| `years` | year with a wish or a fold | `years["2026"]` (D-017) |
+| `habits` | habit, keyed by `(user_id, slug)` | the habit id (`german`) and `colors[id]` |
+| `months` | month that has been used | `months["2026-10"]` existing at all |
+| `habit_months` | habit in a month: name, goal, time, start day, schedule, position | `months[key].habits[]` |
+| `ticks` | ticked day | `months[key].checks[id]` |
 
--- A habit is the lasting thing ("German"); its name, goal and time can change month to month.
-create table habits (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references profiles on delete cascade,
-  slug text not null,                 -- today's ids: "german", "dsa"... keeps streaks across months
-  color text not null,
-  created_at timestamptz default now(),
-  unique (user_id, slug)
-);
-
--- How a habit is set up in one month: the sheet's per-tab settings.
-create table habit_months (
-  habit_id uuid references habits on delete cascade,
-  user_id uuid not null references profiles on delete cascade,
-  month date not null,                -- first day of the month
-  name text not null,
-  goal smallint not null default 20,
-  time time,                          -- reminder time, optional
-  start_day smallint not null default 1,
-  -- Room for habits that aren't daily (vision.md, "Weekly and monthly goals"):
-  cadence text not null default 'daily'
-    check (cadence in ('daily', 'weekdays', 'times_per_week', 'weekly', 'monthly')),
-  weekdays smallint[],                -- for 'weekdays': 1 = Monday ... 7 = Sunday, e.g. {1,3}
-  times_per_week smallint,            -- for 'times_per_week'
-  position smallint not null default 0,
-  updated_at timestamptz default now(),
-  primary key (habit_id, month)
-);
-
--- One row per tick. Unticking deletes the row.
-create table ticks (
-  habit_id uuid references habits on delete cascade,
-  user_id uuid not null references profiles on delete cascade,
-  day date not null,
-  created_at timestamptz default now(),
-  primary key (habit_id, day)
-);
-
--- Each user reads and writes only their own rows (same policy on every table).
-alter table ticks enable row level security;
-create policy "own ticks" on ticks for all
-  using (user_id = auth.uid()) with check (user_id = auth.uid());
-```
-
-Today's JSON maps straight onto this: `months["2026-10"].habits[]` becomes `habit_months` rows,
-`checks[id] = [days]` becomes `ticks` rows, `years["2026"]` becomes a `years` row, and `prefs`,
-`reminders` live on `profiles`. Only months that have been used are stored (D-017), so browsing
-never writes rows.
-
-Every habit imported today becomes `cadence = 'daily'`. The local JSON can gain the same fields
-(`cadence`, `weekdays`, `timesPerWeek` on each month's habit) whenever schedules are built; no
-migration is needed because missing means daily.
-
-Not stored: streaks, percentages, weekly and yearly scores. They stay computed by
-[stats.js](../src/lib/stats.js), as now.
+- **Keys are the app's own ids.** A habit is `(user_id, slug)`, so local data maps over with no
+  id translation, and streaks across months keep working.
+- **`months` is its own table** so a month whose habits were all removed stays empty instead of
+  falling back to a draft of the month before (D-017).
+- **A tick needs its habit in that month** (foreign key on `user_id, slug, month`); removing a
+  habit from a month removes its ticks, exactly as the app does.
+- **The database repeats the app's validation** as constraints (slug and colour formats, name and
+  wish lengths, goal, start day, cadence, weekdays) and its size limits as triggers (240 months,
+  50 habits a month, 1,000 habits, 100 years), so a modified client can't store bad data or fill the
+  free database.
+- **Row-level security on every table:** a signed-in user reads and writes only rows with their own
+  `user_id`; signed-out visitors (`anon`) have no grants at all; a profile can't be deleted by its
+  user (deleting the account cascades instead).
+- **Not in the cloud:** reminder settings and the reminder log stay on each device (notifications
+  are per device), and so do backup reminders. Streaks, percentages and scores stay computed by
+  [stats.js](../src/lib/stats.js).
+- **Realtime** (`supabase_realtime` publication) is added with the sync adapter, in its own
+  migration.
 
 ## Phases
 
