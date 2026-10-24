@@ -192,17 +192,18 @@ Accepted · 24 Oct 2026 · refines D-008's "Cloudflare Pages"
   (4.149.0), so Cloudflare installs that rather than whatever is newest, and `npm audit` covers it.
 - **Note:** the Worker name in `wrangler.jsonc` must match the Worker's name in the dashboard.
 
-## D-015 Rename to One More Fold (after setup)
-Proposed · 24 Oct 2026 · to do once accounts and hosting are set up
+## D-015 The product stays Eightfold; onemorefold.com is the domain
+Accepted · 24 Oct 2026 · replaces the earlier plan (same day) to rename the product to One More Fold
 
 - **Context:** `eightfold.com` and `eightfold.app` are taken. The user bought **onemorefold.com**,
-  and the Cloudflare Worker is already called `onemorefold`.
-- **Decision:** the product becomes **One More Fold**. The rename (wordmark, titles, landing copy,
-  docs, storage key with a fallback like D-009's) happens in its own pull request **after** the
-  account and hosting setup is finished, not before.
-- **The story must not change, only deepen.** The core stays **"fall seven times, rise eight"**:
-  one more fold *is* the eighth rise, getting up one more time. Around it, the "why this name"
-  section on the landing page brings in the words that matter in the user's life:
+  and the Cloudflare Worker is called `onemorefold`. The first plan was to rename the product to
+  One More Fold once setup was done.
+- **Decision:** the product keeps the name **Eightfold**; **onemorefold.com** is only its address.
+  The two names tell the same story: the idea is **"fall seven times, rise eight"**, and eightfold
+  is one more fold after seven. Nothing is renamed: not the code, the storage key, the docs or the
+  GitHub repository (`ozesince02/eightfold`). The Worker keeps its name `onemorefold` (D-014).
+- **The landing page can say so.** A "why this name" section can later connect the name and the
+  domain, and bring in the words that matter in the user's life:
   - "Thoughts become things" (*The Secret*): every fold turns an intention into something real;
     the thousandth is the wish.
   - "The only way to eat an elephant is one bite at a time" (heard in the film *The Six Triple Eight*):
@@ -210,11 +211,7 @@ Proposed · 24 Oct 2026 · to do once accounts and hosting are set up
   - "To lose patience is to lose the battle": not one big effort, just one more.
   - *Make Your Bed*: start with one small task, done today.
   - *Ikigai*: steady, unhurried practice as a way of living.
-- **Ask the user to review the new "why" copy** before merging the rename.
-- **Rename the GitHub repository too:** `ozesince02/eightfold` → `ozesince02/onemorefold`. GitHub
-  redirects the old URL, but then: update the local `origin` remote, check that the Cloudflare
-  Worker's Git connection still builds (reconnect it if not), and update links in the docs.
-  Renaming the local folder on the Desktop is optional and done last.
+- **Ask the user to review that copy** before merging it.
 
 ## D-016 What personal data is public, for now
 Accepted · 24 Oct 2026 · revisit when accounts ship

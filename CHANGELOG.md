@@ -18,8 +18,8 @@ Dates are when the work landed.
 - A not-found page in the paper style.
 
 ### Docs
-- D-015: the product will be renamed **One More Fold** (onemorefold.com) after setup, keeping
-  "fall seven, rise eight" at the heart of the story.
+- D-015: the product keeps the name **Eightfold**; onemorefold.com is its address. Eightfold is
+  one more fold after seven: "fall seven, rise eight".
 - D-016: what personal data is public for now, and the accepted risk of a public repository.
 
 ## 0.6.0 — 24 October 2026
