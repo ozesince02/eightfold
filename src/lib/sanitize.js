@@ -131,7 +131,7 @@ function cleanYears(input, monthKeys) {
   for (const y of Object.keys(src).filter((k) => YEAR.test(k)).sort().slice(-LIMITS.years)) {
     if (!isObject(src[y])) continue;
     const wish = typeof src[y].wish === 'string' ? src[y].wish.slice(0, LIMITS.wish) : '';
-    const foldedAt = Number.isFinite(src[y].foldedAt) && src[y].foldedAt > 0 ? src[y].foldedAt : undefined;
+    const foldedAt = Number.isFinite(src[y].foldedAt) && src[y].foldedAt > 0 && src[y].foldedAt <= 8.64e15 ? src[y].foldedAt : undefined; // a real Date
     if (wish || foldedAt) years[y] = { wish, foldedAt };
   }
   if (typeof input.wish === 'string' && input.wish.trim()) {

@@ -61,7 +61,7 @@ assert.deepEqual(state().months['2027-01'].habits.map((h) => h.id), keep, 'nothi
 assert.equal(wishOf(state(), 2027), 'run a half marathon', 'an empty wish leaves the old one');
 
 // Hostile year records.
-const evil = cleanState({ version: 1, months: {}, years: { 2026: { wish: 'x'.repeat(999), foldedAt: -5 }, '2026"><b>': { wish: 'no' }, 99999: { wish: 'no' }, 2027: 'nope' } });
+const evil = cleanState({ version: 1, months: {}, years: { 2026: { wish: 'x'.repeat(999), foldedAt: -5 }, '2026"><b>': { wish: 'no' }, 99999: { wish: 'no' }, 2027: 'nope', 2028: { foldedAt: 1e300 } } });
 assert.deepEqual(Object.keys(evil.years), ['2026'], 'only real years with object records survive');
 assert.equal(evil.years[2026].wish.length, 200, 'wish capped');
 assert.equal(evil.years[2026].foldedAt, undefined, 'bad timestamps dropped');
