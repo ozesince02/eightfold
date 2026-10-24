@@ -7,6 +7,9 @@ const env = import.meta.env ?? {};
 export const SUPABASE_URL = env.VITE_SUPABASE_URL || '';
 export const SUPABASE_PUBLISHABLE_KEY = env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
 export const ACCOUNTS_ENABLED = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
+// Where the tracker lives: /app on the live site (Cloudflare drops .html), /app.html on the dev
+// server. Sign-in always comes back here; both are on Supabase's redirect list.
+export const APP_PATH = env.DEV ? '/app.html' : '/app';
 
 // ---------- Product ----------
 export const APP_NAME = 'Eightfold';

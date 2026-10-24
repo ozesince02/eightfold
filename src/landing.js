@@ -12,6 +12,8 @@ import { startReminders } from './ui/reminders.js';
 import { esc, safeColor } from './lib/sanitize.js';
 import { seedState, STORY_DATE, STORY_SPAN } from './data/seed.js';
 import { DEMO_HABITS, STORY_ALIASES } from './data/demo.js';
+import { createAccountMenu } from './ui/account-menu.js';
+import { startAuth } from './lib/auth.js';
 
 gsap.registerPlugin(ScrollTrigger);
 window.__oz = true;
@@ -244,6 +246,10 @@ if (reduced) {
 }
 
 window.addEventListener('load', () => ScrollTrigger.refresh());
+
+// The account ball in the header (D-022). Sign-in is loaded after the page, never before it.
+const menu = createAccountMenu($('[data-account]'), { page: 'landing' });
+window.addEventListener('load', () => startAuth((account) => menu.update({ account })));
 
 // Nudges also arrive while only this page is open.
 startReminders();

@@ -350,3 +350,20 @@ Accepted · 24 Oct 2026
   pinned "What it keeps" section holds only its content; its cards size to the screen's height and,
   on screens under 900px tall, the decorative page hides. All cards stay on screen while it slides.
 
+## D-022 The account is a piece of paper in the header
+Accepted · 24 Oct 2026
+
+- **Context:** sign-in lived in a panel on the Habits page, three clicks from anywhere and easy to
+  miss; once signed in, nothing on screen said so.
+- **Decision:** both pages carry the account in the header's right corner (`src/ui/account-menu.js`,
+  `src/styles/account.css`). Signed out it's a **crumpled paper ball** that floats a little ("Sign
+  in" beside it on wider screens): not yours yet. Signed in it's **folded flat**, a red square on
+  its corner with your initial and the sync dot ("Signed in"): yours. Tapping it opens a **chit**,
+  taped at the top and torn at the bottom: sign-in choices with "Not now, keep it on this device",
+  or who you are, sync status and Sign out (plus "Open your tracker" on the landing page).
+- Sign-in from either page returns to the tracker (`APP_PATH`). The Habits page's Account panel is
+  gone; the "two sets of folds" slip on the month stays.
+- **Accessibility:** a real button with `aria-expanded` and a label that says the state; the chit
+  is a labelled dialog, takes focus, closes on Escape or a tap outside and returns focus. Phones
+  get the paper without the label and a full-width chit under it. Reduced motion: no float, no unfold.
+

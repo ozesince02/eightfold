@@ -1,0 +1,84 @@
+/* The account in the header (D-022): a crumpled paper ball when signed out, a square folded flat
+   with your initial when signed in; it opens into a chit of paper. Shared by both pages. */
+
+.acct { position: relative; justify-self: end; }
+header.acct-open { z-index: 50; }
+
+.acct-btn {
+  display: inline-flex; align-items: center; gap: 8px; position: relative;
+  min-height: 44px; min-width: 44px; padding: 0 4px; border: 0; background: none; cursor: pointer;
+  font: inherit; font-weight: 700; font-size: 15px; color: var(--sumi);
+}
+.acct-btn svg { width: 40px; height: 40px; flex: none; filter: drop-shadow(0 3px 3px rgba(30, 27, 24, .28)); }
+.acct-btn:focus-visible { outline: 3px solid var(--ai); outline-offset: 2px; border-radius: 8px; }
+
+/* The ball: three paper tones and pencil-thin creases. It floats a little, and rolls on hover. */
+.acct-ball .p1 { fill: var(--white-paper); stroke: var(--sumi-3); stroke-width: 1.2; stroke-linejoin: round; }
+.acct-ball .p2 { fill: var(--washi-2); }
+.acct-ball .p3 { fill: var(--washi-3); }
+.acct-ball .crease { fill: none; stroke: var(--sumi-3); stroke-width: .9; stroke-linejoin: round; opacity: .7; }
+.acct-btn[data-state="out"] svg { animation: acct-float 4s ease-in-out infinite; transition: transform .4s var(--ease-paper); }
+.acct-btn[data-state="out"]:hover svg { transform: rotate(-24deg) scale(1.06); }
+@keyframes acct-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
+
+/* Folded flat: yours. */
+.acct-folded .p1 { fill: var(--shu); }
+.acct-folded .p2 { fill: var(--shu-ink); }
+.acct-folded text { font-family: var(--display); font-size: 17px; fill: var(--white-paper); }
+.acct-btn[data-state="in"] svg { transition: transform .4s var(--ease-paper); }
+.acct-btn[data-state="in"]:hover svg { transform: rotate(8deg); }
+.acct-btn .sync-dot { position: absolute; left: 34px; top: 6px; border: 2px solid var(--washi); width: 12px; height: 12px; }
+.acct-label { white-space: nowrap; }
+
+/* The chit: a slip of paper under the ball, taped at the top, torn at the bottom. */
+.acct-chit {
+  position: absolute; right: 0; top: calc(100% + 10px); z-index: 60;
+  width: min(330px, calc(100vw - 2 * var(--gutter, 16px)));
+  filter: var(--lift-high);
+  transform-origin: top right;
+  animation: acct-unfold .35s var(--ease-paper);
+}
+.acct-chit[hidden] { display: none; }
+.acct-sheet {
+  background: var(--white-paper); padding: 22px 20px 30px;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), 92% 100%, 84% calc(100% - 7px), 75% 100%, 66% calc(100% - 9px), 57% 100%, 48% calc(100% - 6px), 39% 100%, 30% calc(100% - 9px), 21% 100%, 12% calc(100% - 7px), 4% 100%, 0 calc(100% - 9px));
+}
+.acct-chit .tape { top: -10px; right: 34px; transform: rotate(6deg); z-index: 2; }
+@keyframes acct-unfold {
+  from { opacity: 0; transform: perspective(600px) rotateX(-70deg) scale(.6); }
+  to { opacity: 1; transform: none; }
+}
+
+.acct-sheet h2 { font-family: var(--display); font-weight: 400; font-size: 20px; line-height: 1.15; }
+.acct .note { font-size: 14px; color: var(--sumi-2); margin-top: 8px; }
+.acct-who { margin-top: 10px; font-size: 15px; overflow-wrap: anywhere; }
+.acct-status { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 14px; font-weight: 700; }
+.acct-status .sync-dot { position: static; border: 0; width: 10px; height: 10px; }
+.acct-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 16px; }
+.acct-actions .btn { min-height: 44px; padding: 0 18px; font-size: 15px; }
+.acct-form { display: grid; gap: 8px; margin-top: 18px; }
+.acct-form label { font-size: 13px; font-weight: 700; color: var(--sumi-2); }
+.acct-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.acct-row input { flex: 1 1 160px; min-width: 0; min-height: 44px; padding: 0 12px; border: 0; background: var(--washi); font: inherit; font-size: 15px; color: var(--sumi); }
+.acct-row input:focus { outline: 2px solid var(--ai); outline-offset: 0; background: var(--white-paper); }
+.acct-row .btn { min-height: 44px; padding: 0 16px; font-size: 15px; }
+.acct-later { margin-top: 16px; }
+.acct .seg-link { border: 0; background: none; padding: 0; color: var(--ai); font: inherit; font-weight: 700; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.acct-notice:empty { display: none; }
+.acct-notice { margin-top: 14px; font-size: 14px; font-weight: 700; color: var(--ai); }
+
+/* The sync dot, for pages that don't have the tracker's styles. */
+.acct .sync-dot { border-radius: 50%; background: var(--matcha); flex: none; }
+.acct .sync-dot[data-state="syncing"], .acct .sync-dot[data-state="offline"], .acct .sync-dot[data-state="choose"] { background: var(--yamabuki); }
+.acct .sync-dot[data-state="error"] { background: var(--shu); }
+
+/* Phones: just the paper, no label; the chit spans the screen under the header. */
+@media (max-width: 760px) {
+  .acct-label { display: none; }
+  .acct-chit { position: fixed; left: var(--gutter, 16px); right: var(--gutter, 16px); top: 64px; width: auto; transform-origin: top center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acct-btn svg { animation: none !important; }
+  .acct-chit { animation: none; }
+}

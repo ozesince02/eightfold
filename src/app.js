@@ -10,7 +10,8 @@ import { clampKey, yearBounds, firstMonthKey, lastMonthKey, wishOf, foldedAt, ye
 import { esc } from './lib/sanitize.js';
 import { CRANE_GOAL, CRANE_GOAL_TEXT } from './config.js';
 import { createCraneStage } from './three/stage.js';
-import { startAuth, signInWithGoogle, sendSignInLink, signOut, getClient } from './lib/auth.js';
+import { startAuth, getClient } from './lib/auth.js';
+import { createAccountMenu } from './ui/account-menu.js';
 import { createSync, supabaseApi } from './lib/sync/engine.js';
 import { startReminders, enableReminders, disableReminders, sendTestReminder, permissionState, nextReminder } from './ui/reminders.js';
 
@@ -31,7 +32,7 @@ const icon = {
 $$('[data-mark]').forEach((el) => { el.innerHTML = craneMark(); });
 
 let now = today();
-let ui = { swatchFor: null, pct: null, protection: null, account: { status: 'loading' }, sending: false, sync: { state: 'off', pending: 0 } };
+let ui = { swatchFor: null, pct: null, protection: null, account: { status: 'loading' }, sync: { state: 'off', pending: 0 } };
 let stage = null;
 let lastProgress = -1;
 
@@ -80,7 +81,7 @@ function render() {
     a.href = v === 'year' ? `#/year/${r.year || (r.key ? parseKey(r.key).y : now.y)}` : `#/${v}/${r.key || monthKey(now.y, now.m)}`;
     if (v === r.name || (v === 'year' && r.name === 'fold')) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
-  $('[data-cranes-chip]').innerHTML = `<b>${year.cranes}</b> cranes in ${now.y}${syncDot()}`;
+  $('[data-cranes-chip]').innerHTML = `<b>${year.cranes}</b> cranes in ${now.y}`;
 
   if (r.name === 'year') view.innerHTML = yearView(r.year);
   else if (r.name === 'fold') view.innerHTML = foldView(r.year);
@@ -606,7 +607,6 @@ function habitsView(key) {
         </form>
       </section>
       <div class="span-4 side-stack">
-        ${accountPanel()}
         ${percentagesPanel()}
         ${remindersPanel(month)}
         <section class="panel" id="wish" aria-labelledby="wish-h">
@@ -639,40 +639,24 @@ function habitsView(key) {
 }
 
 // ---------- Sync (D-020) ----------
-const SYNC_WORDS = {
-  synced: 'Saved to your account.',
-  syncing: 'Saving to your account…',
-  offline: 'Offline: changes are saved here and will sync when you\'re back.',
-  error: 'Couldn\'t reach your account; trying again.',
-  choose: 'This browser and your account both have folds.',
-};
-
 const sync = createSync({
   store,
   storage: store.syncStorage,
   online: () => navigator.onLine,
   onStatus: (s) => {
     ui.sync = s;
+    menu.update({ sync: s });
     if (s.message) toast(s.message);
     scheduleRender();
   },
 });
 
-// A dot beside the crane count: in step, saving, or not reaching the account.
-function syncDot() {
-  const s = ui.sync.state;
-  if (s === 'off') return '';
-  const label = SYNC_WORDS[s] || '';
-  return `<span class="sync-dot" data-state="${s}" role="img" aria-label="${esc(label)}" title="${esc(label)}"></span>`;
+// The account lives in the header as a piece of paper (D-022): a crumpled ball when signed out,
+// folded flat with your initial when signed in.
+function chooseSync(kind) {
+  sync.choose(kind).then(() => toast(kind === 'merge' ? 'Kept both. Your account has everything now.' : 'Using your account\'s folds. This browser\'s copy is kept aside.'));
 }
-
-function chooseButtons() {
-  return `<div class="backup-actions">
-      <button class="btn btn--ink" type="button" data-sync-choose="merge">Keep both</button>
-      <button class="seg-link" type="button" data-sync-choose="account">Use only my account's</button>
-    </div>
-    <p class="note">Keep both adds this browser's habits and ticks to your account; nothing is lost either way. Choosing the account's keeps a copy of this browser's data aside.</p>`;
-}
+const menu = createAccountMenu($('[data-account]'), { page: 'app', onChoose: chooseSync, toast: (t) => toast(t) });
 
 // First sign-in on a browser that already has folds, when the account has some too.
 function chooseBar() {
@@ -691,39 +675,13 @@ function chooseBar() {
 function onAccount(account) {
   const was = ui.account;
   ui.account = account;
+  menu.update({ account });
   if (account.status === 'signed-in' && account.id) {
     getClient().then((sb) => sync.start(supabaseApi(sb, account.id), account.id)).catch(() => {});
   } else if (account.status === 'signed-out' && was.status === 'signed-in') {
     sync.stop();
   }
   scheduleRender();
-}
-
-// ---------- Account (D-019) ----------
-function accountPanel() {
-  const a = ui.account;
-  const body = {
-    loading: '<p class="note">Checking your account…</p>',
-    unavailable: '<p class="note">Sign-in can\'t be reached right now. Everything still works on this device.</p>',
-    'signed-in': `<p class="account-who">Signed in as <b>${esc(a.email || 'you')}</b></p>
-      <p class="note">${SYNC_WORDS[ui.sync.state] || 'Connecting to your account…'} Your folds are saved here first, then to your account, and reach your other devices.</p>
-      ${ui.sync.state === 'choose' ? chooseButtons() : ''}
-      <div class="backup-actions"><button class="btn btn--quiet" type="button" data-sign-out>Sign out</button></div>`,
-    'signed-out': `<p class="note">Optional. Sign in to keep your folds on every device; the tracker works the same without it.</p>
-      <div class="backup-actions"><button class="btn btn--ink" type="button" data-sign-in="google">Continue with Google</button></div>
-      <form class="account-form" data-sign-in-email>
-        <label for="account-email">Or get a sign-in link by email</label>
-        <div class="account-row">
-          <input id="account-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" required placeholder="you@example.com" value="${esc(ui.emailDraft || '')}">
-          <button class="btn btn--quiet" type="submit" ${ui.sending ? 'disabled' : ''}>${ui.sending ? 'Sending…' : 'Send link'}</button>
-        </div>
-        <p class="note">Open the link in this browser.</p>
-      </form>`,
-  }[a.status] || '';
-  return `<section class="panel" id="account" aria-labelledby="account-h">
-    <div class="panel-head"><h2 id="account-h">Account</h2></div>
-    ${body}
-  </section>`;
 }
 
 const clock = (mins) => `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
@@ -933,21 +891,8 @@ view.addEventListener('click', (e) => {
     }
     return;
   }
-  const signIn = e.target.closest('[data-sign-in]');
-  if (signIn) {
-    signInWithGoogle().catch((err) => toast(err.message));
-    return;
-  }
   const choose = e.target.closest('[data-sync-choose]');
-  if (choose) {
-    const kind = choose.dataset.syncChoose;
-    sync.choose(kind).then(() => toast(kind === 'merge' ? 'Kept both. Your account has everything now.' : 'Using your account\'s folds. This browser\'s copy is kept aside.'));
-    return;
-  }
-  if (e.target.closest('[data-sign-out]')) {
-    signOut().then(() => toast('Signed out on this device. Your folds are still here.')).catch(() => toast('Couldn\'t sign out. Try again.'));
-    return;
-  }
+  if (choose) return chooseSync(choose.dataset.syncChoose);
 });
 
 view.addEventListener('change', (e) => {
@@ -981,17 +926,6 @@ view.addEventListener('submit', (e) => {
     const added = store.addHabit(route().key, { name: data.name, time: data.time, goal: data.goal, start: data.start, cadence: data.cadence });
     toast(added ? `Added ${data.name.trim()}.` : 'That habit could not be added. A month holds up to 50 habits.');
     requestAnimationFrame(() => $('[data-add] input[name="name"]')?.focus());
-  }
-  if (form.matches('[data-sign-in-email]')) {
-    if (ui.sending) return;
-    ui.sending = true;
-    ui.emailDraft = String(new FormData(form).get('email') || '');
-    render();
-    sendSignInLink(ui.emailDraft)
-      .then(() => toast('Check your email for the sign-in link, and open it in this browser.'))
-      .catch((err) => toast(err.message))
-      .finally(() => { ui.sending = false; render(); });
-    return;
   }
   if (form.matches('[data-wish]')) {
     store.setWish(Number(form.dataset.wish), new FormData(form).get('wish'));

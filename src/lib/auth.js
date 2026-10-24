@@ -4,7 +4,7 @@
 //
 // The project URL and publishable key come from .env through config.js. Both are public by design:
 // what a signed-in person can read or write is decided by row-level security (D-018).
-import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, ACCOUNTS_ENABLED } from '../config.js';
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, ACCOUNTS_ENABLED, APP_PATH } from '../config.js';
 
 const EMAIL = /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']{2,}$/;
 export const isEmail = (s) => typeof s === 'string' && s.length <= 254 && EMAIL.test(s);
@@ -19,9 +19,9 @@ function client() {
   return clientPromise;
 }
 
-// Where Google and the email link send people back to: this page, without the query or hash.
-// Must be listed under Supabase → Authentication → URL Configuration → Redirect URLs.
-const backHere = () => `${location.origin}${location.pathname}`;
+// Where Google and the email link send people back to: the tracker, from whichever page they
+// started on. Must be listed under Supabase → Authentication → URL Configuration → Redirect URLs.
+const backHere = () => `${location.origin}${APP_PATH}`;
 
 // The account as the screens see it: { status: 'loading' | 'signed-out' | 'signed-in', email? }.
 const toAccount = (session) => (session?.user

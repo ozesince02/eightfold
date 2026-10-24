@@ -4,7 +4,7 @@
    (1360 - 11x24) / 12 = 91.33px per column. Rows below land on both canvas edges. */
 
 .topbar {
-  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 28px;
+  display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 28px;
   max-width: var(--max); margin: 0 auto; padding: 14px var(--gutter);
 }
 .wordmark { display: inline-flex; align-items: center; gap: 10px; font-family: var(--display); font-size: 22px; text-decoration: none; }
@@ -285,16 +285,6 @@ td.is-today .cell:not([aria-pressed="true"]) { outline: 2px solid var(--sumi); o
 .fold-keep { margin: 0 0 6px; }
 .rem-list.fold-keep label { grid-template-columns: 22px 1fr; }
 .fold-form .btn { justify-self: start; }
-/* Account (D-019) */
-.account-who { font-size: 15px; overflow-wrap: anywhere; }
-.account-who + .note { margin-top: 6px; }
-.account-form { display: grid; gap: 8px; margin-top: 18px; }
-.account-form label { font-size: 13px; font-weight: 700; color: var(--sumi-2); }
-.account-row { display: flex; gap: 10px; flex-wrap: wrap; }
-.account-row input { flex: 1 1 180px; min-width: 0; min-height: 44px; padding: 0 14px; border: 0; background: var(--washi); font: inherit; font-size: 15px; color: var(--sumi); }
-.account-row input:focus { outline: 2px solid var(--ai); outline-offset: 0; background: var(--white-paper); }
-.account-row .btn { min-height: 44px; padding: 0 18px; font-size: 15px; }
-#account .backup-actions { margin-top: 14px; }
 .safety { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; font-size: 14px; color: var(--sumi-2); }
 .safety b { color: var(--sumi); }
 
@@ -339,7 +329,7 @@ td.is-today .cell:not([aria-pressed="true"]) { outline: 2px solid var(--sumi); o
 }
 @media (max-width: 760px) {
   .fold-facts { grid-template-columns: 1fr 1fr; }
-  .topbar { grid-template-columns: auto 1fr; gap: 12px; padding-top: 10px; padding-bottom: 10px; }
+  .topbar { grid-template-columns: auto 1fr auto; gap: 12px; padding-top: 10px; padding-bottom: 10px; }
   .views { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; justify-content: space-between; }
   .views a { flex: 1; text-align: center; padding: 8px 10px; }
   .cranes-chip { justify-self: end; font-size: 14px; }
