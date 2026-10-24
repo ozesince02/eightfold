@@ -31,6 +31,10 @@ Dates are when the work landed.
   advisories. Nothing visitors download changed.
 
 ### Added
+- **Why a thousand cranes?** The story behind the name, on a paper scroll: the crane, senbazuru,
+  the 1797 folding book, Sadako Sasaki, "fall seven, rise eight", and how Eightfold folds. Open it
+  from the folded note on the landing page's wish card, from the crane once you've ticked the six,
+  or from "Why 1,000?" in the tracker. (D-023)
 - **Your account, in the corner.** A crumpled paper ball in the header of every page: tap it to
   sign in, or to keep going on this device only. Signed in, it's folded flat with your initial and
   shows whether your folds are saved. (D-022)

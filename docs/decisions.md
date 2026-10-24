@@ -367,3 +367,28 @@ Accepted · 24 Oct 2026
   is a labelled dialog, takes focus, closes on Escape or a tap outside and returns focus. Phones
   get the paper without the label and a full-width chit under it. Reduced motion: no float, no unfold.
 
+
+## D-023 The story of the thousand cranes, behind three doors
+Accepted · 24 Oct 2026
+
+- **Context:** the product leans on senbazuru (a thousand cranes, a wish) and "fall seven, rise
+  eight", but never told the story; a visitor had to take "legend says" on trust.
+- **Decision:** one short story in six chapters (the crane as long life; senbazuru; the 1797
+  folding book; Sadako Sasaki; nanakorobi yaoki; how Eightfold uses all of it) on a **hanging
+  scroll** of aged paper that unrolls over the page (`src/ui/crane-story.js`,
+  `src/styles/story.css`). Three ways in, all opening the same scroll:
+  - **The crane's line** in the landing hero, once per visit, after the six demo habits are ticked
+    and the crane is whole: curiosity is highest right after the small win.
+  - **A folded note** on the "A thousand cranes" card, sealed with 千. It wiggles once when it
+    comes into view, its top flap lifts on hover, and on a tap it opens flap by flap into the story.
+  - **"Why 1,000?"** in the tracker's crane panel, for people who never see the landing page.
+- **Light:** no new library or image. The scroll is CSS (gradients and one small SVG noise tile),
+  the 1797 page already on the site, and a native `<dialog>`. The module and its styles load only
+  when someone asks for the story (the landing page starts loading it when a door appears).
+- **Accuracy:** written in our own words, no quotes. Where retellings disagree (how many cranes
+  Sadako folded), it says so instead of repeating one version.
+- **Accessibility:** a modal `<dialog>` labelled by its title; Escape, ✕, the closing button or a
+  tap outside roll it up and focus returns to the door that opened it. Reduced motion: no unroll,
+  no unfold, no wiggle; the scroll simply appears.
+- The scroll closes through its own path rather than waiting for the dialog's `close` event, which
+  the desktop app's browser pane didn't always send.

@@ -274,7 +274,8 @@ function cranePanel(s, year) {
     <div class="crane-slot" data-progress="${progress.toFixed(4)}"></div>
     <p class="crane-count">${year.cranes}<small>of ${CRANE_GOAL_TEXT} cranes</small></p>
     <div class="wish-meter" aria-hidden="true"><span style="width:${Math.min(100, (year.cranes / CRANE_GOAL) * 100)}%"></span></div>
-    <p class="wish-line">${remaining ? `${remaining} to go: about ${perDay} a day until 31 December. ` : `${CRANE_GOAL_TEXT} cranes. `}${wish}</p>
+    <p class="wish-line">${remaining ? `${remaining} to go: about ${perDay} a day until 31 December. ` : `${CRANE_GOAL_TEXT} cranes. `}${wish}
+      <span aria-hidden="true">·</span> <button type="button" aria-haspopup="dialog" data-crane-story>Why ${CRANE_GOAL_TEXT}?</button></p>
   </section>`;
 }
 
@@ -830,6 +831,11 @@ function toggle(btn) {
 view.addEventListener('click', (e) => {
   const t = e.target.closest('[data-toggle]');
   if (t) return toggle(t);
+  // The thousand cranes story (D-023), loaded the first time someone asks for it.
+  if (e.target.closest('[data-crane-story]')) {
+    return import('./ui/crane-story.js').then((m) => m.openCraneStory({ page: 'app' }))
+      .catch(() => toast("The story couldn't load. Check your connection and try again."));
+  }
   const sw = e.target.closest('[data-swatch]');
   if (sw) { ui.swatchFor = ui.swatchFor === sw.dataset.swatch ? null : sw.dataset.swatch; return render(); }
   const col = e.target.closest('[data-color]');
