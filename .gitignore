@@ -11,10 +11,10 @@ dist/
 # Local tool settings (paths on this machine)
 .claude/
 
-# Env files: .env holds public build settings and is committed (Vite's convention).
-# Anything secret goes in .env.local or .env.*.local, which never reach git.
-.env.local
-.env.*.local
+# Env files: .env holds public build settings and is committed (Vite's convention); its contents
+# are checked by scripts/check-security.mjs. Every other env file (.env.local, .env.production...)
+# may hold secrets and never reaches git.
+.env.*
 # Wrangler's local secrets file
 .dev.vars
 .dev.vars.*
