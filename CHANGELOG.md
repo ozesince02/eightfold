@@ -13,6 +13,8 @@ Dates are when the work landed.
 - **Deploying to Cloudflare works.** A `wrangler.jsonc` tells Cloudflare to serve the built site
   instead of guessing from the Vite config (which failed). The tracker lives at `/app`; old
   `/app.html` links still work. (D-014)
+- Development tooling uses a patched `undici` (a dependency of Wrangler) after new security
+  advisories. Nothing visitors download changed.
 
 ### Added
 - A not-found page in the paper style.
