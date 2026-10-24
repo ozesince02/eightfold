@@ -1,0 +1,103 @@
+/* The thousand cranes story (D-023): a hanging scroll of aged paper between two wooden rods. It
+   unrolls downwards when it opens and rolls back up when it closes. Paper texture is CSS and one
+   small SVG noise tile; no images except the 1797 page already on the site. */
+
+.story {
+  width: min(720px, calc(100vw - 2 * var(--gutter, 16px)));
+  max-width: none; max-height: none; margin: auto; padding: 0; border: 0;
+  background: transparent; overflow: visible; color: #2B241C;
+}
+.story::backdrop { background: rgba(30, 27, 24, .62); animation: story-fade .3s ease both; }
+.story.is-closing::backdrop { animation: story-fade .32s ease reverse both; }
+
+.story-scroll {
+  position: relative; display: flex; flex-direction: column;
+  max-height: calc(100svh - 32px);
+  filter: drop-shadow(0 24px 30px rgba(0, 0, 0, .35));
+  animation: story-drop .35s var(--ease-paper) both;
+}
+
+/* The rods: turned wood with darker end knobs, a little wider than the paper. */
+.story-rod {
+  position: relative; z-index: 2; flex: none; height: 18px; margin: 0 -10px; border-radius: 9px;
+  background: linear-gradient(#8A5A33, #B07A44 35%, #6B4326 70%, #4A2F1A);
+}
+.story-rod::before, .story-rod::after {
+  content: ''; position: absolute; top: -4px; width: 16px; height: 26px; border-radius: 6px;
+  background: linear-gradient(#4A2F1A, #2E1C10);
+}
+.story-rod::before { left: -10px; }
+.story-rod::after { right: -10px; }
+
+/* The roll: its single row grows from nothing to the paper's height, carrying the lower rod down. */
+.story-roll {
+  display: grid; grid-template-rows: 1fr; min-height: 0; flex: 0 1 auto;
+  animation: story-unroll .75s cubic-bezier(.3, .75, .25, 1) .12s both;
+}
+.story.is-closing .story-roll { animation: story-rollup .32s cubic-bezier(.5, 0, .75, .3) both; }
+.story.is-closing .story-scroll { animation: none; }
+
+.story-paper {
+  min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: clamp(30px, 5vw, 52px) clamp(22px, 6vw, 64px) 36px;
+  background-color: #EBDDBC;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .22 0 0 0 0 .1 .5 0 0 0 -.14'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse at 50% 35%, transparent 55%, rgba(120, 78, 28, .22) 100%),
+    linear-gradient(90deg, rgba(110, 70, 30, .2), transparent 5%, transparent 95%, rgba(110, 70, 30, .2));
+  scrollbar-width: thin; scrollbar-color: rgba(90, 60, 30, .45) transparent;
+}
+.story-paper > * { max-width: 36rem; margin-left: auto; margin-right: auto; }
+
+.story-x {
+  position: absolute; z-index: 3; top: 28px; right: 12px; width: 44px; height: 44px;
+  display: grid; place-items: center; border: 0; border-radius: 50%; cursor: pointer;
+  background: rgba(251, 248, 242, .7); color: #2B241C; font: inherit; font-size: 18px; font-weight: 900;
+  animation: story-fade .3s ease .6s both;
+}
+.story-x:hover { background: var(--white-paper); }
+.story-x:focus-visible, .story-paper a:focus-visible, .story-paper button:focus-visible { outline: 3px solid var(--ai); outline-offset: 2px; }
+
+.story-kicker { font-family: var(--display); font-size: 18px; letter-spacing: .3em; color: var(--shu-ink); }
+.story h2 { font-size: clamp(32px, 5vw, 50px); margin-top: 6px; color: #241D16; }
+
+/* The 1797 page, printed onto the scroll rather than pasted on it. */
+.story-print { float: right; width: min(34%, 190px); margin: 18px 0 12px 24px; rotate: 2deg; }
+.story-print img { display: block; width: 100%; height: auto; mix-blend-mode: multiply; opacity: .9; }
+
+.story-ch h3 { display: flex; align-items: center; gap: 12px; margin-top: 34px; font-size: clamp(20px, 2.6vw, 26px); color: #241D16; }
+.story-num {
+  flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 4px;
+  background: var(--shu); color: var(--white-paper); font-size: 18px; rotate: -4deg;
+}
+.story-ch p { margin-top: 12px; font-size: 17px; line-height: 1.7; }
+.story-ch i { font-style: italic; }
+
+.story-end { clear: both; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; margin-top: 40px; }
+.story-seal {
+  width: 58px; height: 58px; display: grid; place-items: center; border-radius: 6px; rotate: -6deg;
+  background: var(--shu); color: var(--white-paper); font-family: var(--display); font-size: 30px;
+  box-shadow: inset 0 0 0 3px var(--shu), inset 0 0 0 5px rgba(251, 248, 242, .7);
+  opacity: .92; mix-blend-mode: multiply;
+}
+.story-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+@keyframes story-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes story-drop { from { opacity: 0; transform: translateY(-28px) rotate(-1deg); } to { opacity: 1; transform: none; } }
+@keyframes story-unroll { from { grid-template-rows: 0fr; } to { grid-template-rows: 1fr; } }
+@keyframes story-rollup { from { grid-template-rows: 1fr; } to { grid-template-rows: 0fr; } }
+
+@media (max-width: 560px) {
+  .story-print { float: none; width: 52%; margin: 18px auto 0; }
+  .story-ch p { font-size: 16px; }
+  .story-x { top: 24px; right: 6px; }
+  .story-rod { margin: 0 -5px; }
+  .story-rod::before { left: -5px; }
+  .story-rod::after { right: -5px; }
+}
+
+/* Reduced motion: no unrolling, the scroll simply appears. */
+@media (prefers-reduced-motion: reduce) {
+  .story-scroll, .story-roll, .story-x { animation: story-fade .2s ease both; }
+  .story.is-closing .story-roll { animation: none; }
+}

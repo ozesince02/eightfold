@@ -96,11 +96,47 @@ list.addEventListener('click', (e) => {
   const r = btn.querySelector('.tag-box').getBoundingClientRect();
   if (on) sfxPop(r.right + 6, r.top + 4, n === total ? 'パーフェクト!' : 'パタ', { size: n === total ? 30 : 24 });
   if (on && !reduced) gsap.fromTo(btn.querySelector('.tag-box'), { rotateY: -180 }, { rotateY: 0, duration: 0.5, ease: 'back.out(2)' });
-  if (n === total && on) confetti();
+  if (n === total && on) { confetti(); craneSays(); }
   count.textContent = n === 0 ? 'No folds yet. Tap a habit you\'ve done.'
     : n === total ? `All ${words[total]?.toLowerCase() || total}. That's a whole crane.`
       : `${words[n] || n} of ${total} folds. ${total - n} to go.`;
 });
+
+// ---------- The thousand cranes story (D-023) ----------
+// One scroll, loaded on first use. The crane's line and the folded note start loading it as soon
+// as they appear, so it opens without a wait.
+const story = () => import('./ui/crane-story.js');
+const openStory = (onClose) => story().then((m) => m.openCraneStory({ page: 'landing', onClose }));
+
+// Once the six are ticked and the crane is whole, it asks a question, once per visit.
+const says = $('[data-crane-says]');
+let saidIt = false;
+function craneSays() {
+  if (saidIt) return;
+  saidIt = true;
+  story();
+  setTimeout(() => { says.hidden = false; }, reduced ? 0 : 900);
+}
+says.addEventListener('click', (e) => {
+  if (e.target.closest('[data-story]')) openStory().catch(() => {});
+  else if (e.target.closest('[data-crane-says-x]')) says.hidden = true;
+});
+
+// The folded note on the wish card: it wiggles once when it comes into view, and unfolds into the
+// story when tapped. It folds itself back up once the story is closed.
+const note = $('[data-fold-note]');
+note.addEventListener('click', () => {
+  if (note.classList.contains('is-open')) return;
+  note.classList.add('is-open');
+  const refold = () => setTimeout(() => note.classList.remove('is-open'), 250);
+  setTimeout(() => openStory(refold).catch(refold), reduced ? 0 : 480);
+});
+new IntersectionObserver((entries, io) => {
+  if (!entries[0].isIntersecting) return;
+  io.disconnect();
+  story();
+  note.classList.add('is-seen');
+}, { threshold: 0.9 }).observe(note);
 
 // ---------- Why: real numbers from the sheet ----------
 const monthsWithData = year.months.filter((x) => x.rate !== null).length;

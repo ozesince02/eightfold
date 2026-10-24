@@ -67,6 +67,8 @@ From [src/styles/paper.css](../src/styles/paper.css) and [src/ui/paper.js](../sr
 | `.sfx` + `sfxPop()` | Katakana stickers: パタ (flap), ピコン (ping), パーフェクト! | Decorative, `aria-hidden` |
 | `confetti()` | Paper squares | Perfect days only |
 | `.nudge` | Reminder note | Taped slip, bottom right, max three |
+| `.fold-note` | Envelope-folded note with a 千 seal | Opens flap by flap; one per page, for the cranes story (D-023) |
+| `.story` | Hanging scroll (`<dialog>`) | Aged paper between two rods; unrolls down, rolls up to close (D-023) |
 
 Shadows are allowed **only** on paper lying on paper. Buttons and controls are flat.
 
@@ -141,6 +143,8 @@ Shadows are allowed **only** on paper lying on paper. Buttons and controls are f
   Real interactions (folding, page entrances) stay smooth.
 - Entrances: heading, then text, then picture, 60–90ms apart, rising 16–32px. Once per section.
 - Feedback on every control: press scale, hover lift, a fold flip on ticking.
+- Things that open unfold the way paper would: the account chit flips down, the folded note opens
+  flap by flap, the story scroll unrolls downwards. Closing reverses it, quicker (about 300ms).
 - `prefers-reduced-motion`: no travel, no boil, no confetti, crane renders static. Content never
   depends on an animation finishing.
 

@@ -51,6 +51,14 @@
         <div class="cloud cloud--b boil" style="--r:-3deg" aria-hidden="true" data-cloud></div>
         <canvas class="stage-canvas" aria-label="A paper crane that folds itself as you tick today's habits" role="img"></canvas>
         <span class="sfx stage-sfx boil" style="--r:-8deg" aria-hidden="true">パタパタ</span>
+        <!-- After the six are ticked, the crane asks a question (D-023). -->
+        <div class="crane-says" data-crane-says hidden>
+          <p>That's one crane. Want to know why people fold a thousand?</p>
+          <div class="crane-says-row">
+            <button class="btn btn--ink" type="button" aria-haspopup="dialog" data-story>Tell me</button>
+            <button class="crane-says-x" type="button" data-crane-says-x aria-label="Not now">✕</button>
+          </div>
+        </div>
 
         <div class="today sheet-wrap sheet-wrap--high tilt" style="--r:1.2deg">
           <div class="sheet today-sheet" data-tear="b" data-amp="6" data-seed="5">
@@ -135,6 +143,14 @@
               <p data-wish-text>Every tick folds one crane. Legend says a thousand of them grant a wish.</p>
               <div class="wish-meter" data-wish-meter><span></span></div>
               <p class="wish-figure" data-wish-figure></p>
+              <!-- A folded note: it unfolds into the story of the thousand cranes (D-023). -->
+              <button class="fold-note" type="button" aria-haspopup="dialog" data-fold-note>
+                <span class="fold-note-paper" aria-hidden="true">
+                  <i class="flap flap--t"></i><i class="flap flap--r"></i><i class="flap flap--b"></i><i class="flap flap--l"></i>
+                  <b class="fold-note-seal">千</b>
+                </span>
+                <span class="fold-note-label">Why a thousand?<small>Unfold the story</small></span>
+              </button>
             </div>
           </div>
         </article>

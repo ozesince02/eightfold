@@ -76,7 +76,7 @@
 .crane-count { font-family: var(--display); font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; }
 .crane-count small { font-family: var(--text); font-size: 16px; font-weight: 700; color: var(--sumi-2); margin-left: 6px; }
 .wish-line { margin-top: 8px; font-size: 15px; color: var(--sumi-2); }
-.wish-line button { border: 0; background: none; padding: 0; color: var(--ai); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.wish-line button { margin-left: 2px; min-height: 32px; border: 0; background: none; padding: 0; color: var(--ai); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .wish-meter { height: 12px; background: var(--washi-2); margin-top: 12px; position: relative; }
 .wish-meter span { position: absolute; inset: 0 auto 0 0; background: var(--yamabuki); }
 
