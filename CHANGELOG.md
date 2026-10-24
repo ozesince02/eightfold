@@ -31,6 +31,9 @@ Dates are when the work landed.
   advisories. Nothing visitors download changed.
 
 ### Added
+- **Delete my account**, in the account chit: removes your account and every habit, fold and wish
+  in it, from the servers and from this browser, after a confirmation with "Save a backup first".
+  (D-025)
 - **Sign out and remove your folds from this browser**, for a shared computer. Your folds stay in
   your account; if some changes haven't reached it yet, you're asked first.
 - **Why a thousand cranes?** The story behind the name, on a paper scroll: the crane, senbazuru,
