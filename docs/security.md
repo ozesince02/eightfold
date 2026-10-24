@@ -41,7 +41,9 @@ the rules every change follows, and the record of what has been checked.
 5. **Least privilege in the database.** Every table has row-level security on, with
    `user_id = auth.uid()` policies. Buddy access is read-only and exposes only what was shared.
 6. **Dependencies:** `npm audit` must report 0 before merging to `main`. Upgrade promptly; prefer
-   fewer dependencies.
+   fewer dependencies. Prefer releases at least two weeks old (a fresh release is the usual way a
+   hijacked package spreads); a security patch from the same maintainers may be taken sooner, noted
+   in the audit log.
 7. **Fail safe, keep data.** If data can't be read, keep it aside (`eightfold:v1:unreadable:<time>`)
    and start clean; never silently delete what someone saved.
 8. **Review:** run `npm run check` (includes the security checks) on every branch, and the
@@ -100,6 +102,16 @@ GitHub Actions runs the checks, build and `npm audit` on every PR and push to `m
 vulnerable dependency or a failing security check blocks a merge. Supply-chain care: `permissions:
 contents: read`, `persist-credentials: false`, actions pinned to full commit SHAs, `npm ci` from the
 lockfile.
+
+### 24 October 2026 — undici advisories (branch `chore/patch-undici`)
+
+`npm audit` started failing CI on every branch: undici 7.29.1, pulled in by `wrangler` →
+`miniflare`, has three new advisories (GHSA-4qv8-2p9j-2685 high, a denial of service in the
+EventSource parser; GHSA-f72v-6w45-q472 and GHSA-xjj6-f33q-929c moderate). Development and
+deploy tooling only: undici never reaches the site's visitors. Fix: an `overrides` entry pins
+undici 7.30.1, the patched release from the same maintainers (9 days old, taken early under rule 6
+because it is a security patch). Remove the override once a Wrangler release ships a patched
+undici. Test: `npm audit` 0, `npm run check`, build, `wrangler deploy --dry-run`.
 
 ### 24 October 2026 — years (branch `feature/years`)
 
