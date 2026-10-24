@@ -123,6 +123,16 @@ only habit ids, which `foldYear()` checks with `isId()`. Route arguments are cla
 and years before use. Tests: `scripts/check-years.mjs` (including hostile year records) and a
 browser check that a wish containing HTML shows as text.
 
+### 24 October 2026 — accounts database (branch `feature/accounts-schema`)
+
+New surface: Supabase's Data API, callable by anyone with the public key and, once signed in, their
+own session. Defences in the migration: RLS on all six tables with `user_id = auth.uid()` policies,
+no grants for `anon`, no delete on profiles, the app's validation repeated as constraints, size
+limits per person as triggers, `security definer` only on the sign-up trigger (fixed
+`search_path`, inserts only the new user's id), helper functions in a non-exposed `private` schema.
+Test: `scripts/check-schema.mjs` on real Postgres; a deliberately removed RLS line makes it fail.
+Open: sign-up policy (D-018).
+
 ### Accepted risks (owner's decision, 24 Oct 2026, D-016)
 
 - The repository is public, and its history contains the owner's January–October 2026 habit data
