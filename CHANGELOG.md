@@ -6,6 +6,10 @@ Dates are when the work landed.
 ## Unreleased
 
 ### Changed
+- **The landing page speaks to new visitors.** Sections sit closer together; the "What it keeps"
+  cards now fit on screen while they slide. Numbers are labelled as an example from oze's own sheet
+  (1 January to 22 October 2026) and habit names are everyday ones. New closing words, and a
+  footer with the author's name, email and GitHub. (D-021)
 - **A new visitor's tracker starts empty**, instead of showing the sheet's habits. "Reset to the
   sheet" is gone. The landing page still tells the sheet's story. (D-016, D-020)
 - The backup reminder stops while you're signed in and synced.

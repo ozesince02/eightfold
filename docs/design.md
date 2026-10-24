@@ -72,7 +72,8 @@ Shadows are allowed **only** on paper lying on paper. Buttons and controls are f
 
 ## Layout
 
-- **Landing:** one frame, 16–40px outer gutters (`--gutter`), max 1440px, sections 120–200px apart.
+- **Landing:** one frame, 16–40px outer gutters (`--gutter`), max 1440px, sections 64–128px apart
+  (`--section-gap`, a margin: never padding on a section that gets pinned).
   Every section mixes a collage piece with its text; neighbouring sections never share a layout.
 - **Tracker:** 12-column board, 24px gaps (16px on phones). Panels are `.panel` sheets with a
   20px-ish heading and a one-line note at the right of the head (`.panel-head p`).

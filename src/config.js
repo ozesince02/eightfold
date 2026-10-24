@@ -16,6 +16,14 @@ export const CRANE_GOAL_TEXT = CRANE_GOAL.toLocaleString('en-GB'); // "1,000"
 // The weekly "save a backup" nudge, while data lives in one browser only.
 export const BACKUP_EVERY_DAYS = 7;
 
+// ---------- Author (footer, credits) ----------
+export const AUTHOR = {
+  nickname: 'oze',
+  name: 'Pulkit Choudhary',
+  email: 'hashtechpulkit@gmail.com',
+  github: 'https://github.com/ozesince02',
+};
+
 // ---------- Storage ----------
 export const STORE_KEY = 'eightfold:v1';
 export const LEGACY_STORE_KEY = 'orizuru:v1'; // the app's working name before it became Eightfold

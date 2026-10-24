@@ -1,17 +1,17 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { store, STORE_KEY } from './lib/store.js';
-import { today, monthName, monthShort, minutesOf } from './lib/dates.js';
+import { monthName, monthShort, minutesOf } from './lib/dates.js';
 import { yearStats, percent } from './lib/stats.js';
-import { CRANE_GOAL, CRANE_GOAL_TEXT } from './config.js';
+import { CRANE_GOAL, CRANE_GOAL_TEXT, AUTHOR } from './config.js';
 import { tearAll, craneMark, sfxPop, confetti, rng, inkOn } from './ui/paper.js';
 import { hills, mountains } from './ui/charts.js';
 import { featuredMonth, bestCrossingRun, dateLabel, daysLeftInYear } from './ui/insights.js';
 import { createCraneStage } from './three/stage.js';
 import { startReminders } from './ui/reminders.js';
 import { esc, safeColor } from './lib/sanitize.js';
-import { seedState } from './data/seed.js';
-import { DEMO_HABITS } from './data/demo.js';
+import { seedState, STORY_DATE, STORY_SPAN } from './data/seed.js';
+import { DEMO_HABITS, STORY_ALIASES } from './data/demo.js';
 
 gsap.registerPlugin(ScrollTrigger);
 window.__oz = true;
@@ -19,9 +19,17 @@ window.__oz = true;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-// The page tells the story of the sheet this app grew from (D-016), whatever this visitor tracks.
-const state = seedState();
-const now = today();
+// The page tells the story of the sheet this app grew from (D-016, D-021): oze's real numbers up
+// to 22 October 2026, the day before Eightfold was born, under everyday habit names.
+function storyState() {
+  const s = seedState();
+  for (const month of Object.values(s.months)) {
+    for (const h of month.habits) Object.assign(h, STORY_ALIASES[h.id] || { name: 'A habit', time: '' });
+  }
+  return s;
+}
+const state = storyState();
+const now = STORY_DATE;
 const feat = featuredMonth(state, now);
 const year = yearStats(state, now.y, now);
 const color = (id) => safeColor(state.colors[id]);
@@ -96,9 +104,9 @@ list.addEventListener('click', (e) => {
 const monthsWithData = year.months.filter((x) => x.rate !== null).length;
 const fs = feat.stats;
 $('[data-why-numbers]').innerHTML = [
-  ['13', 'tabs in the old sheet'],
+  ['13', 'tabs in oze\'s old sheet'],
   [String(fs.total.possible), `checkboxes in ${monthName(feat.m)} alone`],
-  [String(year.cranes), `ticks since 1 January`],
+  [String(year.cranes), `ticks from 1 January to 22 October`],
 ].map(([n, l]) => `<div class="ticket"><dt>${n}</dt><dd>${l}</dd></div>`).join('');
 
 // The torn spreadsheet scrap uses the sheet's own TRUE/FALSE cells.
@@ -135,7 +143,7 @@ const nWord = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eig
 $('[data-year-title]').textContent = `${nWord} months, ${year.cranes} cranes.`;
 const rated = year.months.filter((x) => x.rate !== null && !(x.m === now.m && now.y === year.year));
 const worst = rated.reduce((a, b) => (b.rate < a.rate ? b : a), rated[0]);
-$('[data-year-lede]').textContent = `Each mountain is a month, as tall as its success rate. ${monthName(year.best.m)} was the best at ${percent(year.best.rate)}, ${monthName(worst.m)} the dip at ${percent(worst.rate)}. ${monthName(now.m)} is still being folded.`;
+$('[data-year-lede]').textContent = `An example from oze's own year, ${STORY_SPAN}. Each mountain is a month, as tall as its success rate. ${monthName(year.best.m)} was the best at ${percent(year.best.rate)}, ${monthName(worst.m)} the dip at ${percent(worst.rate)}. ${monthName(now.m)} was still being folded when Eightfold was born on 23 October.`;
 $('[data-range]').innerHTML = mountains(year.months, { current: now.m });
 $('[data-range-labels]').innerHTML = year.months.map((x) => `<li class="${x.rate === null ? 'muted' : ''}"><span class="long">${monthShort(x.m)}</span><span class="short">${monthShort(x.m)[0]}</span><b>${x.rate === null ? '—' : `${Math.round(x.rate * 100)}<span class="pct">%</span>`}</b></li>`).join('');
 
@@ -143,8 +151,8 @@ $('[data-range-labels]').innerHTML = year.months.map((x) => `<li class="${x.rate
 const remaining = Math.max(0, CRANE_GOAL - year.cranes);
 const daysLeft = daysLeftInYear(now);
 $('[data-wish-text]').textContent = remaining > 0
-  ? `Every tick folds one crane, and legend says a thousand grant a wish. ${remaining} more by 31 December is about ${Math.ceil(remaining / daysLeft)} a day.`
-  : `Every tick folds one crane. You passed ${CRANE_GOAL_TEXT} this year. Time to make the wish.`;
+  ? `Every tick folds one crane, and legend says a thousand grant a wish. By 22 October oze had folded ${year.cranes}: ${remaining} more by 31 December is about ${Math.ceil(remaining / daysLeft)} a day.`
+  : `Every tick folds one crane, and legend says a thousand grant a wish. oze passed ${CRANE_GOAL_TEXT} this year.`;
 $('[data-wish-figure]').textContent = `${year.cranes} of ${CRANE_GOAL_TEXT}`;
 
 const dayHabits = [...feat.month.habits].filter((h) => h.time).sort((a, b) => minutesOf(a.time) - minutesOf(b.time));
@@ -154,13 +162,15 @@ $('[data-dayline]').innerHTML = dayHabits.map((h) => `<li class="${h === next ? 
 
 const run = bestCrossingRun(state, now.y, now);
 if (run) {
-  $('[data-streak-text]').textContent = `${run.name} ran from ${dateLabel(run.from)} to ${dateLabel(run.to)}: ${run.length} days. The sheet split it into streaks of ${new Intl.ListFormat('en-GB').format(run.parts.map(String))}. Here it's one.`;
+  $('[data-streak-text]').textContent = `In oze's sheet, ${run.name.toLowerCase()} ran from ${dateLabel(run.from)} to ${dateLabel(run.to)}: ${run.length} days. The sheet split it into streaks of ${new Intl.ListFormat('en-GB').format(run.parts.map(String))}. Here it's one.`;
 }
 const perfectYear = year.months.reduce((s, x) => s + (x.perfectDays || 0), 0);
-$('[data-perfect-text]').textContent = `Tick every habit in a day and the crane takes off. ${mName} has had ${fs.perfectDays} so far; the year, ${perfectYear}.`;
+$('[data-perfect-text]').textContent = `Tick every habit in a day and the crane takes off. oze's ${mName} had ${fs.perfectDays} by the 22nd; the year, ${perfectYear}.`;
 $('[data-confetti]').addEventListener('click', (e) => { confetti(); sfxPop(e.clientX, e.clientY - 10, 'パーフェクト!'); });
 
-$('[data-closing-title]').textContent = `Pick up where ${monthName(now.m)} left off.`;
+// Who made this (config.js): plain text and two fixed link shapes, nothing from outside.
+$('[data-author]').innerHTML = `Made by ${esc(AUTHOR.nickname)} (${esc(AUTHOR.name)}), folded out of ${esc(AUTHOR.nickname)}'s Habit Tracker v2.`;
+$('[data-author-links]').innerHTML = `<a href="mailto:${esc(AUTHOR.email)}">${esc(AUTHOR.email)}</a><a href="${esc(AUTHOR.github)}" rel="noopener">GitHub</a>`;
 
 tearAll();
 
