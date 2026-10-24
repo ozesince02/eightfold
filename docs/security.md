@@ -144,6 +144,17 @@ CSP (no inline or third-party scripts) is what keeps the session token out of re
 script, so it stays non-negotiable. `.env` is committed with public values only, guarded by
 `check-security.mjs`; the build refuses a non-publishable key.
 
+### 24 October 2026 — sync (branch `feature/accounts-sync`)
+
+Data from the account is validated with `cleanState()` before use, like a backup file. Realtime
+uses a private channel per person with RLS on `realtime.messages` (topic must be `user:<own id>`);
+the broadcast carries no data. Realtime "Postgres changes" was ruled out because delete events
+skip RLS. Deletes and upserts are scoped to the signed-in user both by the request and by RLS.
+The queue is keyed to the user id, so one person's pending changes are never sent as another's.
+New visitors no longer see the owner's habits in the tracker (D-016).
+Test: `scripts/check-sync.mjs` (includes a second person who never sees the owner's rows) and
+the channel policies in `check-schema.mjs`.
+
 ### Accepted risks (owner's decision, 24 Oct 2026, D-016)
 
 - The repository is public, and its history contains the owner's January–October 2026 habit data

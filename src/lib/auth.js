@@ -49,6 +49,9 @@ export async function startAuth(onChange, onError) {
   }
 }
 
+// The Supabase client, for the sync engine once someone is signed in.
+export const getClient = () => client();
+
 export async function signInWithGoogle() {
   const sb = await client();
   const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: backHere() } });

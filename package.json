@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "node scripts/check-stats.mjs && node scripts/check-reminders.mjs && node scripts/check-seed.mjs && node scripts/check-security.mjs && node scripts/check-backup.mjs && node scripts/check-schedules.mjs && node scripts/check-years.mjs && node scripts/check-schema.mjs",
+    "check": "node scripts/check-stats.mjs && node scripts/check-reminders.mjs && node scripts/check-seed.mjs && node scripts/check-security.mjs && node scripts/check-backup.mjs && node scripts/check-schedules.mjs && node scripts/check-years.mjs && node scripts/check-schema.mjs && node scripts/check-sync.mjs",
     "serve:dist": "node scripts/serve-dist.mjs",
     "images": "node scripts/resize-images.mjs",
     "icons": "node scripts/make-icons.mjs"

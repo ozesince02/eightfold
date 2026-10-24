@@ -1,7 +1,8 @@
 # Eightfold
 
 A paper-collage habit tracker ("fall seven times, rise eight"). Static site: Vite, plain JavaScript,
-Three.js, GSAP. Landing page `index.html`, tracker `app.html`. Data in localStorage (`eightfold:v1`).
+Three.js, GSAP. Landing page `index.html`, tracker `app.html`. Data in localStorage (`eightfold:v1`),
+synced to Supabase when signed in (`src/lib/sync/`, D-020); SQL in `supabase/migrations/`.
 Repository: https://github.com/ozesince02/eightfold
 
 ## Priorities

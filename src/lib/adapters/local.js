@@ -31,6 +31,14 @@ export const localAdapter = {
     try { return (await navigator.storage.persisted()) ? 'persistent' : 'best-effort'; } catch { return 'unknown'; }
   },
 
+  // The sync queue (D-020): changes not yet sent to the account, kept across reloads and offline.
+  loadSync() {
+    try { return JSON.parse(localStorage.getItem(`${STORE_KEY}:sync`) || '{}'); } catch { return {}; }
+  },
+  saveSync(obj) {
+    try { localStorage.setItem(`${STORE_KEY}:sync`, JSON.stringify(obj)); } catch { /* storage full: the next save retries */ }
+  },
+
   // Chrome and Edge decide quietly; Firefox may ask the person. Call it after a click, not on load.
   async protect() {
     if (!navigator.storage?.persist) return 'unknown';

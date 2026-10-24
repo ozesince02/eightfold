@@ -305,3 +305,26 @@ Accepted · 24 Oct 2026
   holds any name other than the two public settings or a value that looks like a key; the build
   fails if they're missing or the key isn't a publishable one; the CSP's Supabase entries are filled
   from `.env` so the two can't drift apart.
+
+## D-020 Sync, and new visitors start empty
+Accepted · 24 Oct 2026
+
+- **How:** the store still saves to localStorage first. The sync engine turns each save into row
+  changes (a diff of the state as rows against what the account has), queues them on the device,
+  and sends them in batches; then it fetches the account's rows and takes them if nothing changed
+  here meanwhile. Whole-state diffs mean every way of changing data (ticks, editor, import, fold)
+  syncs without each one knowing about the network.
+- **Other devices** learn of changes from a broadcast on a private per-person Realtime channel,
+  authorised by RLS on `realtime.messages` (migration `20261024130000_sync_channel.sql`). Realtime
+  "Postgres changes" was rejected: delete events bypass RLS and would hand other people's keys out.
+- **First sign-in with folds on both sides asks** ("Keep both" or "Use only my account's") instead
+  of guessing; neither choice deletes anything.
+- **Refused rows** (bad data or a limit) are dropped one by one so they can't block the queue, and
+  the person is told. Network errors retry with backoff up to a minute.
+- **Signing out** stops syncing and clears the queue; the folds stay in the browser.
+- **New visitors start empty (D-016).** The tracker no longer falls back to the sheet's data, and
+  "Reset to the sheet" is gone. The landing page still tells the sheet's story from `seedState()`.
+- **Tested** by `scripts/check-sync.mjs`: the real engine against the real schema and RLS, with
+  several devices, a second person, offline edits across a reload, conflicting offline ticks, both
+  first-sign-in choices, more than 1,000 rows and the broadcast. Skipping deletes in the engine
+  makes it fail.

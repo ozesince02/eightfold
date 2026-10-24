@@ -97,6 +97,10 @@ Shadows are allowed **only** on paper lying on paper. Buttons and controls are f
   (M T W Th F Sa Su) filled with the habit's colour when on.
 - **Ranked bars:** name on its own line, bar below, figure right. In Both, two labelled bars.
 - **Forms:** labels above inputs, 44px fields, washi fill, ai focus ring.
+- **Sync dot** (`.sync-dot`) after the crane count in the top bar while signed in: matcha in step,
+  yamabuki saving or offline, shu when the account can't be reached; its label says which.
+- **"Two sets of folds" slip:** the backup slip's shape above the month, only on a first sign-in
+  where browser and account both have folds. "Keep both" (sumi) and a text link for the account's.
 - **Account panel** (`#account`, top of the Habits side column): signed out, one sumi "Continue
   with Google" button and an email field with a quiet "Send link" button; signed in, "Signed in as"
   with the email and a quiet "Sign out". Always says signing in is optional.

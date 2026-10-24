@@ -15,6 +15,10 @@
 .views a[aria-current="page"] { background: var(--sumi); color: var(--washi); }
 .cranes-chip { font-weight: 700; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 8px; }
 .cranes-chip b { font-family: var(--display); font-weight: 400; font-size: 20px; }
+/* Sync status (D-020): matcha in step, yamabuki saving or offline, shu when the account can't be reached */
+.sync-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--matcha); flex: none; }
+.sync-dot[data-state="syncing"], .sync-dot[data-state="offline"], .sync-dot[data-state="choose"] { background: var(--yamabuki); }
+.sync-dot[data-state="error"] { background: var(--shu); }
 
 .canvas { max-width: var(--max); margin: 0 auto; padding: 8px var(--gutter) 96px; outline: none; }
 

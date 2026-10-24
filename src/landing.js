@@ -9,7 +9,8 @@ import { hills, mountains } from './ui/charts.js';
 import { featuredMonth, bestCrossingRun, dateLabel, daysLeftInYear } from './ui/insights.js';
 import { createCraneStage } from './three/stage.js';
 import { startReminders } from './ui/reminders.js';
-import { esc } from './lib/sanitize.js';
+import { esc, safeColor } from './lib/sanitize.js';
+import { seedState } from './data/seed.js';
 import { DEMO_HABITS } from './data/demo.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -18,11 +19,12 @@ window.__oz = true;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const state = store.get();
+// The page tells the story of the sheet this app grew from (D-016), whatever this visitor tracks.
+const state = seedState();
 const now = today();
 const feat = featuredMonth(state, now);
 const year = yearStats(state, now.y, now);
-const color = (id) => store.color(id);
+const color = (id) => safeColor(state.colors[id]);
 
 $$('[data-mark]').forEach((el) => { el.innerHTML = craneMark(); });
 

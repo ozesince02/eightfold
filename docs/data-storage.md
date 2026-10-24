@@ -1,6 +1,6 @@
 # Data storage, accounts and sessions
 
-Status: **accepted; the database is built (24 October 2026, D-018), sign-in and sync next.** Written 23 October 2026. Decision record: [decisions.md](decisions.md) D-008.
+Status: **built: database (D-018), sign-in (D-019) and sync (D-020), 24 October 2026.** Written 23 October 2026. Decision record: [decisions.md](decisions.md) D-008.
 The three open questions were settled the same day; see [Decided](#decided).
 
 ## Where things stand
@@ -100,8 +100,12 @@ store.js  ── same API as today: get, toggle, addHabit, updateHabit, setPref,
   JSON backup import uses today).
 
 ### Sync behaviour (agreed 24 October 2026)
-- **Online:** every change is written to Supabase within a second of being made, and other devices
-  see it live through Supabase Realtime (a subscription on the user's own rows).
+Built 24 October 2026 (D-020): [src/lib/sync/](../src/lib/sync/), tested end to end on real
+Postgres by [scripts/check-sync.mjs](../scripts/check-sync.mjs).
+
+- **Online:** every change is written to Supabase within a second of being made. Other devices
+  hear a tiny "changed" broadcast on the person's private Realtime channel (`user:<id>`) and fetch
+  their rows. (Not Realtime "Postgres changes": its delete events can't be checked against RLS.)
 - **Offline:** changes are saved on the device at once and queued. The queue is sent when the browser
   reports it's back online (the `online` event), when the app is opened, and on a short retry timer.
 - **The screen never waits for the network.** A small status shows "Saved", "Saving…" or
@@ -110,6 +114,13 @@ store.js  ── same API as today: get, toggle, addHabit, updateHabit, setPref,
   the data lives in one browser; the synced adapter reports `mode: 'synced'` and `store.backupDue()`
   returns 0. The Save and Load backup buttons stay, for people who want their own copy.
 - **Signed out or no account:** the app keeps working exactly as today, local only, with the nudge.
+- **First sign-in on a browser:** an empty account takes this browser's folds; an empty browser
+  takes the account's; when both have folds, the person chooses "Keep both" (a union: no tick is
+  lost) or "Use only my account's" (this browser's copy is kept aside under a dated key).
+- **Conflicts:** each row is its own fact; the last write to reach the account wins. Ticks made on
+  two offline devices both survive. Before taking the account's copy, a device sends its queue.
+- **Also fetched:** when the tab becomes visible again, when the browser comes back online, and
+  every five minutes while the tab is visible.
 
 ## What phase 1 put in place (24 October 2026)
 

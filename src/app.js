@@ -10,7 +10,8 @@ import { clampKey, yearBounds, firstMonthKey, lastMonthKey, wishOf, foldedAt, ye
 import { esc } from './lib/sanitize.js';
 import { CRANE_GOAL, CRANE_GOAL_TEXT } from './config.js';
 import { createCraneStage } from './three/stage.js';
-import { startAuth, signInWithGoogle, sendSignInLink, signOut } from './lib/auth.js';
+import { startAuth, signInWithGoogle, sendSignInLink, signOut, getClient } from './lib/auth.js';
+import { createSync, supabaseApi } from './lib/sync/engine.js';
 import { startReminders, enableReminders, disableReminders, sendTestReminder, permissionState, nextReminder } from './ui/reminders.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -30,7 +31,7 @@ const icon = {
 $$('[data-mark]').forEach((el) => { el.innerHTML = craneMark(); });
 
 let now = today();
-let ui = { swatchFor: null, pct: null, protection: null, account: { status: 'loading' }, sending: false };
+let ui = { swatchFor: null, pct: null, protection: null, account: { status: 'loading' }, sending: false, sync: { state: 'off', pending: 0 } };
 let stage = null;
 let lastProgress = -1;
 
@@ -79,7 +80,7 @@ function render() {
     a.href = v === 'year' ? `#/year/${r.year || (r.key ? parseKey(r.key).y : now.y)}` : `#/${v}/${r.key || monthKey(now.y, now.m)}`;
     if (v === r.name || (v === 'year' && r.name === 'fold')) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
-  $('[data-cranes-chip]').innerHTML = `<b>${year.cranes}</b> cranes in ${now.y}`;
+  $('[data-cranes-chip]').innerHTML = `<b>${year.cranes}</b> cranes in ${now.y}${syncDot()}`;
 
   if (r.name === 'year') view.innerHTML = yearView(r.year);
   else if (r.name === 'fold') view.innerHTML = foldView(r.year);
@@ -145,6 +146,7 @@ function monthView(key, year) {
   if (timed.length) blocks.push(dayPanel(key, s, color));
 
   return `<div class="title-row"><h1>${monthName(m)} ${y}</h1><p class="finding">${finding}</p>${nav}</div>
+    ${chooseBar()}
     ${isCurrent ? foldBar() : ''}
     ${backupBar()}
     <div class="board">${blocks.join('')}</div>`;
@@ -617,7 +619,7 @@ function habitsView(key) {
         </section>
         <section class="panel" aria-labelledby="backup-h">
           <div class="panel-head"><h2 id="backup-h">Backup</h2></div>
-          <p class="note">Everything lives in this browser. Save a copy now and then, or move it to another device.</p>
+          <p class="note">${store.mode() === 'synced' ? 'Your folds are saved to your account. A backup file is still yours to keep.' : 'Everything lives in this browser. Save a copy now and then, or move it to another device.'}</p>
           <ul class="safety">
             <li><b>Last backup:</b> ${lastBackupText()}</li>
             <li><b>Storage:</b> ${{
@@ -630,11 +632,71 @@ function habitsView(key) {
             <button class="btn btn--quiet" type="button" data-export>Save a backup</button>
             <label class="btn btn--quiet" for="import-file">Load a backup</label>
             <input id="import-file" type="file" accept="application/json,.json" class="visually-hidden" data-import>
-            <button class="btn danger" type="button" data-reset>Reset to the sheet</button>
           </div>
         </section>
       </div>
     </div>`;
+}
+
+// ---------- Sync (D-020) ----------
+const SYNC_WORDS = {
+  synced: 'Saved to your account.',
+  syncing: 'Saving to your account…',
+  offline: 'Offline: changes are saved here and will sync when you\'re back.',
+  error: 'Couldn\'t reach your account; trying again.',
+  choose: 'This browser and your account both have folds.',
+};
+
+const sync = createSync({
+  store,
+  storage: store.syncStorage,
+  online: () => navigator.onLine,
+  onStatus: (s) => {
+    ui.sync = s;
+    if (s.message) toast(s.message);
+    scheduleRender();
+  },
+});
+
+// A dot beside the crane count: in step, saving, or not reaching the account.
+function syncDot() {
+  const s = ui.sync.state;
+  if (s === 'off') return '';
+  const label = SYNC_WORDS[s] || '';
+  return `<span class="sync-dot" data-state="${s}" role="img" aria-label="${esc(label)}" title="${esc(label)}"></span>`;
+}
+
+function chooseButtons() {
+  return `<div class="backup-actions">
+      <button class="btn btn--ink" type="button" data-sync-choose="merge">Keep both</button>
+      <button class="seg-link" type="button" data-sync-choose="account">Use only my account's</button>
+    </div>
+    <p class="note">Keep both adds this browser's habits and ticks to your account; nothing is lost either way. Choosing the account's keeps a copy of this browser's data aside.</p>`;
+}
+
+// First sign-in on a browser that already has folds, when the account has some too.
+function chooseBar() {
+  if (ui.sync.state !== 'choose') return '';
+  return `<section class="backup-bar sheet-wrap" aria-labelledby="choose-h">
+    <div class="backup-bar-sheet">
+      <div><h2 id="choose-h">Two sets of folds</h2><p>This browser and your account both have habits. Keep both, or use only your account's.</p></div>
+      <div class="backup-bar-actions">
+        <button class="btn btn--ink" type="button" data-sync-choose="merge">Keep both</button>
+        <button class="seg-link" type="button" data-sync-choose="account">Use only my account's</button>
+      </div>
+    </div>
+  </section>`;
+}
+
+function onAccount(account) {
+  const was = ui.account;
+  ui.account = account;
+  if (account.status === 'signed-in' && account.id) {
+    getClient().then((sb) => sync.start(supabaseApi(sb, account.id), account.id)).catch(() => {});
+  } else if (account.status === 'signed-out' && was.status === 'signed-in') {
+    sync.stop();
+  }
+  scheduleRender();
 }
 
 // ---------- Account (D-019) ----------
@@ -644,7 +706,8 @@ function accountPanel() {
     loading: '<p class="note">Checking your account…</p>',
     unavailable: '<p class="note">Sign-in can\'t be reached right now. Everything still works on this device.</p>',
     'signed-in': `<p class="account-who">Signed in as <b>${esc(a.email || 'you')}</b></p>
-      <p class="note">Syncing your folds between devices comes next. For now they stay in this browser, as before.</p>
+      <p class="note">${SYNC_WORDS[ui.sync.state] || 'Connecting to your account…'} Your folds are saved here first, then to your account, and reach your other devices.</p>
+      ${ui.sync.state === 'choose' ? chooseButtons() : ''}
       <div class="backup-actions"><button class="btn btn--quiet" type="button" data-sign-out>Sign out</button></div>`,
     'signed-out': `<p class="note">Optional. Sign in to keep your folds on every device; the tracker works the same without it.</p>
       <div class="backup-actions"><button class="btn btn--ink" type="button" data-sign-in="google">Continue with Google</button></div>
@@ -875,15 +938,15 @@ view.addEventListener('click', (e) => {
     signInWithGoogle().catch((err) => toast(err.message));
     return;
   }
+  const choose = e.target.closest('[data-sync-choose]');
+  if (choose) {
+    const kind = choose.dataset.syncChoose;
+    sync.choose(kind).then(() => toast(kind === 'merge' ? 'Kept both. Your account has everything now.' : 'Using your account\'s folds. This browser\'s copy is kept aside.'));
+    return;
+  }
   if (e.target.closest('[data-sign-out]')) {
     signOut().then(() => toast('Signed out on this device. Your folds are still here.')).catch(() => toast('Couldn\'t sign out. Try again.'));
     return;
-  }
-  if (e.target.closest('[data-reset]')) {
-    if (window.confirm('Replace everything with the data from the Google Sheet? Ticks you made here will be lost unless you saved a backup.')) {
-      store.resetToSheet();
-      toast('Back to the sheet, as of 22 October.');
-    }
   }
 });
 
@@ -1001,5 +1064,9 @@ if (location.hash.endsWith('#wish')) $('#wish-text')?.focus();
 startReminders({ toast });
 // After the first render: the sign-in client is only needed once the page is usable. A timer, not
 // requestAnimationFrame, so a tab opened in the background still signs in.
-setTimeout(() => startAuth((account) => { ui.account = account; scheduleRender(); }, toast), 0);
+setTimeout(() => startAuth(onAccount, toast), 0);
+// Back online, or back to this tab: send what's queued and fetch what other devices changed.
+window.addEventListener('online', () => sync.pull());
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') sync.pull(); });
+setInterval(() => { if (document.visibilityState === 'visible') sync.pull(); }, 5 * 60 * 1000);
 if (!reduced) gsap.from('.panel, .title-row', { opacity: 0, y: 18, duration: 0.6, stagger: 0.05, ease: 'power3.out', clearProps: 'opacity,transform' });

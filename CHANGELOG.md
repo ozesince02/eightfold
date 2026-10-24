@@ -6,6 +6,9 @@ Dates are when the work landed.
 ## Unreleased
 
 ### Changed
+- **A new visitor's tracker starts empty**, instead of showing the sheet's habits. "Reset to the
+  sheet" is gone. The landing page still tells the sheet's story. (D-016, D-020)
+- The backup reminder stops while you're signed in and synced.
 - The landing page's "Try it with today's six" now uses six generic tasks (make your bed, walk outside,
   read ten pages...) instead of real habits. (D-016)
 - The tracker opens months from your first month of habits up to next month, and the arrows stop
@@ -20,8 +23,9 @@ Dates are when the work landed.
   advisories. Nothing visitors download changed.
 
 ### Added
-- **Sign in** with Google or an emailed link, from the new Account panel on the Habits page.
-  Optional; syncing your folds between devices comes with the next update. (D-019)
+- **Sign in and sync.** Sign in with Google or an emailed link from the Account panel on the
+  Habits page, and your folds are saved to your account and reach your other devices. Changes made
+  offline sync when you're back. Optional: signed out, everything works as before. (D-019, D-020)
 - A not-found page in the paper style.
 - **Fold the year.** In December and January a slip offers a look back at the year (cranes,
   perfect days, best month, longest run, most-folded habit), lets you choose which habits come into

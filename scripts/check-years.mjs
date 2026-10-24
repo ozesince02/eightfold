@@ -3,12 +3,16 @@
 import assert from 'node:assert/strict';
 import { store } from '../src/lib/store.js';
 import { cleanState } from '../src/lib/sanitize.js';
+import { seedState } from '../src/data/seed.js';
 import { firstMonthKey, lastMonthKey, clampKey, yearBounds, yearToFold, wishOf, foldedAt } from '../src/lib/years.js';
 
 const oct = { y: 2026, m: 10, d: 24 };
 const dec = { y: 2026, m: 12, d: 20 };
 const jan = { y: 2027, m: 1, d: 3 };
 const state = () => store.get();
+// New visitors start empty (D-016); these checks run on the sheet's data.
+assert.equal(Object.keys(state().months).length, 0, 'a new tracker starts empty');
+store.replaceState(seedState());
 
 // Bounds: from the first month with habits to next month.
 assert.equal(firstMonthKey(state(), oct), '2026-01', 'nothing before the first month of data');
