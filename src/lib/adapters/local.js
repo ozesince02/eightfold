@@ -7,8 +7,9 @@
 //   protection()  'persistent' | 'best-effort' | 'unknown': may the browser clear it on its own?
 //   protect()     ask the browser to keep the data permanently
 
-export const STORE_KEY = 'eightfold:v1';
-const LEGACY_KEY = 'orizuru:v1'; // the app's working name before it became Eightfold
+import { STORE_KEY, LEGACY_STORE_KEY as LEGACY_KEY } from '../../config.js';
+
+export { STORE_KEY };
 
 export const localAdapter = {
   mode: 'local',

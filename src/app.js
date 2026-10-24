@@ -8,7 +8,9 @@ import { hills, mountains, ring } from './ui/charts.js';
 import { daysLeftInYear, longestRun } from './ui/insights.js';
 import { clampKey, yearBounds, firstMonthKey, lastMonthKey, wishOf, foldedAt, yearToFold, closingHabits } from './lib/years.js';
 import { esc } from './lib/sanitize.js';
+import { CRANE_GOAL, CRANE_GOAL_TEXT } from './config.js';
 import { createCraneStage } from './three/stage.js';
+import { startAuth, signInWithGoogle, sendSignInLink, signOut } from './lib/auth.js';
 import { startReminders, enableReminders, disableReminders, sendTestReminder, permissionState, nextReminder } from './ui/reminders.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -28,7 +30,7 @@ const icon = {
 $$('[data-mark]').forEach((el) => { el.innerHTML = craneMark(); });
 
 let now = today();
-let ui = { swatchFor: null, pct: null, protection: null };
+let ui = { swatchFor: null, pct: null, protection: null, account: { status: 'loading' }, sending: false };
 let stage = null;
 let lastProgress = -1;
 
@@ -259,17 +261,17 @@ function cranePanel(s, year) {
   const ts = todayMonth ? monthStats(todayMonth, now.y, now.m, now) : null;
   const day = ts?.perDay[now.d - 1];
   const progress = day && day.goal ? day.done / day.goal : 0;
-  const remaining = Math.max(0, 1000 - year.cranes);
+  const remaining = Math.max(0, CRANE_GOAL - year.cranes);
   const perDay = Math.ceil(remaining / daysLeftInYear(now));
   const wish = wishOf(state, now.y)
     ? `Wish: “${esc(wishOf(state, now.y))}”`
-    : `<a href="#/habits/${monthKey(now.y, now.m)}#wish">Write the wish for crane 1,000</a>`;
+    : `<a href="#/habits/${monthKey(now.y, now.m)}#wish">Write the wish for crane ${CRANE_GOAL_TEXT}</a>`;
   return `<section class="panel crane-panel span-4" aria-labelledby="crane-h">
     <div class="panel-head"><h2 id="crane-h">Today's crane</h2><p>${day ? `${day.done} of ${day.goal} folds` : ''}</p></div>
     <div class="crane-slot" data-progress="${progress.toFixed(4)}"></div>
-    <p class="crane-count">${year.cranes}<small>of 1,000 cranes</small></p>
-    <div class="wish-meter" aria-hidden="true"><span style="width:${Math.min(100, year.cranes / 10)}%"></span></div>
-    <p class="wish-line">${remaining ? `${remaining} to go: about ${perDay} a day until 31 December. ` : 'A thousand cranes. '}${wish}</p>
+    <p class="crane-count">${year.cranes}<small>of ${CRANE_GOAL_TEXT} cranes</small></p>
+    <div class="wish-meter" aria-hidden="true"><span style="width:${Math.min(100, (year.cranes / CRANE_GOAL) * 100)}%"></span></div>
+    <p class="wish-line">${remaining ? `${remaining} to go: about ${perDay} a day until 31 December. ` : `${CRANE_GOAL_TEXT} cranes. `}${wish}</p>
   </section>`;
 }
 
@@ -491,7 +493,7 @@ function yearSlip(y, ys) {
     ? `<a class="btn ${folded ? 'btn--quiet' : 'btn--ink'}" href="#/fold/${y}">${folded ? `Look back at ${y}` : `Fold ${y}`}</a>`
     : `<a class="seg-link" href="#/habits/${monthKey(now.y, now.m)}#wish">${wish ? 'Change the wish' : 'Write the wish'}</a>`;
   return `<section class="year-slip panel" aria-label="The wish for ${y}">
-      <p>${wishText} <span>${ys.cranes} of 1,000 cranes. ${foldText}</span></p>
+      <p>${wishText} <span>${ys.cranes} of ${CRANE_GOAL_TEXT} cranes. ${foldText}</span></p>
       ${action}
     </section>`;
 }
@@ -529,7 +531,7 @@ function foldView(y) {
   const jan = state.months[monthKey(y + 1, 1)];
   const habits = jan ? jan.habits : closingHabits(state, y);
   const wishLine = wish
-    ? (ys.cranes >= 1000 ? `A thousand cranes for “${esc(wish)}”. Make the wish.` : `${ys.cranes} cranes toward “${esc(wish)}”. Every one was a time you got up.`)
+    ? (ys.cranes >= CRANE_GOAL ? `${CRANE_GOAL_TEXT} cranes for “${esc(wish)}”. Make the wish.` : `${ys.cranes} cranes toward “${esc(wish)}”. Every one was a time you got up.`)
     : `${ys.cranes} cranes, each one a time you got up.`;
   const fact = (big, label) => `<div class="fold-fact"><p class="big">${big}</p><p class="label">${label}</p></div>`;
 
@@ -554,7 +556,7 @@ function foldView(y) {
         <fieldset class="rem-list fold-keep"><legend class="note">Habits for January ${y + 1}</legend>
           ${habits.length ? habits.map((h) => `<label><input type="checkbox" name="keep" value="${h.id}" checked><i style="--c:${store.color(h.id)}"></i><span>${esc(h.name)}</span></label>`).join('') : '<p class="note">No habits to carry. Add some in January.</p>'}
         </fieldset>
-        <label class="note" for="next-wish">What will crane 1,000 of ${y + 1} be for? Only you see this.</label>
+        <label class="note" for="next-wish">What will crane ${CRANE_GOAL_TEXT} of ${y + 1} be for? Only you see this.</label>
         <textarea id="next-wish" name="wish" maxlength="200">${esc(wishOf(state, y + 1))}</textarea>
         <button class="btn" type="submit">${folded ? `Fold ${y} again` : `Fold ${y}`}</button>
       </form>
@@ -602,12 +604,13 @@ function habitsView(key) {
         </form>
       </section>
       <div class="span-4 side-stack">
+        ${accountPanel()}
         ${percentagesPanel()}
         ${remindersPanel(month)}
         <section class="panel" id="wish" aria-labelledby="wish-h">
           <div class="panel-head"><h2 id="wish-h">The wish for ${y}</h2></div>
           <form class="wish-form" data-wish="${y}">
-            <label class="note" for="wish-text">What will crane 1,000 of ${y} be for? Only you see this.</label>
+            <label class="note" for="wish-text">What will crane ${CRANE_GOAL_TEXT} of ${y} be for? Only you see this.</label>
             <textarea id="wish-text" name="wish" maxlength="200">${esc(wishOf(state, y))}</textarea>
             <button class="btn btn--ink" type="submit">Keep the wish</button>
           </form>
@@ -632,6 +635,32 @@ function habitsView(key) {
         </section>
       </div>
     </div>`;
+}
+
+// ---------- Account (D-019) ----------
+function accountPanel() {
+  const a = ui.account;
+  const body = {
+    loading: '<p class="note">Checking your account…</p>',
+    unavailable: '<p class="note">Sign-in can\'t be reached right now. Everything still works on this device.</p>',
+    'signed-in': `<p class="account-who">Signed in as <b>${esc(a.email || 'you')}</b></p>
+      <p class="note">Syncing your folds between devices comes next. For now they stay in this browser, as before.</p>
+      <div class="backup-actions"><button class="btn btn--quiet" type="button" data-sign-out>Sign out</button></div>`,
+    'signed-out': `<p class="note">Optional. Sign in to keep your folds on every device; the tracker works the same without it.</p>
+      <div class="backup-actions"><button class="btn btn--ink" type="button" data-sign-in="google">Continue with Google</button></div>
+      <form class="account-form" data-sign-in-email>
+        <label for="account-email">Or get a sign-in link by email</label>
+        <div class="account-row">
+          <input id="account-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" required placeholder="you@example.com" value="${esc(ui.emailDraft || '')}">
+          <button class="btn btn--quiet" type="submit" ${ui.sending ? 'disabled' : ''}>${ui.sending ? 'Sending…' : 'Send link'}</button>
+        </div>
+        <p class="note">Open the link in this browser.</p>
+      </form>`,
+  }[a.status] || '';
+  return `<section class="panel" id="account" aria-labelledby="account-h">
+    <div class="panel-head"><h2 id="account-h">Account</h2></div>
+    ${body}
+  </section>`;
 }
 
 const clock = (mins) => `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
@@ -841,6 +870,15 @@ view.addEventListener('click', (e) => {
     }
     return;
   }
+  const signIn = e.target.closest('[data-sign-in]');
+  if (signIn) {
+    signInWithGoogle().catch((err) => toast(err.message));
+    return;
+  }
+  if (e.target.closest('[data-sign-out]')) {
+    signOut().then(() => toast('Signed out on this device. Your folds are still here.')).catch(() => toast('Couldn\'t sign out. Try again.'));
+    return;
+  }
   if (e.target.closest('[data-reset]')) {
     if (window.confirm('Replace everything with the data from the Google Sheet? Ticks you made here will be lost unless you saved a backup.')) {
       store.resetToSheet();
@@ -881,9 +919,20 @@ view.addEventListener('submit', (e) => {
     toast(added ? `Added ${data.name.trim()}.` : 'That habit could not be added. A month holds up to 50 habits.');
     requestAnimationFrame(() => $('[data-add] input[name="name"]')?.focus());
   }
+  if (form.matches('[data-sign-in-email]')) {
+    if (ui.sending) return;
+    ui.sending = true;
+    ui.emailDraft = String(new FormData(form).get('email') || '');
+    render();
+    sendSignInLink(ui.emailDraft)
+      .then(() => toast('Check your email for the sign-in link, and open it in this browser.'))
+      .catch((err) => toast(err.message))
+      .finally(() => { ui.sending = false; render(); });
+    return;
+  }
   if (form.matches('[data-wish]')) {
     store.setWish(Number(form.dataset.wish), new FormData(form).get('wish'));
-    toast('Wish kept. 1,000 cranes to make it count.');
+    toast(`Wish kept. ${CRANE_GOAL_TEXT} cranes to make it count.`);
   }
   if (form.matches('[data-fold]')) {
     const y = Number(form.dataset.fold);
@@ -950,4 +999,7 @@ render();
 scrollToAnchor();
 if (location.hash.endsWith('#wish')) $('#wish-text')?.focus();
 startReminders({ toast });
+// After the first render: the sign-in client is only needed once the page is usable. A timer, not
+// requestAnimationFrame, so a tab opened in the background still signs in.
+setTimeout(() => startAuth((account) => { ui.account = account; scheduleRender(); }, toast), 0);
 if (!reduced) gsap.from('.panel, .title-row', { opacity: 0, y: 18, duration: 0.6, stagger: 0.05, ease: 'power3.out', clearProps: 'opacity,transform' });

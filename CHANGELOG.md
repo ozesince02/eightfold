@@ -20,6 +20,8 @@ Dates are when the work landed.
   advisories. Nothing visitors download changed.
 
 ### Added
+- **Sign in** with Google or an emailed link, from the new Account panel on the Habits page.
+  Optional; syncing your folds between devices comes with the next update. (D-019)
 - A not-found page in the paper style.
 - **Fold the year.** In December and January a slip offers a look back at the year (cranes,
   perfect days, best month, longest run, most-folded habit), lets you choose which habits come into

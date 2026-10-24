@@ -133,6 +133,17 @@ limits per person as triggers, `security definer` only on the sign-up trigger (f
 Test: `scripts/check-schema.mjs` on real Postgres; a deliberately removed RLS line makes it fail.
 Open: sign-up policy (D-018).
 
+### 24 October 2026 — sign-in (branch `feature/accounts-signin`)
+
+New surface: the Supabase Auth session (stored by supabase-js in this origin's localStorage) and
+two new origins in `connect-src` (the project's https and wss addresses only). Measures: PKCE flow;
+redirects only to this page (and Supabase accepts only the listed redirect URLs); failed-sign-in
+descriptions from the URL are never shown; email checked for shape and length before sending;
+the signed-in email is escaped; the client loads from our own origin (bundled, no CDN). The strict
+CSP (no inline or third-party scripts) is what keeps the session token out of reach of injected
+script, so it stays non-negotiable. `.env` is committed with public values only, guarded by
+`check-security.mjs`; the build refuses a non-publishable key.
+
 ### Accepted risks (owner's decision, 24 Oct 2026, D-016)
 
 - The repository is public, and its history contains the owner's January–October 2026 habit data

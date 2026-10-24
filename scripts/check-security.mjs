@@ -73,3 +73,15 @@ assert.throws(() => parseBackup(' '.repeat(LIMITS.backupBytes + 1)), /too large/
 assert.ok(parseBackup(JSON.stringify(seed)).months['2026-10'], 'a real backup round-trips');
 
 console.log('security: all checks pass');
+
+// .env is committed and its values are built into the site (D-019): it may hold only the public
+// Supabase settings, never anything that looks like a secret.
+import { readFileSync } from 'node:fs';
+const envLines = readFileSync(new URL('../.env', import.meta.url), 'utf8').split(/\r?\n/).filter((l) => l.trim() && !l.trim().startsWith('#'));
+const ALLOWED_ENV = new Set(['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY']);
+for (const line of envLines) {
+  const [name, ...rest] = line.split('=');
+  assert.ok(ALLOWED_ENV.has(name.trim()), `.env may only hold public settings; found ${name.trim()}`);
+  assert.doesNotMatch(rest.join('='), /sb_secret_|service_role|eyJhbGci|-----BEGIN|re_[A-Za-z0-9]{20,}|GOCSPX-/, `.env value for ${name.trim()} looks like a secret`);
+}
+console.log('env: only public settings');

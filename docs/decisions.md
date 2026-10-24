@@ -283,3 +283,25 @@ Accepted · 24 Oct 2026
 - **Open (owner's call):** whether anyone can sign up, or only invited people. Recommended for
   family and friends: turn off "Allow new users to sign up" in Supabase and invite people from the
   dashboard; the per-person limits cap the damage if sign-up stays open.
+
+## D-019 Sign-in, and settings in one place
+Accepted · 24 Oct 2026
+
+- **Sign-in:** Supabase Auth with Google or an emailed link, from an Account panel on the Habits
+  page. Optional: signed out, the tracker works exactly as before.
+  - **PKCE flow:** Google's redirect and the email link bring back a one-time code that only the
+    browser that asked can exchange, never a token in the address bar. So the email link must be
+    opened in the same browser; the panel says so.
+  - **Loaded late:** the Supabase client is its own chunk, fetched after the tracker has rendered,
+    so the landing page never loads it and a slow network never delays the grid.
+  - **Errors:** a failed sign-in coming back as `?error=` shows a fixed message (the description
+    in the URL is never displayed); the code and error are removed from the address afterwards.
+  - **Sign out** is for this device only, and leaves the local data where it is.
+  - **This PR doesn't sync yet.** It's meant to ship together with the sync PR that follows.
+- **Settings:** deployment values live in `.env` and are read only through `src/config.js`,
+  together with product constants (`CRANE_GOAL`, `STORE_KEY`, `BACKUP_EVERY_DAYS`). `.env` is
+  committed because everything in it is public and ends up in the built site anyway (Vite's
+  convention); secrets go in `.env.local` or the dashboards. Guards: `npm run check` fails if `.env`
+  holds any name other than the two public settings or a value that looks like a key; the build
+  fails if they're missing or the key isn't a publishable one; the CSP's Supabase entries are filled
+  from `.env` so the two can't drift apart.

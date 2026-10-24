@@ -9,8 +9,10 @@ import { localAdapter, STORE_KEY } from './adapters/local.js';
 
 export { STORE_KEY };
 const adapter = localAdapter;
+import { BACKUP_EVERY_DAYS } from '../config.js';
+
+export { BACKUP_EVERY_DAYS };
 const DAY = 86400000;
-export const BACKUP_EVERY_DAYS = 7;
 const PALETTE = ['#C8302C', '#24496B', '#8EA46B', '#E9B33F', '#C9A57A', '#A9CBD6', '#E8C3BC', '#6E8C8A', '#B98A5E', '#D98E73'];
 
 function fromSeed() {

@@ -1,7 +1,8 @@
 # Security headers for Cloudflare Pages (applied to the built site; the Vite dev server ignores this file).
-# Why each one is here: docs/security.md. When Supabase arrives, add its URL to connect-src.
+# Why each one is here: docs/security.md. connect-src allows our Supabase project only (D-019);
+# its two Supabase placeholders are filled from .env at build time (vite.config.js).
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' __SUPABASE_ORIGIN__ __SUPABASE_WS__; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
