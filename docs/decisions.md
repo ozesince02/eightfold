@@ -334,3 +334,19 @@ Accepted · 24 Oct 2026
   several devices, a second person, offline edits across a reload, conflicting offline ticks, both
   first-sign-in choices, more than 1,000 rows and the broadcast. Skipping deletes in the engine
   makes it fail.
+
+## D-021 The landing page tells oze's story, under everyday names
+Accepted · 24 Oct 2026
+
+- **Context:** the landing page showed the owner's real habits and numbers as if they were the
+  visitor's, and phrased them as "now" ("October is still being folded"). With the app open to
+  everyone, a first-time visitor couldn't tell whose numbers these were.
+- **Decision:** the numbers stay real (they're the story) but are **labelled as oze's**, from
+  1 January to 22 October 2026, the day before Eightfold was born, and computed **as of that date**
+  (`STORY_DATE`), so they never drift. **Habit names are everyday stand-ins** (`STORY_ALIASES` in
+  `src/data/demo.js`: "Read ten pages", "Walk outside"...), and the page says so. The closing
+  speaks to new visitors and quotes oze. The footer names the author from `AUTHOR` in config.js.
+- **Layout:** the space between sections is margin (64–128px by screen width), not padding, so the
+  pinned "What it keeps" section holds only its content; its cards size to the screen's height and,
+  on screens under 900px tall, the decorative page hides. All cards stay on screen while it slides.
+

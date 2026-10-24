@@ -4,6 +4,10 @@
 // `start` marks a habit added mid-month (the sheet had no checkbox before it).
 
 export const SEED_YEAR = 2026;
+// The sheet's last day: Eightfold was born the next day, 23 October 2026 (D-021). The landing page
+// tells the story as of this date, so its numbers never drift with the calendar.
+export const STORY_DATE = { y: 2026, m: 10, d: 22 };
+export const STORY_SPAN = '1 January to 22 October 2026';
 
 // Paper colours per habit family (see tokens.css for the full palette).
 export const HABIT_COLORS = {
