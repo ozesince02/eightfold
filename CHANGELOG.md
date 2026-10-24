@@ -6,6 +6,10 @@ Dates are when the work landed.
 ## Unreleased
 
 ### Changed
+- Landing page: the demo is "Try it with these six", and "Your day, in order" describes the
+  feature for everyone rather than the sheet's habit names. "Streaks that survive the 1st" is now
+  "Habits on your schedule" (chosen days, times a week, weekly, monthly); the zine's streaks panel
+  says that a run keeps counting past the 1st.
 - **The landing page speaks to new visitors.** Sections sit closer together; the "What it keeps"
   cards now fit on screen while they slide. Numbers are labelled as an example from oze's own sheet
   (1 January to 22 October 2026) and habit names are everyday ones. New closing words, and a
