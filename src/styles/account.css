@@ -65,6 +65,8 @@ header.acct-open { z-index: 50; }
 .acct-later { margin-top: 16px; }
 .acct-forget { margin-top: 16px; text-align: left; }
 .acct-forget + .note { margin-top: 4px; font-size: 13px; }
+.acct-legal { margin-top: 14px; font-size: 13px; }
+.acct-legal a { color: var(--ai); font-weight: 700; text-underline-offset: 3px; }
 .acct .acct-delete { display: block; margin-top: 18px; color: var(--shu-ink); }
 .acct .seg-link { border: 0; background: none; padding: 0; color: var(--ai); font: inherit; font-weight: 700; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .acct-notice:empty { display: none; }

@@ -10,6 +10,9 @@ export const ACCOUNTS_ENABLED = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY
 // Where the tracker lives: /app on the live site (Cloudflare drops .html), /app.html on the dev
 // server. Sign-in always comes back here; both are on Supabase's redirect list.
 export const APP_PATH = env.DEV ? '/app.html' : '/app';
+// The Privacy and Terms pages (D-026), the same way.
+export const PRIVACY_PATH = env.DEV ? '/privacy.html' : '/privacy';
+export const TERMS_PATH = env.DEV ? '/terms.html' : '/terms';
 
 // ---------- Product ----------
 export const APP_NAME = 'Eightfold';

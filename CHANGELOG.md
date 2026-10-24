@@ -31,6 +31,8 @@ Dates are when the work landed.
   advisories. Nothing visitors download changed.
 
 ### Added
+- **Privacy and Terms pages**, in plain words, linked from the footer and the account menu. Signing
+  in now says that it means agreeing to them. (D-026)
 - **Delete my account**, in the account chit: removes your account and every habit, fold and wish
   in it, from the servers and from this browser, after a confirmation with "Save a backup first".
   (D-025)
