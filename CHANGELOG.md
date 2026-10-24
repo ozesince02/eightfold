@@ -6,6 +6,8 @@ Dates are when the work landed.
 ## Unreleased
 
 ### Changed
+- Landing page: the demo is "Try it with these six", and "Your day, in order" describes the
+  feature for everyone rather than the sheet's habit names.
 - **The landing page speaks to new visitors.** Sections sit closer together; the "What it keeps"
   cards now fit on screen while they slide. Numbers are labelled as an example from oze's own sheet
   (1 January to 22 October 2026) and habit names are everyday ones. New closing words, and a

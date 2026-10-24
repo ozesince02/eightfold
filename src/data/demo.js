@@ -1,4 +1,4 @@
-// Six made-up habits for the landing page's "Try it with today's six" demo (D-016).
+// Six made-up habits for the landing page's "Try it with these six" demo (D-016).
 // Generic on purpose: nothing here is anyone's real habit or schedule.
 
 export const DEMO_HABITS = [
