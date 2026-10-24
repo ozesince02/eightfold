@@ -102,9 +102,10 @@ Shadows are allowed **only** on paper lying on paper. Buttons and controls are f
   yamabuki saving or offline, shu when the account can't be reached; its label says which.
 - **"Two sets of folds" slip:** the backup slip's shape above the month, only on a first sign-in
   where browser and account both have folds. "Keep both" (sumi) and a text link for the account's.
-- **Account panel** (`#account`, top of the Habits side column): signed out, one sumi "Continue
-  with Google" button and an email field with a quiet "Send link" button; signed in, "Signed in as"
-  with the email and a quiet "Sign out". Always says signing in is optional.
+- **Account paper** (header, both pages, D-022): a 40px crumpled ball (three paper tones, sumi-3
+  creases, a slow 3px float) when signed out; a shu square on its corner with the white initial and
+  the sync dot when signed in. Opens a 330px chit (white paper, tape at the top, torn bottom,
+  `--lift-high`); full width under the header on phones.
 - **Toasts:** sumi slip, bottom centre, 2.4s.
 - **Fold slip** (`.backup-bar.fold-bar`): the backup slip's shape in sakura, above it on the
   current month, from 1 December to 31 January until the year is folded. One sumi button.

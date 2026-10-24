@@ -2,9 +2,9 @@
 
 .bar {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   align-items: center;
-  gap: 32px;
+  gap: 24px;
   max-width: var(--max);
   margin: 0 auto;
   padding: 18px var(--gutter);
@@ -268,7 +268,7 @@ section { scroll-margin-top: 24px; }
 
 @media (max-width: 1080px) {
   .bar-links { display: none; }
-  .bar { grid-template-columns: auto 1fr; }
+  .bar { grid-template-columns: auto 1fr auto; gap: 12px; }
   .bar-cta { justify-self: end; }
   .why, .closing, .year-head { grid-template-columns: 1fr; }
   .year-head p { justify-self: start; }
@@ -282,6 +282,9 @@ section { scroll-margin-top: 24px; }
   .piece--later { grid-column: 6 / -1; }
   .closing-print { max-width: 420px; }
 }
+
+.bar-cta { white-space: nowrap; }
+@media (max-width: 420px) { .cta-the { display: none; } .bar-cta { padding: 0 14px; } }
 
 @media (max-width: 760px) {
   .bar { padding-top: 12px; padding-bottom: 12px; }

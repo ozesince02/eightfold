@@ -27,6 +27,9 @@ Dates are when the work landed.
   advisories. Nothing visitors download changed.
 
 ### Added
+- **Your account, in the corner.** A crumpled paper ball in the header of every page: tap it to
+  sign in, or to keep going on this device only. Signed in, it's folded flat with your initial and
+  shows whether your folds are saved. (D-022)
 - **Sign in and sync.** Sign in with Google or an emailed link from the Account panel on the
   Habits page, and your folds are saved to your account and reach your other devices. Changes made
   offline sync when you're back. Optional: signed out, everything works as before. (D-019, D-020)
