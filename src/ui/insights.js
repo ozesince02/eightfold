@@ -12,7 +12,11 @@ export function featuredMonth(state, now) {
 
 // The best run of any habit that crossed from one month into the next,
 // which the sheet would have split into two streaks.
-export function bestCrossingRun(state, year, now) {
+export const bestCrossingRun = (state, year, now) => bestRun(state, year, now, (months) => months.size > 1);
+// The longest run of ticked days in a row in the year, for the look back when folding it.
+export const longestRun = (state, year, now) => bestRun(state, year, now, () => true);
+
+function bestRun(state, year, now, accept) {
   let best = null;
   const ids = new Set();
   Object.entries(state.months).forEach(([key, mo]) => { if (key.startsWith(String(year))) mo.habits.forEach((h) => ids.add(h.id)); });
@@ -20,7 +24,7 @@ export function bestCrossingRun(state, year, now) {
     let run = [];
     const finish = () => {
       const months = new Set(run.map((r) => r.m));
-      if (months.size > 1 && (!best || run.length > best.length)) {
+      if (accept(months) && (!best || run.length > best.length)) {
         const parts = [...months].map((mm) => run.filter((r) => r.m === mm).length);
         const name = state.months[monthKey(year, run[run.length - 1].m)].habits.find((h) => h.id === id)?.name || id;
         best = { id, name, length: run.length, from: run[0], to: run[run.length - 1], parts };

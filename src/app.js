@@ -5,7 +5,8 @@ import { monthStats, yearStats, streakOf, runWords, percent, pct, VIEWS, VIEW_LA
 import { habitWeeks, weekOf, describe, CADENCES, CADENCE_LABELS, WEEKDAY_SHORT, cadenceOf } from './lib/schedule.js';
 import { craneMark, sfxPop, confetti } from './ui/paper.js';
 import { hills, mountains, ring } from './ui/charts.js';
-import { daysLeftInYear } from './ui/insights.js';
+import { daysLeftInYear, longestRun } from './ui/insights.js';
+import { clampKey, yearBounds, firstMonthKey, lastMonthKey, wishOf, foldedAt, yearToFold, closingHabits } from './lib/years.js';
 import { esc } from './lib/sanitize.js';
 import { createCraneStage } from './three/stage.js';
 import { startReminders, enableReminders, disableReminders, sendTestReminder, permissionState, nextReminder } from './ui/reminders.js';
@@ -31,14 +32,26 @@ let ui = { swatchFor: null, pct: null, protection: null };
 let stage = null;
 let lastProgress = -1;
 
-// ---------- Routing: #/month/2026-10, #/year/2026, #/habits/2026-10 ----------
+// ---------- Routing: #/month/2026-10, #/year/2026, #/habits/2026-10, #/fold/2026 ----------
+// Only months from the first one with habits up to next month can be opened (D-017); anything
+// else lands on the nearest month that can.
 function route() {
   const [name = 'month', arg] = location.hash.replace(/^#\/?/, '').split('#')[0].split('/');
+  const state = store.get();
   const current = monthKey(now.y, now.m);
-  if (name === 'year') return { name, year: Number(arg) || now.y };
-  const key = /^\d{4}-\d{2}$/.test(arg || '') ? arg : current;
+  if (name === 'year' || name === 'fold') {
+    const { first } = yearBounds(state, now);
+    const year = Math.min(now.y, Math.max(first, Number(arg) || now.y));
+    // A year can be folded once it has ended, or from December while it ends.
+    if (name === 'fold' && (year < now.y || now.m === 12)) return { name, year };
+    return { name: 'year', year };
+  }
+  const key = clampKey(/^\d{4}-(0[1-9]|1[0-2])$/.test(arg || '') ? arg : current, state, now);
   return { name: name === 'habits' ? 'habits' : 'month', key };
 }
+
+// The address that matches a route, so a corrected route doesn't leave a wrong URL behind.
+const hashOf = (r) => `#/${r.name}/${r.key || r.year}`;
 
 // ---------- Render ----------
 let queued = false;
@@ -50,8 +63,11 @@ function scheduleRender() {
 
 function render() {
   now = today();
+  // This month always exists, as it did in the sheet; other months are saved only when edited.
+  store.ensureMonth(monthKey(now.y, now.m));
   const r = route();
-  if (r.key) store.ensureMonth(r.key);
+  const [path, anchor] = location.hash.replace(/^#\/?/, '').split('#');
+  if (path && `#/${path}` !== hashOf(r)) history.replaceState(null, '', hashOf(r) + (anchor ? `#${anchor}` : ''));
   const focusKey = document.activeElement?.dataset?.focus;
   const gridScroll = $('.grid-scroll', view)?.scrollLeft || 0;
   const year = yearStats(store.get(), now.y, now);
@@ -59,11 +75,12 @@ function render() {
   $$('.views a').forEach((a) => {
     const v = a.dataset.view;
     a.href = v === 'year' ? `#/year/${r.year || (r.key ? parseKey(r.key).y : now.y)}` : `#/${v}/${r.key || monthKey(now.y, now.m)}`;
-    if (v === r.name) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    if (v === r.name || (v === 'year' && r.name === 'fold')) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
   $('[data-cranes-chip]').innerHTML = `<b>${year.cranes}</b> cranes in ${now.y}`;
 
   if (r.name === 'year') view.innerHTML = yearView(r.year);
+  else if (r.name === 'fold') view.innerHTML = foldView(r.year);
   else if (r.name === 'habits') view.innerHTML = habitsView(r.key);
   else view.innerHTML = monthView(r.key, year);
 
@@ -87,17 +104,16 @@ function placeCrane() {
 function monthView(key, year) {
   const { y, m } = parseKey(key);
   const state = store.get();
-  const month = state.months[key];
+  const month = store.view(key);
   const s = monthStats(month, y, m, now);
   const isCurrent = s.isCurrent;
-  const prev = shiftMonth(y, m, -1), next = shiftMonth(y, m, 1);
   const color = (id) => store.color(id);
 
   const nav = `<div class="month-nav">
       ${viewSwitch()}
-      <a class="icon-btn" href="#/month/${monthKey(prev.y, prev.m)}" aria-label="${monthName(prev.m)} ${prev.y}">${icon.prev}</a>
+      ${stepLink('month', key, -1, icon.prev)}
       ${isCurrent ? '' : `<a class="icon-btn" href="#/month/${monthKey(now.y, now.m)}">This month</a>`}
-      <a class="icon-btn" href="#/month/${monthKey(next.y, next.m)}" aria-label="${monthName(next.m)} ${next.y}">${icon.next}</a>
+      ${stepLink('month', key, 1, icon.next)}
     </div>`;
 
   if (!s.habits.length) {
@@ -127,8 +143,21 @@ function monthView(key, year) {
   if (timed.length) blocks.push(dayPanel(key, s, color));
 
   return `<div class="title-row"><h1>${monthName(m)} ${y}</h1><p class="finding">${finding}</p>${nav}</div>
+    ${isCurrent ? foldBar() : ''}
     ${backupBar()}
     <div class="board">${blocks.join('')}</div>`;
+}
+
+// Previous / next month: a link while there is somewhere to go, a disabled button at the ends.
+function stepLink(name, key, delta, glyph) {
+  const { y, m } = parseKey(key);
+  const to = shiftMonth(y, m, delta);
+  const toKey = monthKey(to.y, to.m);
+  const label = `${monthName(to.m)} ${to.y}`;
+  const open = delta < 0 ? toKey >= firstMonthKey(store.get(), now) : toKey <= lastMonthKey(now);
+  return open
+    ? `<a class="icon-btn" href="#/${name}/${toKey}" aria-label="${label}">${glyph}</a>`
+    : `<button class="icon-btn" type="button" disabled aria-label="${label}">${glyph}</button>`;
 }
 
 function todayPanel(key, s, color) {
@@ -232,8 +261,8 @@ function cranePanel(s, year) {
   const progress = day && day.goal ? day.done / day.goal : 0;
   const remaining = Math.max(0, 1000 - year.cranes);
   const perDay = Math.ceil(remaining / daysLeftInYear(now));
-  const wish = state.wish
-    ? `Wish: “${esc(state.wish)}”`
+  const wish = wishOf(state, now.y)
+    ? `Wish: “${esc(wishOf(state, now.y))}”`
     : `<a href="#/habits/${monthKey(now.y, now.m)}#wish">Write the wish for crane 1,000</a>`;
   return `<section class="panel crane-panel span-4" aria-labelledby="crane-h">
     <div class="panel-head"><h2 id="crane-h">Today's crane</h2><p>${day ? `${day.done} of ${day.goal} folds` : ''}</p></div>
@@ -407,7 +436,9 @@ function yearView(y) {
     const key = monthKey(y, x.m);
     const month = state.months[key];
     if (!month || !month.habits.length) {
-      return `<a class="month-card empty" href="#/month/${key}"><h3>${monthName(x.m)}<span>—</span></h3><p>Not started</p></a>`;
+      const reachable = key >= firstMonthKey(state, now) && key <= lastMonthKey(now);
+      const inner = `<h3>${monthName(x.m)}<span>—</span></h3><p>${key > monthKey(now.y, now.m) ? 'Still ahead' : 'Not started'}</p>`;
+      return reachable ? `<a class="month-card empty" href="#/month/${key}">${inner}</a>` : `<div class="month-card empty">${inner}</div>`;
     }
     const s = monthStats(month, y, x.m, now);
     const heat = s.habits.map((h) => h.cells.map((c) => `<i class="${c ? 'on' : ''}" style="--c:${store.color(h.id)}"></i>`).join('')).join('');
@@ -424,7 +455,8 @@ function yearView(y) {
   };
   const rangeNote = { days: 'Ticks against the days in each month (so far, for this one)', goal: 'Ticks against each month\'s goals', both: 'Mountains show days; the goal figure sits under each month' }[v];
   return `<div class="title-row"><h1>${y}</h1><p class="finding">${finding}</p>
-      <div class="month-nav">${viewSwitch()}<a class="icon-btn" href="#/year/${y - 1}" aria-label="${y - 1}">${icon.prev}</a><a class="icon-btn" href="#/year/${y + 1}" aria-label="${y + 1}">${icon.next}</a></div></div>
+      <div class="month-nav">${viewSwitch()}${yearStep(y, -1, icon.prev)}${yearStep(y, 1, icon.next)}</div></div>
+    ${yearSlip(y, ys)}
     <div class="board">
       <section class="panel span-12" aria-labelledby="range-h">
         <div class="panel-head"><h2 id="range-h">Success rate by month</h2><p>${rangeNote}</p></div>
@@ -439,12 +471,101 @@ function yearView(y) {
     </div>`;
 }
 
+function yearStep(y, delta, glyph) {
+  const to = y + delta;
+  return to >= yearBounds(store.get(), now).first && to <= now.y
+    ? `<a class="icon-btn" href="#/year/${to}" aria-label="${to}">${glyph}</a>`
+    : `<button class="icon-btn" type="button" disabled aria-label="${to}">${glyph}</button>`;
+}
+
+// The year's wish, and whether the year has been folded.
+function yearSlip(y, ys) {
+  const state = store.get();
+  const wish = wishOf(state, y);
+  const folded = foldedAt(state, y);
+  const canFold = y < now.y || now.m === 12;
+  const wishText = wish ? `The wish for ${y}: “${esc(wish)}”` : `No wish written for ${y} yet.`;
+  const date = folded && new Date(folded);
+  const foldText = folded ? `Folded on ${date.getDate()} ${monthName(date.getMonth() + 1)}.` : canFold ? 'Not folded yet.' : '';
+  const action = canFold
+    ? `<a class="btn ${folded ? 'btn--quiet' : 'btn--ink'}" href="#/fold/${y}">${folded ? `Look back at ${y}` : `Fold ${y}`}</a>`
+    : `<a class="seg-link" href="#/habits/${monthKey(now.y, now.m)}#wish">${wish ? 'Change the wish' : 'Write the wish'}</a>`;
+  return `<section class="year-slip panel" aria-label="The wish for ${y}">
+      <p>${wishText} <span>${ys.cranes} of 1,000 cranes. ${foldText}</span></p>
+      ${action}
+    </section>`;
+}
+
+// ---------- Fold the year (D-017) ----------
+// From December to January: look back at the year, choose the habits that come along, and write
+// next year's wish. Months carry their habits over anyway; this is the moment to choose.
+function foldBar() {
+  const y = yearToFold(store.get(), now);
+  if (!y) return '';
+  return `<section class="backup-bar fold-bar sheet-wrap" aria-labelledby="fold-bar-h">
+    <div class="backup-bar-sheet">
+      <div><h2 id="fold-bar-h">Fold ${y}</h2><p>${now.m === 12 ? `${y} is nearly folded.` : `${y} is done.`} Look back, pick what comes with you into ${y + 1}, and write its wish.</p></div>
+      <div class="backup-bar-actions"><a class="btn btn--ink" href="#/fold/${y}">Look back at ${y}</a></div>
+    </div>
+  </section>`;
+}
+
+function foldView(y) {
+  const state = store.get();
+  const ys = yearStats(state, y, now);
+  const sum = summarise(ys.months, 'days');
+  const perfect = ys.months.reduce((a, x) => a + (x.perfectDays || 0), 0);
+  const run = longestRun(state, y, now);
+  const folded = foldedAt(state, y);
+  const wish = wishOf(state, y);
+  // The habit folded most often in the year.
+  const totals = {};
+  Object.entries(state.months).forEach(([k, mo]) => {
+    if (!k.startsWith(`${y}-`)) return;
+    mo.habits.forEach((h) => { totals[h.id] = { name: h.name, n: (totals[h.id]?.n || 0) + (mo.checks[h.id]?.length || 0) }; });
+  });
+  const top = Object.values(totals).sort((a, b) => b.n - a.n)[0];
+  const runName = run && (totals[run.id]?.name || run.name); // the habit's latest name in the year
+  const jan = state.months[monthKey(y + 1, 1)];
+  const habits = jan ? jan.habits : closingHabits(state, y);
+  const wishLine = wish
+    ? (ys.cranes >= 1000 ? `A thousand cranes for “${esc(wish)}”. Make the wish.` : `${ys.cranes} cranes toward “${esc(wish)}”. Every one was a time you got up.`)
+    : `${ys.cranes} cranes, each one a time you got up.`;
+  const fact = (big, label) => `<div class="fold-fact"><p class="big">${big}</p><p class="label">${label}</p></div>`;
+
+  return `<div class="title-row"><h1>Fold ${y}</h1>
+      <p class="finding">${y === now.y ? 'December is still open; its ticks keep counting after you fold. ' : ''}Look back, choose what comes with you, and write the wish for ${y + 1}.</p>
+      <div class="month-nav"><a class="icon-btn" href="#/year/${y}">Back to ${y}</a></div></div>
+    <div class="board">
+      <section class="panel span-8 fold-look" aria-labelledby="look-h">
+        <div class="panel-head"><h2 id="look-h">${y}, looking back</h2><p>Best month counts ticks against its days</p></div>
+        <p class="fold-wish">${wishLine}</p>
+        <svg class="fold-range" viewBox="0 0 640 160" preserveAspectRatio="none" aria-hidden="true">${mountains(ys.months.map((x) => ({ ...x, rate: x.daysRate })), { width: 640, height: 160, mini: true })}</svg>
+        <div class="fold-facts">
+          ${fact(ys.cranes, 'cranes folded')}
+          ${fact(perfect, `perfect day${perfect === 1 ? '' : 's'}`)}
+          ${fact(sum.best ? monthShort(sum.best.m) : '—', sum.best ? `best month, ${percent(sum.bestRate)} of its days` : 'best month')}
+          ${fact(run ? run.length : 0, run ? `days in a row of ${esc(runName)}, the longest run` : 'longest run, in days')}
+          ${fact(top ? top.n : 0, top ? `folds of ${esc(top.name)}, more than any other habit` : 'folds of the top habit')}
+        </div>
+      </section>
+      <form class="panel span-4 fold-form" data-fold="${y}" aria-labelledby="carry-h">
+        <div class="panel-head"><h2 id="carry-h">Into ${y + 1}</h2><p>${folded ? 'Folded; you can change it' : 'All of them, unless you say'}</p></div>
+        <fieldset class="rem-list fold-keep"><legend class="note">Habits for January ${y + 1}</legend>
+          ${habits.length ? habits.map((h) => `<label><input type="checkbox" name="keep" value="${h.id}" checked><i style="--c:${store.color(h.id)}"></i><span>${esc(h.name)}</span></label>`).join('') : '<p class="note">No habits to carry. Add some in January.</p>'}
+        </fieldset>
+        <label class="note" for="next-wish">What will crane 1,000 of ${y + 1} be for? Only you see this.</label>
+        <textarea id="next-wish" name="wish" maxlength="200">${esc(wishOf(state, y + 1))}</textarea>
+        <button class="btn" type="submit">${folded ? `Fold ${y} again` : `Fold ${y}`}</button>
+      </form>
+    </div>`;
+}
+
 // ---------- Habits editor ----------
 function habitsView(key) {
   const { y, m } = parseKey(key);
   const state = store.get();
-  const month = state.months[key];
-  const prev = shiftMonth(y, m, -1), next = shiftMonth(y, m, 1);
+  const month = store.view(key);
   const days = daysIn(y, m);
   const rows = month.habits.map((h, i) => {
     const c = store.color(h.id);
@@ -466,7 +587,7 @@ function habitsView(key) {
 
   return `<div class="title-row"><h1>Habits for ${monthName(m)}</h1>
       <p class="finding">Changes apply to ${monthName(m)} ${y}. A new month starts with the habits of the month before, so set it up once.</p>
-      <div class="month-nav"><a class="icon-btn" href="#/habits/${monthKey(prev.y, prev.m)}" aria-label="${monthName(prev.m)}">${icon.prev}</a><a class="icon-btn" href="#/month/${key}">Back to the month</a><a class="icon-btn" href="#/habits/${monthKey(next.y, next.m)}" aria-label="${monthName(next.m)}">${icon.next}</a></div></div>
+      <div class="month-nav">${stepLink('habits', key, -1, icon.prev)}<a class="icon-btn" href="#/month/${key}">Back to the month</a>${stepLink('habits', key, 1, icon.next)}</div></div>
     <div class="board">
       <section class="span-8" aria-labelledby="list-h">
         <h2 id="list-h" class="visually-hidden">This month's habits</h2>
@@ -484,10 +605,10 @@ function habitsView(key) {
         ${percentagesPanel()}
         ${remindersPanel(month)}
         <section class="panel" id="wish" aria-labelledby="wish-h">
-          <div class="panel-head"><h2 id="wish-h">The wish</h2></div>
-          <form class="wish-form" data-wish>
-            <label class="note" for="wish-text">What will crane 1,000 be for? Only you see this.</label>
-            <textarea id="wish-text" name="wish" maxlength="200">${esc(state.wish || '')}</textarea>
+          <div class="panel-head"><h2 id="wish-h">The wish for ${y}</h2></div>
+          <form class="wish-form" data-wish="${y}">
+            <label class="note" for="wish-text">What will crane 1,000 of ${y} be for? Only you see this.</label>
+            <textarea id="wish-text" name="wish" maxlength="200">${esc(wishOf(state, y))}</textarea>
             <button class="btn btn--ink" type="submit">Keep the wish</button>
           </form>
         </section>
@@ -668,7 +789,7 @@ view.addEventListener('click', (e) => {
   const rm = e.target.closest('[data-remove]');
   if (rm) {
     const key = route().key;
-    const h = store.month(key).habits.find((x) => x.id === rm.dataset.remove);
+    const h = store.view(key).habits.find((x) => x.id === rm.dataset.remove);
     if (h && window.confirm(`Remove “${h.name}” from ${monthName(parseKey(key).m)}? Its ticks for this month go with it.`)) {
       store.removeHabit(key, h.id);
       toast(`Removed ${h.name}.`);
@@ -691,7 +812,7 @@ view.addEventListener('click', (e) => {
   if (wd) {
     const [id, dayStr] = wd.dataset.wd.split(':');
     const key = route().key;
-    const habit = store.month(key)?.habits.find((x) => x.id === id);
+    const habit = store.view(key).habits.find((x) => x.id === id);
     if (!habit) return;
     const day = Number(dayStr);
     const current = habit.weekdays || [];
@@ -761,8 +882,18 @@ view.addEventListener('submit', (e) => {
     requestAnimationFrame(() => $('[data-add] input[name="name"]')?.focus());
   }
   if (form.matches('[data-wish]')) {
-    store.setWish(new FormData(form).get('wish').trim());
+    store.setWish(Number(form.dataset.wish), new FormData(form).get('wish'));
     toast('Wish kept. 1,000 cranes to make it count.');
+  }
+  if (form.matches('[data-fold]')) {
+    const y = Number(form.dataset.fold);
+    const data = new FormData(form);
+    const kept = store.foldYear(y, { keep: data.getAll('keep'), wish: data.get('wish') });
+    if (!reduced) confetti();
+    toast(kept.length
+      ? `${y} folded. ${kept.join(', ')} stayed: January already has ticks for ${kept.length === 1 ? 'it' : 'them'}.`
+      : `${y} folded. January ${y + 1} is ready.`);
+    location.hash = `#/year/${y}`;
   }
 });
 

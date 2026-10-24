@@ -5,12 +5,12 @@ import { SEED_MONTHS, HABIT_COLORS } from '../src/data/seed.js';
 
 const seedState = () => ({
   version: 1,
-  wish: '',
   colors: { ...HABIT_COLORS },
   months: Object.fromEntries(Object.entries(SEED_MONTHS).map(([k, hs]) => [k, {
     habits: hs.map(({ id, name, goal, time, start }) => ({ id, name, goal, time: time || '', start: start || 1 })),
     checks: Object.fromEntries(hs.map((h) => [h.id, [...h.days]])),
   }])),
+  years: {},
 });
 
 // The real data passes through unchanged.
@@ -56,7 +56,7 @@ assert.deepEqual(oct.checks.german, [1, 2, 31], 'only real days of the month sur
 assert.deepEqual(oct.checks.core, [], 'non-array ticks become empty');
 assert.equal('ghost' in oct.checks, false, 'ticks for unknown habits are dropped');
 assert.deepEqual(evil.colors, { dsa: '#E9B33F' }, 'only #RRGGBB colours on valid ids survive');
-assert.equal(evil.wish.length, LIMITS.wish, 'wish is capped');
+assert.equal(evil.years[2026].wish.length, LIMITS.wish, 'wish is capped');
 assert.equal(evil.prefs.percentView, 'days', 'unknown view falls back to days');
 assert.deepEqual(evil.reminders, { enabled: false, lead: 0, off: { dsa: true }, log: { '2026-10-23:german': { firedAt: undefined, snoozeUntil: 5 } } });
 assert.equal('extra' in evil, false, 'unknown keys are dropped');

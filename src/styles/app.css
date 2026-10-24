@@ -207,11 +207,11 @@ td.is-today .cell:not([aria-pressed="true"]) { outline: 2px solid var(--sumi); o
 .editor { display: grid; gap: 10px; }
 .edit-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) 120px 96px 96px auto; gap: 12px; align-items: end; background: var(--white-paper); padding: 14px 16px; filter: var(--lift); }
 .edit-row label, .add-form label { display: grid; gap: 4px; font-size: 13px; font-weight: 700; color: var(--sumi-2); }
-.edit-row input, .add-form input, .wish-form textarea {
+.edit-row input, .add-form input, .wish-form textarea, .fold-form textarea {
   font: inherit; font-size: 16px; font-weight: 500; color: var(--sumi); min-height: 44px; padding: 8px 10px;
   border: 1px solid var(--washi-3); border-radius: 4px; background: var(--washi); width: 100%;
 }
-.edit-row input:focus, .add-form input:focus, .wish-form textarea:focus { outline: 2px solid var(--ai); outline-offset: 0; background: var(--white-paper); }
+.edit-row input:focus, .add-form input:focus, .wish-form textarea:focus, .fold-form textarea:focus { outline: 2px solid var(--ai); outline-offset: 0; background: var(--white-paper); }
 .swatch-btn { width: 40px; height: 44px; border: 0; border-radius: 4px; background: var(--c); cursor: pointer; }
 .row-actions { display: flex; gap: 6px; }
 .swatches { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 0 0; grid-column: 1 / -1; }
@@ -220,7 +220,7 @@ td.is-today .cell:not([aria-pressed="true"]) { outline: 2px solid var(--sumi); o
 .add-form { display: grid; grid-template-columns: minmax(0, 1fr) 120px 150px 96px 96px auto; gap: 12px; align-items: end; }
 .side-stack { display: grid; gap: 24px; align-content: start; }
 .wish-form { display: grid; gap: 10px; }
-.wish-form textarea { min-height: 88px; resize: vertical; }
+.wish-form textarea, .fold-form textarea { min-height: 88px; resize: vertical; }
 .backup-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .backup-actions .btn { min-height: 44px; padding: 0 18px; font-size: 15px; }
 .danger { background: var(--washi-2); color: var(--shu-ink); }
@@ -267,6 +267,20 @@ td.is-today .cell:not([aria-pressed="true"]) { outline: 2px solid var(--sumi); o
 .backup-bar p { font-size: 15px; margin-top: 2px; }
 .backup-bar-actions { display: flex; align-items: center; gap: 16px; }
 .backup-bar .seg-link { color: var(--sumi); }
+/* Years (D-017): the fold slip in December and January, the year's wish, the look back */
+.fold-bar .backup-bar-sheet { background: var(--sakura); }
+.year-slip { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; margin: 0 0 24px; }
+.year-slip p { font-weight: 700; max-width: 72ch; }
+.year-slip span { font-weight: 500; color: var(--sumi-2); }
+.fold-wish { font-family: var(--display); font-size: var(--step-1); line-height: 1.25; max-width: 36ch; margin: 6px 0 18px; }
+.fold-range { display: block; width: 100%; height: 140px; overflow: visible; }
+.fold-range path.mtn { filter: drop-shadow(0 -3px 4px rgba(30, 27, 24, .16)); }
+.fold-range path.ghost { fill: none; stroke: var(--sumi-2); stroke-width: 2; stroke-dasharray: 6 7; }
+.fold-facts { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; margin-top: 22px; }
+.fold-form { display: grid; gap: 10px; align-content: start; }
+.fold-keep { margin: 0 0 6px; }
+.rem-list.fold-keep label { grid-template-columns: 22px 1fr; }
+.fold-form .btn { justify-self: start; }
 .safety { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; font-size: 14px; color: var(--sumi-2); }
 .safety b { color: var(--sumi); }
 
@@ -299,6 +313,9 @@ td.is-today .cell:not([aria-pressed="true"]) { outline: 2px solid var(--sumi); o
 .toast.show { transform: translate(-50%, 0); visibility: visible; transition: transform .35s var(--ease-paper); }
 
 @media (max-width: 1180px) {
+  .fold-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .fold-form.span-4 { grid-column: 1 / -1; }
+  .fold-keep { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
   .span-5, .span-4, .span-3 { grid-column: span 6; }
   .span-8, .span-7, .span-6 { grid-column: span 12; }
   .crane-panel { grid-row: span 1; }
@@ -307,6 +324,7 @@ td.is-today .cell:not([aria-pressed="true"]) { outline: 2px solid var(--sumi); o
   .edit-row .row-actions { grid-column: 2 / -1; }
 }
 @media (max-width: 760px) {
+  .fold-facts { grid-template-columns: 1fr 1fr; }
   .topbar { grid-template-columns: auto 1fr; gap: 12px; padding-top: 10px; padding-bottom: 10px; }
   .views { grid-column: 1 / -1; grid-row: 2; justify-self: stretch; justify-content: space-between; }
   .views a { flex: 1; text-align: center; padding: 8px 10px; }

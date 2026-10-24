@@ -229,3 +229,34 @@ Accepted · 24 Oct 2026 · revisit when accounts ship
     page keeps its current detail until the owner asks to change it.
   - **Repository:** stays public. The owner judged that a list of habits worked on can't be used
     maliciously. Recorded as an accepted risk in [security.md](security.md).
+
+## D-017 Years: months only when used, a wish per year, and folding the year
+Accepted · 24 Oct 2026
+
+- **Context:** the tracker began with 2026 data only. Months are stored by key (`"2026-10"`), so
+  2027 is just more months, and habits already carry over from one month to the next. Three things
+  around that didn't fit a second year: opening any month (even 2031 or 2019) saved an empty copy
+  of it; the arrows went forward and back forever; and there was one wish for all time while the
+  crane count resets every year.
+- **Decision:**
+  - **Months are saved only when something changes in them.** Opening a month that hasn't been
+    used shows a draft (last month's habits, empty grid) without saving it. Ticking, adding,
+    editing, moving or removing a habit saves the month. This month is always saved, as in the
+    sheet, so reminders and the Today list work from the 1st. Once synced, browsing never writes
+    rows to the database.
+  - **Limits:** the tracker opens months from the first one with a habit in it (nothing before
+    the user started) up to next month (so it can be set up ahead). Years go from the first year up
+    to this one. An address outside that lands on the nearest month or year that is allowed.
+  - **One wish per year:** `years["2026"].wish`. Crane 1,000 of each year is for something new;
+    past years keep theirs. An old backup's single `wish` moves to the latest year that has months.
+  - **Fold the year:** from 1 December to 31 January, a slip on the current month offers a look
+    back at the year (cranes, perfect days, best month, longest run, most-folded habit), a
+    checklist of the habits to carry into January (all ticked by default), and next year's wish.
+    Folding records `years["2026"].foldedAt`. A habit you let go that already has ticks in January
+    stays, and you're told so: ticks are never thrown away. Skipping the ritual changes nothing:
+    habits carry over by themselves.
+- **Data:** a top-level `years` map, `{ "2026": { wish, foldedAt } }`, validated in
+  `cleanState()` (four-digit years, wish capped at 200 characters, at most 100 years). In Postgres
+  it becomes a `years` table (see data-storage.md); `profiles.wish` goes away.
+- **Later:** a year recap and comparisons between years (vision.md) read the same data; nothing
+  extra needs storing for them.

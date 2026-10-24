@@ -12,12 +12,14 @@ export const LIMITS = {
   habitsPerMonth: 50,
   name: 120,
   wish: 200,
+  years: 100,
 };
 
 const ID = /^[a-z0-9][a-z0-9-]{0,63}$/;
 const HEX = /^#[0-9a-fA-F]{6}$/;
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 const MONTH = /^(\d{4})-(0[1-9]|1[0-2])$/;
+const YEAR = /^(19|20|21)\d{2}$/;
 const DATE = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 const VIEWS = ['days', 'goal', 'both'];
 const LEADS = [0, 5, 10, 15, 30];
@@ -88,12 +90,7 @@ export function cleanState(input) {
     for (const [id, c] of Object.entries(input.colors)) if (isId(id) && HEX.test(c)) colors[id] = c;
   }
 
-  const out = {
-    version: 1,
-    wish: typeof input.wish === 'string' ? input.wish.slice(0, LIMITS.wish) : '',
-    colors,
-    months,
-  };
+  const out = { version: 1, colors, months, years: cleanYears(input, keys) };
 
   if (isObject(input.prefs)) {
     out.prefs = { percentView: VIEWS.includes(input.prefs.percentView) ? input.prefs.percentView : 'days' };
@@ -124,6 +121,24 @@ export function cleanState(input) {
     out.reminders = { enabled: r.enabled === true, lead: LEADS.includes(r.lead) ? r.lead : 0, off, log };
   }
   return out;
+}
+
+// Per-year records (D-017): { "2026": { wish, foldedAt } }. Older data had one `wish` for all time;
+// it belongs to the latest year with months in it, the year it was written for.
+function cleanYears(input, monthKeys) {
+  const years = {};
+  const src = isObject(input.years) ? input.years : {};
+  for (const y of Object.keys(src).filter((k) => YEAR.test(k)).sort().slice(-LIMITS.years)) {
+    if (!isObject(src[y])) continue;
+    const wish = typeof src[y].wish === 'string' ? src[y].wish.slice(0, LIMITS.wish) : '';
+    const foldedAt = Number.isFinite(src[y].foldedAt) && src[y].foldedAt > 0 && src[y].foldedAt <= 8.64e15 ? src[y].foldedAt : undefined; // a real Date
+    if (wish || foldedAt) years[y] = { wish, foldedAt };
+  }
+  if (typeof input.wish === 'string' && input.wish.trim()) {
+    const y = monthKeys.length ? monthKeys[monthKeys.length - 1].slice(0, 4) : String(new Date().getFullYear());
+    if (!years[y]?.wish) years[y] = { ...years[y], wish: input.wish.slice(0, LIMITS.wish) };
+  }
+  return years;
 }
 
 export function parseBackup(text) {

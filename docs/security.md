@@ -113,6 +113,16 @@ undici 7.30.1, the patched release from the same maintainers (9 days old, taken 
 because it is a security patch). Remove the override once a Wrangler release ships a patched
 undici. Test: `npm audit` 0, `npm run check`, build, `wrangler deploy --dry-run`.
 
+### 24 October 2026 — years (branch `feature/years`)
+
+New input: a top-level `years` map (`{ "2026": { wish, foldedAt } }`) in stored data and backups.
+`cleanState()` keeps only four-digit years with object records, caps the wish at 200 characters and
+the map at 100 years, and drops bad timestamps; an old single `wish` is moved, not trusted as is.
+Wishes and habit names on the new fold page and year slip go through `esc()`; the fold form sends
+only habit ids, which `foldYear()` checks with `isId()`. Route arguments are clamped to real months
+and years before use. Tests: `scripts/check-years.mjs` (including hostile year records) and a
+browser check that a wish containing HTML shows as text.
+
 ### Accepted risks (owner's decision, 24 Oct 2026, D-016)
 
 - The repository is public, and its history contains the owner's January–October 2026 habit data

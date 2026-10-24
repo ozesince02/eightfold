@@ -98,6 +98,13 @@ Shadows are allowed **only** on paper lying on paper. Buttons and controls are f
 - **Ranked bars:** name on its own line, bar below, figure right. In Both, two labelled bars.
 - **Forms:** labels above inputs, 44px fields, washi fill, ai focus ring.
 - **Toasts:** sumi slip, bottom centre, 2.4s.
+- **Fold slip** (`.backup-bar.fold-bar`): the backup slip's shape in sakura, above it on the
+  current month, from 1 December to 31 January until the year is folded. One sumi button.
+- **Year slip** (`.year-slip`): a white panel under the year's title with its wish, cranes out of
+  1,000 and whether it's folded; a button to fold or look back once the year can be folded.
+- **Fold page** (`#/fold/2026`): a look-back panel (the wish line in the display face, mini
+  mountains, five figures) beside a form (habits for January as colour-chip checkboxes, next year's
+  wish, one red button). Ends of the month arrows are disabled buttons, not hidden.
 - **Backup slip** (`.backup-bar`): a yamabuki strip with notched ends above the month board, only
   when a backup is due and data is local. One primary (sumi) button and a text link to snooze.
 

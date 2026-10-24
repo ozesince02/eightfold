@@ -70,6 +70,16 @@ once a week. Fall seven times, rise eight, as a mechanic.
 ### Weekly recap
 A paper card every Sunday: folds made, best habit, the week's crane, ready to save or share.
 
+### Year in folds: a recap, and years side by side (24 Oct 2026, from the user)
+A year-end recap in the spirit of Spotify Wrapped, made of paper: a short sequence of cards to tap
+through in December, ending on the wish. Ideas for cards: total cranes and what that is in paper
+(a stack as tall as...), the habit you folded most, the longest run and when it happened, the best
+month and the hardest one you came back from, your most consistent hour, perfect days, the day of
+the week you never missed. Saved as images to share, with habit names optional (privacy first).
+Plus **comparisons between years**: 2027 against 2026 per habit, month by month, as two mountain
+ranges laid over each other. "Fold the year" (D-017) is the first step and already shows a short
+look back; the data is ready for this (habit ids stay the same across years).
+
 ### Wish at 1,000
 When crane 1,000 is folded, the wish written on the Habits page is revealed on a big paper scroll.
 
