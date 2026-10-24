@@ -1,0 +1,8 @@
+/* The two typefaces, served from this site instead of Google Fonts (D-027), so no other company
+   sees who visits. From Fontsource (OFL-1.1), split by unicode-range like Google's: a page
+   downloads only the slices for the characters it shows (Latin text, plus the few kanji and
+   katakana on the stickers and the cranes story). */
+@import '@fontsource/dela-gothic-one/400.css';
+@import '@fontsource/zen-maru-gothic/500.css';
+@import '@fontsource/zen-maru-gothic/700.css';
+@import '@fontsource/zen-maru-gothic/900.css';

@@ -6,6 +6,8 @@ Dates are when the work landed.
 ## Unreleased
 
 ### Changed
+- **The fonts come from Eightfold itself**, not Google Fonts, so no other company sees your visits.
+  The security policy no longer allows any third-party style or font origin. (D-027)
 - Landing page: the demo is "Try it with these six", and "Your day, in order" describes the
   feature for everyone rather than the sheet's habit names. "Streaks that survive the 1st" is now
   "Habits on your schedule" (chosen days, times a week, weekly, monthly); the zine's streaks panel
@@ -77,6 +79,8 @@ Dates are when the work landed.
 - Arrow keys in the grid hop over rest days.
 
 ### Changed
+- **The fonts come from Eightfold itself**, not Google Fonts, so no other company sees your visits.
+  The security policy no longer allows any third-party style or font origin. (D-027)
 - In the Days view the grid's columns are now "Due" and "% due", since a weekly habit is counted in weeks.
 
 ### Fixed
@@ -130,6 +134,8 @@ Dates are when the work landed.
   the [data storage study](docs/data-storage.md) and the [vision](docs/vision.md).
 
 ### Changed
+- **The fonts come from Eightfold itself**, not Google Fonts, so no other company sees your visits.
+  The security policy no longer allows any third-party style or font origin. (D-027)
 - This month's success rate counts only the days so far. Today counts once it's ticked.
 - A month's goal total counts each habit at most at its goal.
 
@@ -139,6 +145,8 @@ Dates are when the work landed.
 ## 0.3.0 — 23 October 2026
 
 ### Changed
+- **The fonts come from Eightfold itself**, not Google Fonts, so no other company sees your visits.
+  The security policy no longer allows any third-party style or font origin. (D-027)
 - **Renamed to Eightfold** (was the working name Orizuru). New hero line, "Fall seven, rise eight",
   and the story behind the name in the Why section. (D-009)
 - Data saved under the old name is picked up automatically.

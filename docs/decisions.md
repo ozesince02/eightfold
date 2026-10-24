@@ -448,3 +448,19 @@ Accepted · 25 Oct 2026
 - When a service that handles data changes (for example self-hosted fonts drop Google from page
   loads), the Privacy page and its date change in the same pull request.
 
+## D-027 The fonts are served from our own site
+Accepted · 25 Oct 2026
+
+- **Context:** every page loaded Dela Gothic One and Zen Maru Gothic from Google Fonts, so Google
+  saw each visitor's IP address, even people who never sign in, and the CSP had to allow two Google
+  origins.
+- **Decision:** the same two typefaces from **Fontsource** (`@fontsource/dela-gothic-one`,
+  `@fontsource/zen-maru-gothic`, OFL-1.1, exact versions), imported once in
+  `src/styles/fonts.css` and linked by every page. They're split by unicode-range like Google's,
+  so a page downloads only the slices it shows (about 85 KB on the landing page).
+- `vite.config.js` drops Fontsource's `.woff` fallbacks from the built CSS (every browser we
+  support reads woff2; it saves ~10 MB of deploy) and never inlines a font as a `data:` URL, which
+  `font-src 'self'` would block. `404.html` moved from `public/` to a Vite page so it gets the fonts
+  too. `check-security.mjs` fails if a page loads Google Fonts again or the CSP loosens.
+- **Cost:** the deploy carries ~8 MB of font slices (489 files) that visitors fetch only as needed.
+
