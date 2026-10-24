@@ -8,7 +8,10 @@ import { hills, mountains, ring } from './ui/charts.js';
 import { daysLeftInYear, longestRun } from './ui/insights.js';
 import { clampKey, yearBounds, firstMonthKey, lastMonthKey, wishOf, foldedAt, yearToFold, closingHabits } from './lib/years.js';
 import { esc } from './lib/sanitize.js';
+import { CRANE_GOAL, CRANE_GOAL_TEXT } from './config.js';
 import { createCraneStage } from './three/stage.js';
+import { startAuth, signInWithGoogle, sendSignInLink, signOut, getClient } from './lib/auth.js';
+import { createSync, supabaseApi } from './lib/sync/engine.js';
 import { startReminders, enableReminders, disableReminders, sendTestReminder, permissionState, nextReminder } from './ui/reminders.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -28,7 +31,7 @@ const icon = {
 $$('[data-mark]').forEach((el) => { el.innerHTML = craneMark(); });
 
 let now = today();
-let ui = { swatchFor: null, pct: null, protection: null };
+let ui = { swatchFor: null, pct: null, protection: null, account: { status: 'loading' }, sending: false, sync: { state: 'off', pending: 0 } };
 let stage = null;
 let lastProgress = -1;
 
@@ -77,7 +80,7 @@ function render() {
     a.href = v === 'year' ? `#/year/${r.year || (r.key ? parseKey(r.key).y : now.y)}` : `#/${v}/${r.key || monthKey(now.y, now.m)}`;
     if (v === r.name || (v === 'year' && r.name === 'fold')) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
-  $('[data-cranes-chip]').innerHTML = `<b>${year.cranes}</b> cranes in ${now.y}`;
+  $('[data-cranes-chip]').innerHTML = `<b>${year.cranes}</b> cranes in ${now.y}${syncDot()}`;
 
   if (r.name === 'year') view.innerHTML = yearView(r.year);
   else if (r.name === 'fold') view.innerHTML = foldView(r.year);
@@ -143,6 +146,7 @@ function monthView(key, year) {
   if (timed.length) blocks.push(dayPanel(key, s, color));
 
   return `<div class="title-row"><h1>${monthName(m)} ${y}</h1><p class="finding">${finding}</p>${nav}</div>
+    ${chooseBar()}
     ${isCurrent ? foldBar() : ''}
     ${backupBar()}
     <div class="board">${blocks.join('')}</div>`;
@@ -259,17 +263,17 @@ function cranePanel(s, year) {
   const ts = todayMonth ? monthStats(todayMonth, now.y, now.m, now) : null;
   const day = ts?.perDay[now.d - 1];
   const progress = day && day.goal ? day.done / day.goal : 0;
-  const remaining = Math.max(0, 1000 - year.cranes);
+  const remaining = Math.max(0, CRANE_GOAL - year.cranes);
   const perDay = Math.ceil(remaining / daysLeftInYear(now));
   const wish = wishOf(state, now.y)
     ? `Wish: “${esc(wishOf(state, now.y))}”`
-    : `<a href="#/habits/${monthKey(now.y, now.m)}#wish">Write the wish for crane 1,000</a>`;
+    : `<a href="#/habits/${monthKey(now.y, now.m)}#wish">Write the wish for crane ${CRANE_GOAL_TEXT}</a>`;
   return `<section class="panel crane-panel span-4" aria-labelledby="crane-h">
     <div class="panel-head"><h2 id="crane-h">Today's crane</h2><p>${day ? `${day.done} of ${day.goal} folds` : ''}</p></div>
     <div class="crane-slot" data-progress="${progress.toFixed(4)}"></div>
-    <p class="crane-count">${year.cranes}<small>of 1,000 cranes</small></p>
-    <div class="wish-meter" aria-hidden="true"><span style="width:${Math.min(100, year.cranes / 10)}%"></span></div>
-    <p class="wish-line">${remaining ? `${remaining} to go: about ${perDay} a day until 31 December. ` : 'A thousand cranes. '}${wish}</p>
+    <p class="crane-count">${year.cranes}<small>of ${CRANE_GOAL_TEXT} cranes</small></p>
+    <div class="wish-meter" aria-hidden="true"><span style="width:${Math.min(100, (year.cranes / CRANE_GOAL) * 100)}%"></span></div>
+    <p class="wish-line">${remaining ? `${remaining} to go: about ${perDay} a day until 31 December. ` : `${CRANE_GOAL_TEXT} cranes. `}${wish}</p>
   </section>`;
 }
 
@@ -491,7 +495,7 @@ function yearSlip(y, ys) {
     ? `<a class="btn ${folded ? 'btn--quiet' : 'btn--ink'}" href="#/fold/${y}">${folded ? `Look back at ${y}` : `Fold ${y}`}</a>`
     : `<a class="seg-link" href="#/habits/${monthKey(now.y, now.m)}#wish">${wish ? 'Change the wish' : 'Write the wish'}</a>`;
   return `<section class="year-slip panel" aria-label="The wish for ${y}">
-      <p>${wishText} <span>${ys.cranes} of 1,000 cranes. ${foldText}</span></p>
+      <p>${wishText} <span>${ys.cranes} of ${CRANE_GOAL_TEXT} cranes. ${foldText}</span></p>
       ${action}
     </section>`;
 }
@@ -529,7 +533,7 @@ function foldView(y) {
   const jan = state.months[monthKey(y + 1, 1)];
   const habits = jan ? jan.habits : closingHabits(state, y);
   const wishLine = wish
-    ? (ys.cranes >= 1000 ? `A thousand cranes for “${esc(wish)}”. Make the wish.` : `${ys.cranes} cranes toward “${esc(wish)}”. Every one was a time you got up.`)
+    ? (ys.cranes >= CRANE_GOAL ? `${CRANE_GOAL_TEXT} cranes for “${esc(wish)}”. Make the wish.` : `${ys.cranes} cranes toward “${esc(wish)}”. Every one was a time you got up.`)
     : `${ys.cranes} cranes, each one a time you got up.`;
   const fact = (big, label) => `<div class="fold-fact"><p class="big">${big}</p><p class="label">${label}</p></div>`;
 
@@ -554,7 +558,7 @@ function foldView(y) {
         <fieldset class="rem-list fold-keep"><legend class="note">Habits for January ${y + 1}</legend>
           ${habits.length ? habits.map((h) => `<label><input type="checkbox" name="keep" value="${h.id}" checked><i style="--c:${store.color(h.id)}"></i><span>${esc(h.name)}</span></label>`).join('') : '<p class="note">No habits to carry. Add some in January.</p>'}
         </fieldset>
-        <label class="note" for="next-wish">What will crane 1,000 of ${y + 1} be for? Only you see this.</label>
+        <label class="note" for="next-wish">What will crane ${CRANE_GOAL_TEXT} of ${y + 1} be for? Only you see this.</label>
         <textarea id="next-wish" name="wish" maxlength="200">${esc(wishOf(state, y + 1))}</textarea>
         <button class="btn" type="submit">${folded ? `Fold ${y} again` : `Fold ${y}`}</button>
       </form>
@@ -602,19 +606,20 @@ function habitsView(key) {
         </form>
       </section>
       <div class="span-4 side-stack">
+        ${accountPanel()}
         ${percentagesPanel()}
         ${remindersPanel(month)}
         <section class="panel" id="wish" aria-labelledby="wish-h">
           <div class="panel-head"><h2 id="wish-h">The wish for ${y}</h2></div>
           <form class="wish-form" data-wish="${y}">
-            <label class="note" for="wish-text">What will crane 1,000 of ${y} be for? Only you see this.</label>
+            <label class="note" for="wish-text">What will crane ${CRANE_GOAL_TEXT} of ${y} be for? Only you see this.</label>
             <textarea id="wish-text" name="wish" maxlength="200">${esc(wishOf(state, y))}</textarea>
             <button class="btn btn--ink" type="submit">Keep the wish</button>
           </form>
         </section>
         <section class="panel" aria-labelledby="backup-h">
           <div class="panel-head"><h2 id="backup-h">Backup</h2></div>
-          <p class="note">Everything lives in this browser. Save a copy now and then, or move it to another device.</p>
+          <p class="note">${store.mode() === 'synced' ? 'Your folds are saved to your account. A backup file is still yours to keep.' : 'Everything lives in this browser. Save a copy now and then, or move it to another device.'}</p>
           <ul class="safety">
             <li><b>Last backup:</b> ${lastBackupText()}</li>
             <li><b>Storage:</b> ${{
@@ -627,11 +632,98 @@ function habitsView(key) {
             <button class="btn btn--quiet" type="button" data-export>Save a backup</button>
             <label class="btn btn--quiet" for="import-file">Load a backup</label>
             <input id="import-file" type="file" accept="application/json,.json" class="visually-hidden" data-import>
-            <button class="btn danger" type="button" data-reset>Reset to the sheet</button>
           </div>
         </section>
       </div>
     </div>`;
+}
+
+// ---------- Sync (D-020) ----------
+const SYNC_WORDS = {
+  synced: 'Saved to your account.',
+  syncing: 'Saving to your account…',
+  offline: 'Offline: changes are saved here and will sync when you\'re back.',
+  error: 'Couldn\'t reach your account; trying again.',
+  choose: 'This browser and your account both have folds.',
+};
+
+const sync = createSync({
+  store,
+  storage: store.syncStorage,
+  online: () => navigator.onLine,
+  onStatus: (s) => {
+    ui.sync = s;
+    if (s.message) toast(s.message);
+    scheduleRender();
+  },
+});
+
+// A dot beside the crane count: in step, saving, or not reaching the account.
+function syncDot() {
+  const s = ui.sync.state;
+  if (s === 'off') return '';
+  const label = SYNC_WORDS[s] || '';
+  return `<span class="sync-dot" data-state="${s}" role="img" aria-label="${esc(label)}" title="${esc(label)}"></span>`;
+}
+
+function chooseButtons() {
+  return `<div class="backup-actions">
+      <button class="btn btn--ink" type="button" data-sync-choose="merge">Keep both</button>
+      <button class="seg-link" type="button" data-sync-choose="account">Use only my account's</button>
+    </div>
+    <p class="note">Keep both adds this browser's habits and ticks to your account; nothing is lost either way. Choosing the account's keeps a copy of this browser's data aside.</p>`;
+}
+
+// First sign-in on a browser that already has folds, when the account has some too.
+function chooseBar() {
+  if (ui.sync.state !== 'choose') return '';
+  return `<section class="backup-bar sheet-wrap" aria-labelledby="choose-h">
+    <div class="backup-bar-sheet">
+      <div><h2 id="choose-h">Two sets of folds</h2><p>This browser and your account both have habits. Keep both, or use only your account's.</p></div>
+      <div class="backup-bar-actions">
+        <button class="btn btn--ink" type="button" data-sync-choose="merge">Keep both</button>
+        <button class="seg-link" type="button" data-sync-choose="account">Use only my account's</button>
+      </div>
+    </div>
+  </section>`;
+}
+
+function onAccount(account) {
+  const was = ui.account;
+  ui.account = account;
+  if (account.status === 'signed-in' && account.id) {
+    getClient().then((sb) => sync.start(supabaseApi(sb, account.id), account.id)).catch(() => {});
+  } else if (account.status === 'signed-out' && was.status === 'signed-in') {
+    sync.stop();
+  }
+  scheduleRender();
+}
+
+// ---------- Account (D-019) ----------
+function accountPanel() {
+  const a = ui.account;
+  const body = {
+    loading: '<p class="note">Checking your account…</p>',
+    unavailable: '<p class="note">Sign-in can\'t be reached right now. Everything still works on this device.</p>',
+    'signed-in': `<p class="account-who">Signed in as <b>${esc(a.email || 'you')}</b></p>
+      <p class="note">${SYNC_WORDS[ui.sync.state] || 'Connecting to your account…'} Your folds are saved here first, then to your account, and reach your other devices.</p>
+      ${ui.sync.state === 'choose' ? chooseButtons() : ''}
+      <div class="backup-actions"><button class="btn btn--quiet" type="button" data-sign-out>Sign out</button></div>`,
+    'signed-out': `<p class="note">Optional. Sign in to keep your folds on every device; the tracker works the same without it.</p>
+      <div class="backup-actions"><button class="btn btn--ink" type="button" data-sign-in="google">Continue with Google</button></div>
+      <form class="account-form" data-sign-in-email>
+        <label for="account-email">Or get a sign-in link by email</label>
+        <div class="account-row">
+          <input id="account-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="254" required placeholder="you@example.com" value="${esc(ui.emailDraft || '')}">
+          <button class="btn btn--quiet" type="submit" ${ui.sending ? 'disabled' : ''}>${ui.sending ? 'Sending…' : 'Send link'}</button>
+        </div>
+        <p class="note">Open the link in this browser.</p>
+      </form>`,
+  }[a.status] || '';
+  return `<section class="panel" id="account" aria-labelledby="account-h">
+    <div class="panel-head"><h2 id="account-h">Account</h2></div>
+    ${body}
+  </section>`;
 }
 
 const clock = (mins) => `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
@@ -841,11 +933,20 @@ view.addEventListener('click', (e) => {
     }
     return;
   }
-  if (e.target.closest('[data-reset]')) {
-    if (window.confirm('Replace everything with the data from the Google Sheet? Ticks you made here will be lost unless you saved a backup.')) {
-      store.resetToSheet();
-      toast('Back to the sheet, as of 22 October.');
-    }
+  const signIn = e.target.closest('[data-sign-in]');
+  if (signIn) {
+    signInWithGoogle().catch((err) => toast(err.message));
+    return;
+  }
+  const choose = e.target.closest('[data-sync-choose]');
+  if (choose) {
+    const kind = choose.dataset.syncChoose;
+    sync.choose(kind).then(() => toast(kind === 'merge' ? 'Kept both. Your account has everything now.' : 'Using your account\'s folds. This browser\'s copy is kept aside.'));
+    return;
+  }
+  if (e.target.closest('[data-sign-out]')) {
+    signOut().then(() => toast('Signed out on this device. Your folds are still here.')).catch(() => toast('Couldn\'t sign out. Try again.'));
+    return;
   }
 });
 
@@ -881,9 +982,20 @@ view.addEventListener('submit', (e) => {
     toast(added ? `Added ${data.name.trim()}.` : 'That habit could not be added. A month holds up to 50 habits.');
     requestAnimationFrame(() => $('[data-add] input[name="name"]')?.focus());
   }
+  if (form.matches('[data-sign-in-email]')) {
+    if (ui.sending) return;
+    ui.sending = true;
+    ui.emailDraft = String(new FormData(form).get('email') || '');
+    render();
+    sendSignInLink(ui.emailDraft)
+      .then(() => toast('Check your email for the sign-in link, and open it in this browser.'))
+      .catch((err) => toast(err.message))
+      .finally(() => { ui.sending = false; render(); });
+    return;
+  }
   if (form.matches('[data-wish]')) {
     store.setWish(Number(form.dataset.wish), new FormData(form).get('wish'));
-    toast('Wish kept. 1,000 cranes to make it count.');
+    toast(`Wish kept. ${CRANE_GOAL_TEXT} cranes to make it count.`);
   }
   if (form.matches('[data-fold]')) {
     const y = Number(form.dataset.fold);
@@ -950,4 +1062,11 @@ render();
 scrollToAnchor();
 if (location.hash.endsWith('#wish')) $('#wish-text')?.focus();
 startReminders({ toast });
+// After the first render: the sign-in client is only needed once the page is usable. A timer, not
+// requestAnimationFrame, so a tab opened in the background still signs in.
+setTimeout(() => startAuth(onAccount, toast), 0);
+// Back online, or back to this tab: send what's queued and fetch what other devices changed.
+window.addEventListener('online', () => sync.pull());
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') sync.pull(); });
+setInterval(() => { if (document.visibilityState === 'visible') sync.pull(); }, 5 * 60 * 1000);
 if (!reduced) gsap.from('.panel, .title-row', { opacity: 0, y: 18, duration: 0.6, stagger: 0.05, ease: 'power3.out', clearProps: 'opacity,transform' });

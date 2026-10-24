@@ -11,10 +11,10 @@ dist/
 # Local tool settings (paths on this machine)
 .claude/
 
-# Secrets: Supabase and email keys will live in env files, never in git
-.env
+# Env files: .env holds public build settings and is committed (Vite's convention); its contents
+# are checked by scripts/check-security.mjs. Every other env file (.env.local, .env.production...)
+# may hold secrets and never reaches git.
 .env.*
-!.env.example
 # Wrangler's local secrets file
 .dev.vars
 .dev.vars.*

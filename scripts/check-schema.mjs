@@ -2,35 +2,11 @@
 // each user sees and changes only their own rows, signed-out visitors get nothing, and the
 // database refuses data the app would refuse. Supabase's auth schema and roles are stood in for.
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
-import { PGlite } from '@electric-sql/pglite';
+import { supabaseStandIn } from './lib/supabase-stand-in.mjs';
 
-const db = new PGlite();
+const { db, as } = await supabaseStandIn();
 const A = '00000000-0000-4000-8000-00000000000a';
 const B = '00000000-0000-4000-8000-00000000000b';
-
-// What Supabase provides: the anon and authenticated roles, auth.users and auth.uid().
-await db.exec(`
-  create role anon nologin; create role authenticated nologin;
-  create schema auth;
-  create table auth.users (id uuid primary key, email text);
-  create function auth.uid() returns uuid language sql stable as
-    $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
-  grant usage on schema auth, public to anon, authenticated;
-  grant execute on function auth.uid() to anon, authenticated;
-  alter default privileges in schema public grant all on tables to anon, authenticated;
-`);
-for (const file of readdirSync('supabase/migrations').sort()) {
-  await db.exec(readFileSync(`supabase/migrations/${file}`, 'utf8'));
-}
-
-// Act as a role: 'anon', or a signed-in user id. reset() goes back to the owner.
-async function as(who, sql, params = []) {
-  await db.exec('reset role');
-  if (who === 'anon') await db.exec(`set role anon; select set_config('request.jwt.claim.sub', '', false)`);
-  else await db.query(`select set_config('request.jwt.claim.sub', $1, false)`, [who]).then(() => db.exec('set role authenticated'));
-  try { return await db.query(sql, params); } finally { await db.exec('reset role'); }
-}
 const rejects = (p, pattern, message) => assert.rejects(p, pattern, message);
 
 // New accounts get a profile from the trigger.
@@ -96,6 +72,18 @@ const before = (await as(A, `select updated_at from public.years where year = 20
 await new Promise((r) => setTimeout(r, 5));
 await as(A, `update public.years set wish = 'Kyoto in spring' where year = 2026`);
 assert.ok((await as(A, `select updated_at from public.years where year = 2026`)).rows[0].updated_at > before, 'updated_at is set by the database');
+
+// Sync channel (D-020): each person can listen and send only on their own topic.
+const onTopic = async (who, topic, sql, params = []) => {
+  await db.query(`select set_config('realtime.topic', $1, false)`, [topic]);
+  return as(who, sql, params);
+};
+await db.exec(`insert into realtime.messages (topic, extension) values ('user:${A}', 'broadcast'), ('user:${B}', 'broadcast')`);
+assert.equal((await onTopic(A, `user:${A}`, 'select count(*)::int as n from realtime.messages')).rows[0].n, 2, 'A can listen on their own topic');
+assert.equal((await onTopic(A, `user:${B}`, 'select count(*)::int as n from realtime.messages')).rows[0].n, 0, "A can't listen on B's topic");
+await onTopic(A, `user:${A}`, `insert into realtime.messages (topic, extension) values ($1, 'broadcast')`, [`user:${A}`]);
+await rejects(onTopic(A, `user:${B}`, `insert into realtime.messages (topic, extension) values ($1, 'broadcast')`, [`user:${B}`]), /row-level security/, "A can't send on B's topic");
+await rejects(onTopic('anon', `user:${A}`, 'select * from realtime.messages'), /permission denied/, "anon can't listen");
 
 // Removing a habit from a month removes its ticks; deleting the account removes everything.
 await as(A, `delete from public.habit_months where slug = 'dsa' and month = '2026-10-01'`);

@@ -1,7 +1,8 @@
 # Eightfold
 
 A paper-collage habit tracker ("fall seven times, rise eight"). Static site: Vite, plain JavaScript,
-Three.js, GSAP. Landing page `index.html`, tracker `app.html`. Data in localStorage (`eightfold:v1`).
+Three.js, GSAP. Landing page `index.html`, tracker `app.html`. Data in localStorage (`eightfold:v1`),
+synced to Supabase when signed in (`src/lib/sync/`, D-020); SQL in `supabase/migrations/`.
 Repository: https://github.com/ozesince02/eightfold
 
 ## Priorities
@@ -42,6 +43,18 @@ data, storage, rendering, auth or headers. Say plainly when something is a risk.
   `npm run build` and `npm audit` on every PR and push to `main`. Keep its permissions read-only and
   its actions pinned to commit SHAs; when bumping an action, update the SHA and the tag comment.
 - Commit messages: a short summary line, a blank line, then why. Small, focused commits.
+
+## Configuration
+
+- **[.env](.env):** deployment settings Vite builds into the site (`VITE_*` only). Committed, so
+  it holds **public values only** (the Supabase URL and publishable key); `npm run check` fails if
+  anything secret-looking appears. Secrets live in the Supabase / Cloudflare dashboards or in
+  `.env.local` (ignored). A build with these settings missing or malformed fails on purpose.
+- **[src/config.js](src/config.js):** the one place code reads settings from (`SUPABASE_URL`,
+  `CRANE_GOAL`, `STORE_KEY`, ...). Don't hard-code a value used in more than one place; add a named
+  constant there. Validation limits stay in `LIMITS` in `src/lib/sanitize.js`.
+- **CSP:** `public/_headers` names Supabase with placeholders that `vite.config.js` fills from
+  `.env` after the build.
 
 ## When you change something
 

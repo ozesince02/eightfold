@@ -1,6 +1,5 @@
 // The whole tracker lives in one state object, kept by an adapter (localStorage today).
 // No formulas: every number on screen is computed from `months[key].checks` by stats.js.
-import { SEED_MONTHS, HABIT_COLORS } from '../data/seed.js';
 import { monthKey, parseKey, shiftMonth, daysIn } from './dates.js';
 import { cleanState, parseBackup, isId, safeColor, safeTime, safeName, cleanSchedule, LIMITS } from './sanitize.js';
 import { defaultGoal } from './schedule.js';
@@ -9,35 +8,30 @@ import { localAdapter, STORE_KEY } from './adapters/local.js';
 
 export { STORE_KEY };
 const adapter = localAdapter;
+import { BACKUP_EVERY_DAYS } from '../config.js';
+
+export { BACKUP_EVERY_DAYS };
 const DAY = 86400000;
-export const BACKUP_EVERY_DAYS = 7;
 const PALETTE = ['#C8302C', '#24496B', '#8EA46B', '#E9B33F', '#C9A57A', '#A9CBD6', '#E8C3BC', '#6E8C8A', '#B98A5E', '#D98E73'];
 
-function fromSeed() {
-  const months = {};
-  for (const [key, habits] of Object.entries(SEED_MONTHS)) {
-    months[key] = {
-      habits: habits.map(({ id, name, goal, time, start }) => ({ id, name, goal, time: time || '', start: start || 1 })),
-      checks: Object.fromEntries(habits.map((h) => [h.id, [...h.days]])),
-    };
-  }
-  return { version: 1, colors: { ...HABIT_COLORS }, months, years: {} };
-}
+// A new visitor starts with an empty tracker (D-016): nobody else's habits.
+const emptyState = () => ({ version: 1, colors: {}, months: {}, years: {} });
 
 // Stored data is validated like an imported file: it may have been edited by hand or by
 // another script on this origin. Data that can't be read is kept aside, never thrown away.
 function read() {
   const raw = adapter.load();
-  if (!raw) return fromSeed();
+  if (!raw) return emptyState();
   try {
     return cleanState(JSON.parse(raw));
   } catch {
     adapter.keepAside(raw);
-    return fromSeed();
+    return emptyState();
   }
 }
 
 let state = read();
+let synced = false; // set by the sync engine while this browser is in step with an account
 
 function draftMonth(key) {
   const { y, m } = parseKey(key);
@@ -72,7 +66,8 @@ export const store = {
   get: () => state,
   subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
 
-  mode: () => adapter.mode,
+  mode: () => (synced ? 'synced' : adapter.mode),
+  setSynced(on) { synced = Boolean(on); },
   protection: () => adapter.protection(),
   protect: () => adapter.protect(),
 
@@ -89,7 +84,7 @@ export const store = {
   snoozeBackup(days = 1) { this.meta().backupSnoozedUntil = Date.now() + days * DAY; save(); },
   // Days since the last backup when one is due, otherwise 0. Never due once data is synced.
   backupDue(now = Date.now()) {
-    if (adapter.mode !== 'local') return 0;
+    if (adapter.mode !== 'local' || synced) return 0;
     const { lastBackupAt, firstUsedAt, backupSnoozedUntil } = this.meta();
     const since = lastBackupAt || firstUsedAt;
     if (!since || (backupSnoozedUntil && now < backupSnoozedUntil)) return 0;
@@ -274,11 +269,17 @@ export const store = {
     state.meta = { ...meta, lastBackupAt: Date.now() }; // the loaded file is itself a backup
     save();
   },
-  resetToSheet() {
+  // The account's copy replaces what's here (sync, D-020). Reminders and backup times belong to
+  // this device and stay.
+  replaceState(next) {
     const { reminders, meta } = state;
-    state = fromSeed();
-    if (reminders) state.reminders = { ...reminders, log: {} };
+    state = cleanState(next);
+    if (reminders) state.reminders = reminders;
     if (meta) state.meta = meta;
     save();
   },
+  // Where the sync queue lives (the adapter owns storage).
+  syncStorage: { read: () => adapter.loadSync(), write: (obj) => adapter.saveSync(obj) },
+  // Park a copy of this browser's data under a dated key before it's replaced; never delete it.
+  keepAsideCopy() { adapter.keepAside(JSON.stringify(state)); },
 };

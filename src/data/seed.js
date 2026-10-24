@@ -107,3 +107,16 @@ export const SEED_MONTHS = {
 // Monthly success rates exactly as the sheet's "Annual Progress Tracker" tab printed them.
 // Used only to check the transcription; the app computes its own numbers.
 export const SHEET_RATES = { 1: 45, 2: 44, 3: 57, 4: 42, 5: 37, 6: 37, 7: 37, 8: 30, 9: 50, 10: 43 };
+
+// The sheet's data as a tracker state. The landing page tells its story with it (D-016); the
+// tracker itself starts empty for everyone.
+export function seedState() {
+  const months = {};
+  for (const [key, habits] of Object.entries(SEED_MONTHS)) {
+    months[key] = {
+      habits: habits.map(({ id, name, goal, time, start }) => ({ id, name, goal, time: time || '', start: start || 1 })),
+      checks: Object.fromEntries(habits.map((h) => [h.id, [...h.days]])),
+    };
+  }
+  return { version: 1, colors: { ...HABIT_COLORS }, months, years: {} };
+}

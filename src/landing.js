@@ -3,12 +3,14 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { store, STORE_KEY } from './lib/store.js';
 import { today, monthName, monthShort, minutesOf } from './lib/dates.js';
 import { yearStats, percent } from './lib/stats.js';
+import { CRANE_GOAL, CRANE_GOAL_TEXT } from './config.js';
 import { tearAll, craneMark, sfxPop, confetti, rng, inkOn } from './ui/paper.js';
 import { hills, mountains } from './ui/charts.js';
 import { featuredMonth, bestCrossingRun, dateLabel, daysLeftInYear } from './ui/insights.js';
 import { createCraneStage } from './three/stage.js';
 import { startReminders } from './ui/reminders.js';
-import { esc } from './lib/sanitize.js';
+import { esc, safeColor } from './lib/sanitize.js';
+import { seedState } from './data/seed.js';
 import { DEMO_HABITS } from './data/demo.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -17,11 +19,12 @@ window.__oz = true;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const state = store.get();
+// The page tells the story of the sheet this app grew from (D-016), whatever this visitor tracks.
+const state = seedState();
 const now = today();
 const feat = featuredMonth(state, now);
 const year = yearStats(state, now.y, now);
-const color = (id) => store.color(id);
+const color = (id) => safeColor(state.colors[id]);
 
 $$('[data-mark]').forEach((el) => { el.innerHTML = craneMark(); });
 
@@ -137,12 +140,12 @@ $('[data-range]').innerHTML = mountains(year.months, { current: now.m });
 $('[data-range-labels]').innerHTML = year.months.map((x) => `<li class="${x.rate === null ? 'muted' : ''}"><span class="long">${monthShort(x.m)}</span><span class="short">${monthShort(x.m)[0]}</span><b>${x.rate === null ? '—' : `${Math.round(x.rate * 100)}<span class="pct">%</span>`}</b></li>`).join('');
 
 // ---------- New ----------
-const remaining = Math.max(0, 1000 - year.cranes);
+const remaining = Math.max(0, CRANE_GOAL - year.cranes);
 const daysLeft = daysLeftInYear(now);
 $('[data-wish-text]').textContent = remaining > 0
   ? `Every tick folds one crane, and legend says a thousand grant a wish. ${remaining} more by 31 December is about ${Math.ceil(remaining / daysLeft)} a day.`
-  : `Every tick folds one crane. You passed a thousand this year. Time to make the wish.`;
-$('[data-wish-figure]').textContent = `${year.cranes} of 1,000`;
+  : `Every tick folds one crane. You passed ${CRANE_GOAL_TEXT} this year. Time to make the wish.`;
+$('[data-wish-figure]').textContent = `${year.cranes} of ${CRANE_GOAL_TEXT}`;
 
 const dayHabits = [...feat.month.habits].filter((h) => h.time).sort((a, b) => minutesOf(a.time) - minutesOf(b.time));
 const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
@@ -164,7 +167,7 @@ tearAll();
 // ---------- Motion ----------
 if (reduced) {
   gsap.set('.reveal', { opacity: 1 });
-  $('[data-wish-meter] span').style.width = `${Math.min(100, year.cranes / 10)}%`;
+  $('[data-wish-meter] span').style.width = `${Math.min(100, (year.cranes / CRANE_GOAL) * 100)}%`;
 } else {
   // The collage assembles itself: sheets drop onto the table one after another.
   const hero = gsap.timeline({ defaults: { ease: 'back.out(1.6)' } });
@@ -205,7 +208,7 @@ if (reduced) {
   gsap.fromTo('.range-svg .peak-flag', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, delay: 1, scrollTrigger: { trigger: '.range', start: 'top 75%', once: true } });
 
   gsap.fromTo('[data-wish-meter] span', { width: '0%' }, {
-    width: `${Math.min(100, year.cranes / 10)}%`, duration: 1.6, ease: 'power2.out',
+    width: `${Math.min(100, (year.cranes / CRANE_GOAL) * 100)}%`, duration: 1.6, ease: 'power2.out',
     scrollTrigger: { trigger: '.piece--wish', start: 'top 75%', once: true },
   });
 

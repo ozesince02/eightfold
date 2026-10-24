@@ -7,8 +7,9 @@
 //   protection()  'persistent' | 'best-effort' | 'unknown': may the browser clear it on its own?
 //   protect()     ask the browser to keep the data permanently
 
-export const STORE_KEY = 'eightfold:v1';
-const LEGACY_KEY = 'orizuru:v1'; // the app's working name before it became Eightfold
+import { STORE_KEY, LEGACY_STORE_KEY as LEGACY_KEY } from '../../config.js';
+
+export { STORE_KEY };
 
 export const localAdapter = {
   mode: 'local',
@@ -28,6 +29,14 @@ export const localAdapter = {
   async protection() {
     if (!navigator.storage?.persisted) return 'unknown';
     try { return (await navigator.storage.persisted()) ? 'persistent' : 'best-effort'; } catch { return 'unknown'; }
+  },
+
+  // The sync queue (D-020): changes not yet sent to the account, kept across reloads and offline.
+  loadSync() {
+    try { return JSON.parse(localStorage.getItem(`${STORE_KEY}:sync`) || '{}'); } catch { return {}; }
+  },
+  saveSync(obj) {
+    try { localStorage.setItem(`${STORE_KEY}:sync`, JSON.stringify(obj)); } catch { /* storage full: the next save retries */ }
   },
 
   // Chrome and Edge decide quietly; Firefox may ask the person. Call it after a click, not on load.

@@ -15,6 +15,10 @@
 .views a[aria-current="page"] { background: var(--sumi); color: var(--washi); }
 .cranes-chip { font-weight: 700; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 8px; }
 .cranes-chip b { font-family: var(--display); font-weight: 400; font-size: 20px; }
+/* Sync status (D-020): matcha in step, yamabuki saving or offline, shu when the account can't be reached */
+.sync-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--matcha); flex: none; }
+.sync-dot[data-state="syncing"], .sync-dot[data-state="offline"], .sync-dot[data-state="choose"] { background: var(--yamabuki); }
+.sync-dot[data-state="error"] { background: var(--shu); }
 
 .canvas { max-width: var(--max); margin: 0 auto; padding: 8px var(--gutter) 96px; outline: none; }
 
@@ -281,6 +285,16 @@ td.is-today .cell:not([aria-pressed="true"]) { outline: 2px solid var(--sumi); o
 .fold-keep { margin: 0 0 6px; }
 .rem-list.fold-keep label { grid-template-columns: 22px 1fr; }
 .fold-form .btn { justify-self: start; }
+/* Account (D-019) */
+.account-who { font-size: 15px; overflow-wrap: anywhere; }
+.account-who + .note { margin-top: 6px; }
+.account-form { display: grid; gap: 8px; margin-top: 18px; }
+.account-form label { font-size: 13px; font-weight: 700; color: var(--sumi-2); }
+.account-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.account-row input { flex: 1 1 180px; min-width: 0; min-height: 44px; padding: 0 14px; border: 0; background: var(--washi); font: inherit; font-size: 15px; color: var(--sumi); }
+.account-row input:focus { outline: 2px solid var(--ai); outline-offset: 0; background: var(--white-paper); }
+.account-row .btn { min-height: 44px; padding: 0 18px; font-size: 15px; }
+#account .backup-actions { margin-top: 14px; }
 .safety { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; font-size: 14px; color: var(--sumi-2); }
 .safety b { color: var(--sumi); }
 
