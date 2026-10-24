@@ -240,7 +240,7 @@ Settled with the user on 23 October 2026.
   points of presence across India.
 - **Supabase project in the Mumbai region** (`ap-south-1`) so the database sits close to the users.
 - Vercel was the runner-up; its free Hobby plan is "restricted to non-commercial personal use only".
-- **Domain:** `onemorefold.com`, bought 24 October 2026 (the product name is moving to One More Fold).
+- **Domain:** `onemorefold.com`, bought 24 October 2026 (the product keeps the name Eightfold, D-015).
 - **Deploys (updated 24 Oct 2026, D-014):** Cloudflare now connects a repository as a *Worker*
   rather than a Pages project. `wrangler.jsonc` makes it a static-assets Worker serving `dist/`;
   Cloudflare runs `npm run build`, then `npx wrangler deploy`. Each push to `main` deploys.
