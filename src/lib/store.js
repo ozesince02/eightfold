@@ -282,4 +282,14 @@ export const store = {
   syncStorage: { read: () => adapter.loadSync(), write: (obj) => adapter.saveSync(obj) },
   // Park a copy of this browser's data under a dated key before it's replaced; never delete it.
   keepAsideCopy() { adapter.keepAside(JSON.stringify(state)); },
+  // Changes made here that haven't reached the account yet (the sync queue, D-020).
+  unsentChanges() { return Object.keys(adapter.loadSync().ops || {}).length; },
+  // Signing out on a shared computer: remove everything Eightfold stored in this browser and show
+  // an empty tracker. Only after signing out, so the account still has the folds. True if removed.
+  forgetDevice() {
+    const ok = adapter.clearAll();
+    state = emptyState();
+    listeners.forEach((fn) => fn(state));
+    return ok;
+  },
 };

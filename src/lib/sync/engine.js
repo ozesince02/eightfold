@@ -316,10 +316,14 @@ export function createSync({ store, storage, onStatus = () => {}, online = () =>
 
     // Signed out: stop syncing. The folds stay in this browser; the queue is cleared, but the
     // browser remembers whose folds these are, so another account never receives them.
+    // Safe to call twice: a second call (or one before start finished) keeps whose folds these
+    // are from what's saved, and writes nothing to a browser that has just been cleared.
     stop() {
-      const lastUser = uid;
+      const saved = storage.read() || {};
+      const lastUser = uid || saved.user || saved.lastUser;
       end();
-      storage.write(lastUser ? { lastUser } : {});
+      if (lastUser) storage.write({ lastUser });
+      else if (Object.keys(saved).length) storage.write({});
       setStatus('off');
     },
   };

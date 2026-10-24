@@ -7,6 +7,7 @@ import { createSync } from '../src/lib/sync/engine.js';
 import { stateToRows, rowsToState, TABLES } from '../src/lib/sync/rows.js';
 import { cleanState } from '../src/lib/sanitize.js';
 import { seedState } from '../src/data/seed.js';
+import { localAdapter } from '../src/lib/adapters/local.js';
 
 const { db, as, addUser } = await supabaseStandIn();
 const OWNER = '00000000-0000-4000-8000-0000000000a1';
@@ -220,6 +221,14 @@ assert.equal(laptop.status().state, 'off');
 assert.deepEqual(laptop.saved.value, { lastUser: OWNER }, 'the queue is cleared; the browser remembers whose folds these are');
 assert.deepEqual(rowsOf(laptop.store.get()), before, 'the folds stay in this browser');
 
+// 10b. Hearing about the sign-out twice (the menu, then the tracker) keeps the marker, and a
+// browser that has just been cleared stays empty: stop() writes nothing there.
+laptop.sync.stop();
+assert.deepEqual(laptop.saved.value, { lastUser: OWNER }, 'a second stop keeps whose folds these are');
+const wiped = device('wiped', { version: 1, months: {}, colors: {}, years: {} }, { value: null });
+wiped.sync.stop();
+assert.equal(wiped.saved.value, null, 'stopping on a cleared browser writes nothing');
+
 // 11. A shared browser: someone else signs in after the owner signed out. The owner's folds must
 // not reach their account, and aren't shown; they're kept aside on the device.
 const THIRD = '00000000-0000-4000-8000-0000000000c3';
@@ -241,6 +250,25 @@ await odd.sync.start(api(OWNER), OWNER);
 assert.ok(odd.messages.some((m) => /1 change couldn.t be saved/.test(m)), 'the refused change is reported');
 assert.equal((await accountState(OWNER)).years[2031]?.wish, 'still sent', 'the rest of the queue went through');
 assert.deepEqual(odd.saved.value.ops, {}, 'and the queue is empty');
+
+// 13. "Sign out and remove my folds from this browser" removes every Eightfold key, including
+// copies kept aside and the old name's data, and nothing that belongs to anyone else.
+{
+  const items = new Map([
+    ['eightfold:v1', '{}'], ['eightfold:v1:sync', '{"lastUser":"x"}'], ['eightfold:v1:unreadable:1', '{}'],
+    ['orizuru:v1', '{}'], ['sb-txmseoofjrvsmxyaiwps-auth-token', 'kept for supabase'], ['other-site-thing', '1'],
+  ]);
+  globalThis.localStorage = {
+    get length() { return items.size; },
+    key: (i) => [...items.keys()][i] ?? null,
+    getItem: (k) => items.get(k) ?? null,
+    setItem: (k, v) => items.set(k, String(v)),
+    removeItem: (k) => items.delete(k),
+  };
+  assert.equal(localAdapter.clearAll(), true, 'clearAll reports success');
+  assert.deepEqual([...items.keys()].sort(), ['other-site-thing', 'sb-txmseoofjrvsmxyaiwps-auth-token'], "only Eightfold's own keys are removed");
+  delete globalThis.localStorage;
+}
 
 await db.close();
 console.log('sync: all checks pass');

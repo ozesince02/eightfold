@@ -392,3 +392,16 @@ Accepted · 24 Oct 2026
   no unfold, no wiggle; the scroll simply appears.
 - The scroll closes through its own path rather than waiting for the dialog's `close` event, which
   the desktop app's browser pane didn't always send.
+
+## D-024 Signing out can leave nothing behind
+Accepted · 25 Oct 2026
+
+- **Context:** folds live in the browser first (D-020). Signing out kept them there, and a second
+  account signing in on the same browser parked the first person's copy rather than deleting it.
+  Right for your own phone; a leak on a shared computer.
+- **Decision:** plain "Sign out" still keeps the folds on the device (it's the safe default: nothing
+  is lost, offline changes included). The chit adds **"Sign out and remove my folds from this
+  browser"**: it signs out first, then removes every Eightfold key (tracker, sync queue, copies
+  kept aside, the old name's data) and shows an empty tracker. If changes are still waiting to reach
+  the account, it asks before throwing them away. Other sites' data and Supabase's own keys are
+  left alone (signing out already removes the session).

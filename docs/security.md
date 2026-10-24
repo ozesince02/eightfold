@@ -159,6 +159,18 @@ New visitors no longer see the owner's habits in the tracker (D-016).
 Test: `scripts/check-sync.mjs` (includes a second person who never sees the owner's rows) and
 the channel policies in `check-schema.mjs`.
 
+### 25 October 2026 — privacy review
+
+Who can see a person's habits, checked end to end. Other accounts and signed-out visitors: no
+(grants plus RLS on every table, tested in `check-schema.mjs`). What was still open:
+
+| # | Severity | Finding | Fix | Test |
+| --- | --- | --- | --- | --- |
+| 1 | Medium | On a shared computer, signing out left the folds in the browser, and a later account's sign-in parked the earlier person's copy there too. The next person at that computer could read them. | "Sign out and remove my folds from this browser" in the account chit removes every Eightfold key (tracker, sync queue, copies kept aside, old name); asks first if changes haven't reached the account. Sync `stop()` is now safe to call twice and writes nothing to a cleared browser. (branch `fix/sign-out-clears-browser`) | `check-sync.mjs` scenarios 10b and 13 |
+| 2 | Medium | No way for a person to delete their account and data; only the owner could, from the dashboard. | Planned: "Delete my account" | — |
+| 3 | Low | Google Fonts sees every visitor's IP address on every page load. | Planned: self-hosted fonts | — |
+| 4 | Info | The owner (dashboard, secret key) can read everyone's rows; RLS protects users from each other, not from the operator. | Stated in the privacy policy; two-factor sign-in on every admin account. End-to-end encryption is a possible later "private mode" (docs/vision.md). | — |
+
 ### Accepted risks (owner's decision, 24 Oct 2026, D-016)
 
 - The repository is public, and its history contains the owner's January–October 2026 habit data
