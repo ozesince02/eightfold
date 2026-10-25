@@ -5,6 +5,7 @@
 import { esc } from '../lib/sanitize.js';
 import { signInWithGoogle, sendSignInLink, signOut } from '../lib/auth.js';
 import { APP_PATH } from '../config.js';
+import { store } from '../lib/store.js';
 
 // A crumpled ball: an uneven outline cut into facets of three paper tones, with crease lines.
 const BALL = `<svg class="acct-ball" viewBox="0 0 48 48" aria-hidden="true">
@@ -75,7 +76,9 @@ export function createAccountMenu(slot, { page = 'app', onChoose, toast } = {}) 
         <div class="acct-actions">
           ${page === 'landing' ? `<a class="btn btn--ink" href="${APP_PATH}">Open your tracker</a>` : ''}
           <button class="btn btn--quiet" type="button" data-acct-out>Sign out</button>
-        </div>`;
+        </div>
+        <button class="seg-link acct-forget" type="button" data-acct-forget>Sign out and remove my folds from this browser</button>
+        <p class="note">For a shared computer. Your folds stay in your account.</p>`;
     } else if (a.status === 'signed-out') {
       body = `<h2 id="acct-h">Keep your folds everywhere</h2>
         <p class="note">Sign in to have the same tracker on your phone and laptop. Optional: without an account, everything stays on this device.</p>
@@ -125,6 +128,8 @@ export function createAccountMenu(slot, { page = 'app', onChoose, toast } = {}) 
     } else if (e.target.closest('[data-acct-out]')) {
       signOut().then(() => { toast('Signed out on this device. Your folds are still here.'); setOpen(false); })
         .catch(() => toast('Couldn\'t sign out. Try again.'));
+    } else if (e.target.closest('[data-acct-forget]')) {
+      forget();
     } else if (e.target.closest('[data-acct-close]')) {
       setOpen(false);
     } else {
@@ -132,6 +137,24 @@ export function createAccountMenu(slot, { page = 'app', onChoose, toast } = {}) 
       if (choose) onChoose?.(choose.dataset.acctChoose);
     }
   });
+
+  // Sign out, then remove everything Eightfold keeps in this browser. Changes that haven't reached
+  // the account yet would be lost, so that needs a yes first.
+  async function forget() {
+    const unsent = store.unsentChanges();
+    if (unsent && !window.confirm(`${unsent === 1 ? "One change hasn't" : `${unsent} changes haven't`} reached your account yet and will be lost. Sign out and remove your folds from this browser anyway?`)) return;
+    try {
+      await signOut();
+    } catch {
+      toast("Couldn't sign out, so nothing was removed. Try again.");
+      return;
+    }
+    const removed = store.forgetDevice();
+    toast(removed
+      ? 'Signed out. Your folds are removed from this browser and still in your account.'
+      : "Signed out, but this browser wouldn't let Eightfold remove your folds. Clear this site's data in the browser settings.");
+    setOpen(false);
+  }
 
   chit.addEventListener('submit', (e) => {
     e.preventDefault();

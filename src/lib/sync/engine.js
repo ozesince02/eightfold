@@ -186,18 +186,19 @@ export function createSync({ store, storage, onStatus = () => {}, online = () =>
     try { return await flushing; } finally { flushing = null; }
   }
 
-  async function fetchAccount() {
+  // Reads through the api it was given, never a later one: a sign-out mid-read can't mix accounts.
+  async function fetchAccount(via = api) {
     const tables = {};
     for (const t of READ_TABLES) {
       const rows = [];
       for (let from = 0; ; from += PAGE) {
-        const page = await api.page(t, from, from + PAGE - 1);
+        const page = await via.page(t, from, from + PAGE - 1);
         rows.push(...page);
         if (page.length < PAGE) break;
       }
       tables[t] = rows;
     }
-    const profile = await api.profile();
+    const profile = await via.profile();
     tables.profiles = profile ? [profile] : [];
     // Data from the network is validated like any other input (docs/security.md, rule 1).
     const local = store.get();
@@ -209,9 +210,13 @@ export function createSync({ store, storage, onStatus = () => {}, online = () =>
     if (pulling) return pulling;
     pulling = (async () => {
       if (!linked) return;
+      const myApi = api;
       if (!(await flush()) || Object.keys(ops).length) return;
       if (!online()) { setStatus('offline'); return; }
-      const remote = await fetchAccount();
+      const remote = await fetchAccount(myApi);
+      // Signed out (or someone else signed in) while fetching: this answer belongs to nobody now.
+      // Writing it would put the folds back into a browser that was just cleared.
+      if (api !== myApi) return;
       if (Object.keys(ops).length) return; // a change arrived while fetching; the next pull gets it
       if (!sameRows(stateToRows(remote), stateToRows(store.get()))) {
         if (refused) { store.keepAsideCopy(); refused = false; }
@@ -235,8 +240,10 @@ export function createSync({ store, storage, onStatus = () => {}, online = () =>
     if (linked) return pull();
     if (!online()) { setStatus('offline'); scheduleRetry(); return; }
     setStatus('syncing');
+    const myApi = api;
     let remote;
-    try { remote = await fetchAccount(); } catch { setStatus(online() ? 'error' : 'offline'); scheduleRetry(); return; }
+    try { remote = await fetchAccount(myApi); } catch { if (api === myApi) { setStatus(online() ? 'error' : 'offline'); scheduleRetry(); } return; }
+    if (api !== myApi) return; // signed out while fetching: nothing to link or show
     const local = store.get();
     if (!hasData(remote)) {
       // A new account: this browser's folds become the account's.
@@ -316,10 +323,14 @@ export function createSync({ store, storage, onStatus = () => {}, online = () =>
 
     // Signed out: stop syncing. The folds stay in this browser; the queue is cleared, but the
     // browser remembers whose folds these are, so another account never receives them.
+    // Safe to call twice: a second call (or one before start finished) keeps whose folds these
+    // are from what's saved, and writes nothing to a browser that has just been cleared.
     stop() {
-      const lastUser = uid;
+      const saved = storage.read() || {};
+      const lastUser = uid || saved.user || saved.lastUser;
       end();
-      storage.write(lastUser ? { lastUser } : {});
+      if (lastUser) storage.write({ lastUser });
+      else if (Object.keys(saved).length) storage.write({});
       setStatus('off');
     },
   };
