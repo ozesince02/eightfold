@@ -40,6 +40,8 @@ export default defineConfig(({ command, mode }) => {
         input: {
           main: resolve(import.meta.dirname, 'index.html'),
           app: resolve(import.meta.dirname, 'app.html'),
+          privacy: resolve(import.meta.dirname, 'privacy.html'),
+          terms: resolve(import.meta.dirname, 'terms.html'),
         },
       },
     },

@@ -426,3 +426,25 @@ Accepted · 25 Oct 2026
 - **Not done:** other signed-in devices aren't wiped remotely. Their sign-in stops working (the
   sessions are deleted with the account) but their local copy stays until removed there.
 
+## D-026 Privacy and Terms, in plain words
+Accepted · 25 Oct 2026
+
+- **Context:** accounts store personal data (email, habit names, wishes). India's DPDP Act applies
+  (an Indian operator, data in Mumbai), the GDPR applies to EU visitors who sign in, and Google's
+  sign-in screen asks for a privacy policy. Eightfold had none.
+- **Decision:** two static paper pages, `privacy.html` and `terms.html` (`/privacy` and `/terms`
+  on the live site), each opening with a yellow "short version" slip. They say what is kept, where
+  (Supabase in Mumbai, Cloudflare, Google), who can see it (only the person; the operator only on
+  request, for security or by law), how long, and how to export, remove or delete it; and that
+  there are no ads, analytics or trackers. Accounts are for people 18 and over (the DPDP Act needs
+  a parent's verifiable consent below that); anyone can use Eightfold without one, which sends
+  nothing to us. Terms: free, as is, no professional advice, fair use, 30 days' notice before
+  closing, Indian law.
+- **Where:** linked in the landing footer and in the account chit; the sign-in chit says "By
+  signing in you agree to the Terms and the Privacy page". Using Eightfold without an account
+  needs no agreement: nothing leaves the device.
+- Written without a lawyer, as a plain-language starting point; worth a professional review if
+  Eightfold grows or takes payments. The contact address comes from `AUTHOR` in config.js.
+- When a service that handles data changes (for example self-hosted fonts drop Google from page
+  loads), the Privacy page and its date change in the same pull request.
+
