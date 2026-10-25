@@ -57,8 +57,8 @@ Set by Cloudflare Pages from [public/_headers](../public/_headers). Test locally
 | Header | Value (short) | Why |
 | --- | --- | --- |
 | Content-Security-Policy | `default-src 'self'; script-src 'self'; …` | Blocks injected and third-party scripts, plugins, framing and form hijacking |
-| — `style-src` | `'self' 'unsafe-inline' fonts.googleapis.com` | Inline `style` attributes carry habit colours; styles can't run code |
-| — `font-src` | `fonts.gstatic.com` | Google Fonts files |
+| — `style-src` | `'self' 'unsafe-inline'` | Inline `style` attributes carry habit colours; styles can't run code |
+| — `font-src` | `'self'` | Self-hosted fonts (D-027); `check-security.mjs` keeps Google Fonts out |
 | — `img-src` | `'self' data: blob:` | The paper-grain texture is a data: SVG |
 | — `connect-src` | `'self'` | Add the Supabase project URL when accounts arrive |
 | X-Content-Type-Options | `nosniff` | No MIME sniffing |
@@ -168,7 +168,7 @@ Who can see a person's habits, checked end to end. Other accounts and signed-out
 | --- | --- | --- | --- | --- |
 | 1 | Medium | On a shared computer, signing out left the folds in the browser, and a later account's sign-in parked the earlier person's copy there too. The next person at that computer could read them. | "Sign out and remove my folds from this browser" in the account chit removes every Eightfold key (tracker, sync queue, copies kept aside, old name); asks first if changes haven't reached the account. Sync `stop()` is now safe to call twice and writes nothing to a cleared browser. (branch `fix/sign-out-clears-browser`) | `check-sync.mjs` scenarios 10b, 12b and 13. Review follow-up: a sync read still in flight when the person signs out is now thrown away instead of written back into the cleared browser. |
 | 2 | Medium | No way for a person to delete their account and data; only the owner could, from the dashboard. | "Delete my account" in the account chit calls `public.delete_my_account()`: SECURITY DEFINER, empty search_path, deletes only `auth.uid()`'s auth user (everything cascades); not callable by anon. The browser then stops syncing, forgets its copy and reloads signed out. (branch `feature/delete-account`, D-025) | `check-schema.mjs`: anon can't call it, B deleting removes only B, A's rows all go, an old token can't write afterwards |
-| 3 | Low | Google Fonts sees every visitor's IP address on every page load. | Planned: self-hosted fonts | — |
+| 3 | Low | Google Fonts sees every visitor's IP address on every page load. | Fonts served from our own site (Fontsource, woff2 only); CSP `font-src 'self'`, Google origins removed from `style-src`. (branch `chore/self-host-fonts`, D-027) | `check-security.mjs` (fonts); production build: no font requests leave the site, no CSP violations |
 | 4 | Info | The owner (dashboard, secret key) can read everyone's rows; RLS protects users from each other, not from the operator. | Stated in the privacy policy; two-factor sign-in on every admin account. End-to-end encryption is a possible later "private mode" (docs/vision.md). | — |
 
 ### Accepted risks (owner's decision, 24 Oct 2026, D-016)
@@ -182,4 +182,4 @@ Who can see a person's habits, checked end to end. Other accounts and signed-out
   URL in `connect-src`, auth redirect URLs locked to our domain, rate limits on magic-link email.
 - When hosting: confirm the headers on the live site (securityheaders.com), enable Cloudflare's
   "Always use HTTPS".
-- Consider self-hosting the two fonts to drop the Google Fonts origins from the policy.
+- ~~Consider self-hosting the two fonts~~: done 25 Oct 2026 (D-027).

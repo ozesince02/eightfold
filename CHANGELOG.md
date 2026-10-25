@@ -6,6 +6,8 @@ Dates are when the work landed.
 ## Unreleased
 
 ### Changed
+- **The fonts come from Eightfold itself**, not Google Fonts, so no other company sees your visits.
+  The security policy no longer allows any third-party style or font origin. (D-027)
 - Landing page: the demo is "Try it with these six", and "Your day, in order" describes the
   feature for everyone rather than the sheet's habit names. "Streaks that survive the 1st" is now
   "Habits on your schedule" (chosen days, times a week, weekly, monthly); the zine's streaks panel

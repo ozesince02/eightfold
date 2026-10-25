@@ -85,3 +85,15 @@ for (const line of envLines) {
   assert.doesNotMatch(rest.join('='), /sb_secret_|service_role|eyJhbGci|-----BEGIN|re_[A-Za-z0-9]{20,}|GOCSPX-/, `.env value for ${name.trim()} looks like a secret`);
 }
 console.log('env: only public settings');
+
+// No third-party origins for styles or fonts (D-027): every page uses the self-hosted fonts, and
+// the CSP allows fonts only from this site. Nothing on a page may reach Google Fonts again.
+const headers = readFileSync(new URL('../public/_headers', import.meta.url), 'utf8');
+assert.match(headers, /font-src 'self';/, "the CSP allows fonts only from 'self'");
+assert.match(headers, /style-src 'self' 'unsafe-inline';/, 'the CSP allows styles only from this site');
+for (const page of ['index.html', 'app.html', 'privacy.html', 'terms.html', '404.html']) {
+  const html = readFileSync(new URL(`../${page}`, import.meta.url), 'utf8');
+  assert.doesNotMatch(html, /fonts\.googleapis|fonts\.gstatic/, `${page} doesn't load Google Fonts`);
+  assert.match(html, /\/src\/styles\/fonts\.css/, `${page} uses the self-hosted fonts`);
+}
+console.log('fonts: self-hosted only');
