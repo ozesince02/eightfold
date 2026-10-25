@@ -657,7 +657,7 @@ const sync = createSync({
 function chooseSync(kind) {
   sync.choose(kind).then(() => toast(kind === 'merge' ? 'Kept both. Your account has everything now.' : 'Using your account\'s folds. This browser\'s copy is kept aside.'));
 }
-const menu = createAccountMenu($('[data-account]'), { page: 'app', onChoose: chooseSync, toast: (t) => toast(t) });
+const menu = createAccountMenu($('[data-account]'), { page: 'app', onChoose: chooseSync, onLeave: () => sync.stop(), toast: (t) => toast(t) });
 
 // First sign-in on a browser that already has folds, when the account has some too.
 function chooseBar() {

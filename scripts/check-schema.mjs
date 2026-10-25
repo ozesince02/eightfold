@@ -88,10 +88,18 @@ await rejects(onTopic('anon', `user:${A}`, 'select * from realtime.messages'), /
 // Removing a habit from a month removes its ticks; deleting the account removes everything.
 await as(A, `delete from public.habit_months where slug = 'dsa' and month = '2026-10-01'`);
 assert.equal((await as(A, `select count(*)::int as n from public.ticks where slug = 'dsa'`)).rows[0].n, 0, 'ticks go with their habit month');
-await db.exec(`delete from auth.users where id = '${A}'`);
+// "Delete my account" (D-025): only the caller, only when signed in.
+await rejects(as('anon', 'select public.delete_my_account()'), /permission denied/, "anon can't call delete_my_account");
+await as(B, 'select public.delete_my_account()');
+assert.equal((await db.query(`select count(*)::int as n from auth.users where id = '${B}'`)).rows[0].n, 0, 'B deleted their own account');
+assert.equal((await db.query(`select count(*)::int as n from auth.users where id = '${A}'`)).rows[0].n, 1, "and A's is untouched");
+assert.ok((await db.query(`select count(*)::int as n from public.ticks where user_id = '${A}'`)).rows[0].n > 0, "A's ticks are untouched");
+await as(A, 'select public.delete_my_account()');
+assert.equal((await db.query(`select count(*)::int as n from public.profiles where id = '${A}'`)).rows[0].n, 0, 'account deletion clears the profile');
 for (const t of ['years', 'habits', 'months', 'habit_months', 'ticks']) {
   assert.equal((await db.query(`select count(*)::int as n from public.${t} where user_id = '${A}'`)).rows[0].n, 0, `account deletion clears ${t}`);
 }
+await rejects(as(A, `insert into public.years (user_id, year) values ($1, 2027)`, [A]), /foreign key/, "a deleted account can't write again with its old token");
 
 await db.close();
 console.log('schema: all checks pass');

@@ -75,3 +75,18 @@ export async function signOut() {
   const sb = await client();
   await sb.auth.signOut({ scope: 'local' });
 }
+
+// Deletes the signed-in person's account and everything stored in it (D-025), then signs out on
+// this device. The database function deletes only the caller.
+export async function deleteAccount() {
+  const sb = await client();
+  const { error } = await sb.rpc('delete_my_account');
+  if (error) throw new Error("Your account couldn't be deleted just now. Nothing was removed; try again in a moment.");
+  // The account is gone, and so are its sessions on the server. Forget this browser's copy too;
+  // if Supabase can't (the server no longer knows the user), remove its saved session directly.
+  let out;
+  try { out = await sb.auth.signOut({ scope: 'local' }); } catch (e) { out = { error: e }; }
+  if (out?.error) {
+    try { localStorage.removeItem(`sb-${new URL(SUPABASE_URL).hostname.split('.')[0]}-auth-token`); } catch { /* nothing saved */ }
+  }
+}

@@ -3,7 +3,7 @@
 // with the sign-in choices, or who you are, how syncing is going and a way to sign out.
 // Used by the landing page and the tracker; the page passes in what it knows.
 import { esc } from '../lib/sanitize.js';
-import { signInWithGoogle, sendSignInLink, signOut } from '../lib/auth.js';
+import { signInWithGoogle, sendSignInLink, signOut, deleteAccount } from '../lib/auth.js';
 import { APP_PATH } from '../config.js';
 import { store } from '../lib/store.js';
 
@@ -33,8 +33,13 @@ const SYNC_WORDS = {
   choose: 'Choose how to combine your folds',
 };
 
-// slot: an element in the header. page: 'landing' | 'app'. onChoose(kind): the tracker's sync choice.
-export function createAccountMenu(slot, { page = 'app', onChoose, toast } = {}) {
+// A message that has to survive the page reloading (after an account is deleted). Fixed texts only.
+const PARTING = 'eightfold:parting';
+const PARTING_TEXT = { deleted: 'Your account and everything in it are deleted. Eightfold still works on this device, starting empty.' };
+
+// slot: an element in the header. page: 'landing' | 'app'. onChoose(kind): the tracker's sync
+// choice. onLeave(): called before this browser's folds are removed, so the page stops syncing.
+export function createAccountMenu(slot, { page = 'app', onChoose, onLeave, toast } = {}) {
   let notice = '';
   // Pages without toasts (the landing page) show messages on the chit itself.
   toast ||= (text) => { notice = text; if (open) drawChit(); };
@@ -43,6 +48,8 @@ export function createAccountMenu(slot, { page = 'app', onChoose, toast } = {}) 
   let open = false;
   let sending = false;
   let draft = '';
+  let confirmDelete = false;
+  let deleting = false;
 
   slot.classList.add('acct');
   slot.innerHTML = `<button class="acct-btn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="acct-chit"></button>
@@ -66,7 +73,16 @@ export function createAccountMenu(slot, { page = 'app', onChoose, toast } = {}) 
   function drawChit() {
     const a = account;
     let body;
-    if (a.status === 'signed-in') {
+    if (a.status === 'signed-in' && confirmDelete) {
+      body = `<h2 id="acct-h">Delete your account?</h2>
+        <p class="note">This deletes your account and every habit, fold and wish in it, from Eightfold's servers and from this browser. It can't be undone.</p>
+        <p class="note">Other devices keep their own copy until you choose "remove my folds from this browser" there.</p>
+        <div class="acct-actions"><button class="btn btn--quiet" type="button" data-acct-backup>Save a backup first</button></div>
+        <div class="acct-actions">
+          <button class="btn" type="button" data-acct-delete-yes ${deleting ? 'disabled' : ''}>${deleting ? 'Deleting…' : 'Delete everything'}</button>
+          <button class="seg-link" type="button" data-acct-delete-no>Keep my account</button>
+        </div>`;
+    } else if (a.status === 'signed-in') {
       const status = SYNC_WORDS[sync.state];
       body = `<h2 id="acct-h">Your account</h2>
         <p class="acct-who">Signed in as <b>${esc(a.email || 'you')}</b></p>
@@ -78,7 +94,8 @@ export function createAccountMenu(slot, { page = 'app', onChoose, toast } = {}) 
           <button class="btn btn--quiet" type="button" data-acct-out>Sign out</button>
         </div>
         <button class="seg-link acct-forget" type="button" data-acct-forget>Sign out and remove my folds from this browser</button>
-        <p class="note">For a shared computer. Your folds stay in your account.</p>`;
+        <p class="note">For a shared computer. Your folds stay in your account.</p>
+        <button class="seg-link acct-delete" type="button" data-acct-delete>Delete my account</button>`;
     } else if (a.status === 'signed-out') {
       body = `<h2 id="acct-h">Keep your folds everywhere</h2>
         <p class="note">Sign in to have the same tracker on your phone and laptop. Optional: without an account, everything stays on this device.</p>
@@ -102,6 +119,7 @@ export function createAccountMenu(slot, { page = 'app', onChoose, toast } = {}) 
 
   function setOpen(next, { focus = true } = {}) {
     open = next;
+    if (!open && !deleting) confirmDelete = false;
     chit.hidden = !open;
     slot.classList.toggle('is-open', open);
     // The header shares a layer with the page below it; lift it while the chit hangs over the page.
@@ -130,6 +148,18 @@ export function createAccountMenu(slot, { page = 'app', onChoose, toast } = {}) 
         .catch(() => toast('Couldn\'t sign out. Try again.'));
     } else if (e.target.closest('[data-acct-forget]')) {
       forget();
+    } else if (e.target.closest('[data-acct-delete]')) {
+      confirmDelete = true;
+      drawChit();
+      chit.querySelector('[data-acct-delete-no]')?.focus();
+    } else if (e.target.closest('[data-acct-delete-no]')) {
+      confirmDelete = false;
+      drawChit();
+      chit.querySelector('[data-acct-delete]')?.focus();
+    } else if (e.target.closest('[data-acct-backup]')) {
+      saveBackup();
+    } else if (e.target.closest('[data-acct-delete-yes]')) {
+      removeAccount();
     } else if (e.target.closest('[data-acct-close]')) {
       setOpen(false);
     } else {
@@ -149,11 +179,42 @@ export function createAccountMenu(slot, { page = 'app', onChoose, toast } = {}) 
       toast("Couldn't sign out, so nothing was removed. Try again.");
       return;
     }
+    onLeave?.();
     const removed = store.forgetDevice();
     toast(removed
       ? 'Signed out. Your folds are removed from this browser and still in your account.'
       : "Signed out, but this browser wouldn't let Eightfold remove your folds. Clear this site's data in the browser settings.");
     setOpen(false);
+  }
+
+  // The same file as the tracker's "Save a backup", so it can be loaded back in later.
+  function saveBackup() {
+    store.markBackedUp();
+    const blob = new Blob([store.exportJSON()], { type: 'application/json' });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `eightfold-backup-${new Date().toISOString().slice(0, 10)}.json` });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast('Backup saved to your downloads. Keep it somewhere safe.');
+  }
+
+  // Delete the account (D-025): the database removes it and everything in it; then this browser
+  // stops syncing, forgets its copy and starts afresh, signed out.
+  async function removeAccount() {
+    if (deleting) return;
+    deleting = true;
+    drawChit();
+    try {
+      await deleteAccount();
+    } catch (err) {
+      deleting = false;
+      drawChit();
+      toast(err.message);
+      return;
+    }
+    onLeave?.();
+    store.forgetDevice();
+    try { sessionStorage.setItem(PARTING, 'deleted'); } catch { /* the page still reloads */ }
+    location.reload();
   }
 
   chit.addEventListener('submit', (e) => {
@@ -169,6 +230,11 @@ export function createAccountMenu(slot, { page = 'app', onChoose, toast } = {}) 
   });
 
   drawButton();
+
+  // After an account was deleted the page reloads; say what happened once.
+  let parting = null;
+  try { parting = PARTING_TEXT[sessionStorage.getItem(PARTING)]; sessionStorage.removeItem(PARTING); } catch { /* none */ }
+  if (parting) setTimeout(() => { toast(parting); if (page === 'landing') setOpen(true, { focus: false }); }, 0);
 
   return {
     update(next = {}) {

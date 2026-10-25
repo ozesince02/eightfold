@@ -405,3 +405,24 @@ Accepted · 25 Oct 2026
   kept aside, the old name's data) and shows an empty tracker. If changes are still waiting to reach
   the account, it asks before throwing them away. Other sites' data and Supabase's own keys are
   left alone (signing out already removes the session).
+
+## D-025 People can delete their own account
+Accepted · 25 Oct 2026
+
+- **Context:** only the owner could delete an account (Supabase dashboard). A privacy policy that
+  promises deletion needs a button that does it.
+- **Decision:** "Delete my account" at the bottom of the signed-in chit opens a confirmation:
+  what goes (the account, every habit, fold and wish, here and on the servers), that it can't be
+  undone, that other devices keep their copy until removed there, and **Save a backup first**
+  (the same file as the tracker's backup). "Delete everything" calls the database function
+  `public.delete_my_account()` (`supabase/migrations/20261025120000_delete_account.sql`), which
+  deletes the caller's auth user; profiles cascade from it and every table from profiles, so
+  nothing is left. Then the page stops syncing, removes this browser's copy (D-024) and reloads,
+  signed out, with a one-line note.
+- **Why a database function, not an Edge Function with the secret key:** it's one statement, it
+  runs with the caller's own token, and no secret key has to live anywhere outside the dashboard.
+  It's `SECURITY DEFINER` (people can't touch `auth.users` themselves) with an empty
+  `search_path`, deletes only `auth.uid()`, and signed-out visitors can't execute it.
+- **Not done:** other signed-in devices aren't wiped remotely. Their sign-in stops working (the
+  sessions are deleted with the account) but their local copy stays until removed there.
+
