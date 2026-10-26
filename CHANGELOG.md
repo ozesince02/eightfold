@@ -58,6 +58,8 @@ Dates are when the work landed.
   year's wish. Your current wish stays with 2026. (D-017)
 
 ### Docs
+- End-to-end encryption of habit names is written up as a parked idea in the vision, with why it
+  waits (one key on several devices at once).
 - D-018: the accounts database (tables, limits and row-level security), ready to run in Supabase.
   Nothing changes in the app yet.
 - D-015: the product keeps the name **Eightfold**; onemorefold.com is its address. Eightfold is

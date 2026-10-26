@@ -63,6 +63,21 @@ only belong on certain days.
   [data-storage.md](data-storage.md), data model.
 - Reminders follow the schedule: no nudge on a day the habit isn't due.
 
+### Private names: end-to-end encryption (25 Oct 2026, from the user) — parked 26 Oct 2026
+Habit names, wishes and times encrypted in the browser before they sync, so nobody with database
+access, the owner included, can read them. Until then the Privacy page says plainly that the owner
+can technically reach the data and looks only on request.
+- **How:** the browser's own AES-256-GCM (WebCrypto), with a key made on the device that never
+  reaches the server. Encoding (Base64) or encrypting on the server with a key we hold were ruled
+  out: neither stops the person who runs the service.
+- **Why parked:** people use Eightfold on several devices at once, and every device needs the same
+  key without the server ever having it (a recovery code, scanning a QR code from a signed-in
+  device, or later passkeys). That's too much for now.
+- **Costs to settle when it comes back:** a lost key and lost devices mean lost names (ticks
+  survive); closed-app reminders can't name the habit unless the device decrypts them; buddies
+  would need a shared key; existing names must be encrypted in place; dates of ticks stay visible.
+- **Design before buddies and closed-app reminders**, since both change once names are encrypted.
+
 ### Kintsugi days
 A missed day inside a long run is mended with a gold seam instead of breaking the streak, at most
 once a week. Fall seven times, rise eight, as a mechanic.

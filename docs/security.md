@@ -112,6 +112,8 @@ deploy tooling only: undici never reaches the site's visitors. Fix: an `override
 undici 7.30.1, the patched release from the same maintainers (9 days old, taken early under rule 6
 because it is a security patch). Remove the override once a Wrangler release ships a patched
 undici. Test: `npm audit` 0, `npm run check`, build, `wrangler deploy --dry-run`.
+**26 October:** Wrangler 4.153.0 (released 26 Oct) depends on undici 7.30.1. On or after
+9 November (two weeks, rule 6), upgrade Wrangler to it and remove the override on a `chore/` branch.
 
 ### 24 October 2026 — years (branch `feature/years`)
 
