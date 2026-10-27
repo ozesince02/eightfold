@@ -210,6 +210,9 @@ Settled with the user on 23 October 2026.
     ideally through a view that exposes only daily totals, not individual habits;
   - invite links and a way to remove a buddy at any time.
 - Misses are never shown to buddies, only what was done.
+- **27 October 2026:** the fuller plan, with several buddies, three sharing levels and challenges,
+  is in [buddies-and-notifications.md](buddies-and-notifications.md). It proposes showing a buddy
+  your consistency as totals (never which days were missed), which would replace the rule above.
 
 ### Hosting: Cloudflare Pages, Supabase in Mumbai
 - **Cloudflare Pages** serves the static site: free, commercial use allowed, 500 builds a month,

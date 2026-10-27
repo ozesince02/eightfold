@@ -21,9 +21,10 @@ fold, each week a stage, the full model at month end. How full it is shows how t
 - Builds on the existing fold engine in `src/three/crane.js`, which already folds a model in
   stages from a flat crease pattern. Each new model is a new set of triangles and fold stages.
 
-### Reminders that arrive with the app closed
-Web Push from a small server job, or native notifications in the phone app.
-See [data-storage.md](data-storage.md), phase 3.
+### Reminders that arrive with the app closed (planned 27 Oct 2026)
+Web Push from a job that runs every 30 minutes, plus a daily summary and a weekly recap, each
+switched on or off separately. Native notifications in the phone app later. Design:
+[buddies-and-notifications.md](buddies-and-notifications.md).
 
 ### Phone apps (Android and iOS)
 Wrap the web app with Capacitor: same code, native notifications, home-screen widget for today's
@@ -33,11 +34,19 @@ habits.
 Sign in with an email link or Google; the same data on phone and laptop. Plan in
 [data-storage.md](data-storage.md).
 
-### Opt-in buddies (23 Oct 2026, from the user; planned after accounts)
-Accounts start private. Later, invite a friend as a buddy: you see each other's cranes and streaks,
-never each other's misses, and habit names only if you choose to share them. Remove a buddy at any
-time. Data side: [data-storage.md](data-storage.md), "Sharing".
+### Opt-in buddies and challenges (23 Oct 2026, from the user; planned 27 Oct 2026)
+Accounts start private. Add several buddies you know in real life, by invite link (no search, no
+community, no chat), and choose for each how much they see: nothing, how consistent you are, or
+chosen habits by name. A buddy who sees you struggling can reach out in person. Remove a buddy at
+any time. **Challenges:** a habit two people, or a group of up to ten, take on together for a
+week, a month or a year, each ticking their own. Design:
+[buddies-and-notifications.md](buddies-and-notifications.md).
 - Later still: a family circle with one shared thousand-crane wish.
+
+### Nudges between buddies (27 Oct 2026, from the user; not in the first version)
+A buddy could send a nudge when a habit isn't ticked yet. Left out for now: the other person may
+already be doing it and just hasn't ticked, and repeated nudges would irritate more than help.
+Buddies know each other and can reach out directly.
 
 ### Weekly and monthly goals, and habits on chosen days (23 Oct 2026, from the user) — built 24 Oct 2026, D-013
 Daily habits are short-term goals; weekly and monthly ones are the long-term goals. And some habits
@@ -84,6 +93,7 @@ once a week. Fall seven times, rise eight, as a mechanic.
 
 ### Weekly recap
 A paper card every Sunday: folds made, best habit, the week's crane, ready to save or share.
+Announced by the weekly recap notification ([buddies-and-notifications.md](buddies-and-notifications.md)).
 
 ### Year in folds: a recap, and years side by side (24 Oct 2026, from the user)
 A year-end recap in the spirit of Spotify Wrapped, made of paper: a short sequence of cards to tap
@@ -97,6 +107,16 @@ look back; the data is ready for this (habit ids stay the same across years).
 
 ### Wish at 1,000
 When crane 1,000 is folded, the wish written on the Habits page is revealed on a big paper scroll.
+
+### A quote for the day (27 Oct 2026, from the user)
+A motivating quote, phrase or statement on the tracker, each with a small picture of what it
+stands for, in paper art or pixel art.
+- **A finite, hand-picked list.** The words already in D-015 are a natural start: "thoughts become
+  things", "one bite at a time", "to lose patience is to lose the battle", *Make Your Bed*,
+  *Ikigai*, "fall seven, rise eight".
+- **Your own words too:** people can add quotes they believe in, the ones that work for them.
+- **To decide later:** a new quote each visit, or one per day (a quote of the day); where it sits
+  on the page; paper art or pixel art, or both.
 
 ### Habit templates
 Start a new month or a new person from a template: "morning routine", "DSA prep", "language".
