@@ -108,5 +108,15 @@ look back; the data is ready for this (habit ids stay the same across years).
 ### Wish at 1,000
 When crane 1,000 is folded, the wish written on the Habits page is revealed on a big paper scroll.
 
+### A quote for the day (27 Oct 2026, from the user)
+A motivating quote, phrase or statement on the tracker, each with a small picture of what it
+stands for, in paper art or pixel art.
+- **A finite, hand-picked list.** The words already in D-015 are a natural start: "thoughts become
+  things", "one bite at a time", "to lose patience is to lose the battle", *Make Your Bed*,
+  *Ikigai*, "fall seven, rise eight".
+- **Your own words too:** people can add quotes they believe in, the ones that work for them.
+- **To decide later:** a new quote each visit, or one per day (a quote of the day); where it sits
+  on the page; paper art or pixel art, or both.
+
 ### Habit templates
 Start a new month or a new person from a template: "morning routine", "DSA prep", "language".
