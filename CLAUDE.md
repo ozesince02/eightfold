@@ -19,6 +19,8 @@ data, storage, rendering, auth or headers. Say plainly when something is a risk.
 - [docs/design.md](docs/design.md): the design system. Read it before any UI change.
 - [docs/decisions.md](docs/decisions.md): why things are the way they are (D-001...).
 - [docs/data-storage.md](docs/data-storage.md): the plan for accounts and cloud data.
+- [docs/buddies-and-notifications.md](docs/buddies-and-notifications.md): the plan for buddies,
+  challenges and closed-app notifications.
 - [docs/vision.md](docs/vision.md): future ideas.
 
 ## Branches

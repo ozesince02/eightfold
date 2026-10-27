@@ -58,6 +58,8 @@ Dates are when the work landed.
   year's wish. Your current wish stays with 2026. (D-017)
 
 ### Docs
+- A plan for buddies, challenges and notifications with the app closed (reminders, a daily
+  summary, a weekly recap), for review. Nothing is built yet.
 - End-to-end encryption of habit names is written up as a parked idea in the vision, with why it
   waits (one key on several devices at once).
 - D-018: the accounts database (tables, limits and row-level security), ready to run in Supabase.
