@@ -61,6 +61,9 @@ data, storage, rendering, auth or headers. Say plainly when something is a risk.
 ## When you change something
 
 - Add a line to [CHANGELOG.md](CHANGELOG.md) (what changed, for users).
+- When a release ships something people will notice, add it to the patch notes
+  ([src/data/patch-notes.js](src/data/patch-notes.js), D-032): plain, warm, a little funny, no
+  technical detail.
 - Add or update a decision in docs/decisions.md when a choice would surprise a later reader.
 - Add new ideas the user mentions to docs/vision.md.
 - Add to the audit log in docs/security.md when you find or fix a security issue.

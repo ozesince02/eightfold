@@ -4,7 +4,8 @@
 // Used by the landing page and the tracker; the page passes in what it knows.
 import { esc } from '../lib/sanitize.js';
 import { signInWithGoogle, sendSignInLink, signOut, deleteAccount } from '../lib/auth.js';
-import { APP_PATH, PRIVACY_PATH, TERMS_PATH } from '../config.js';
+import { APP_PATH, PRIVACY_PATH, TERMS_PATH, PATCH_NOTES_PATH } from '../config.js';
+import { patchUnseen } from '../lib/patches.js';
 import { store } from '../lib/store.js';
 
 // A crumpled ball: an uneven outline cut into facets of three paper tones, with crease lines.
@@ -32,6 +33,9 @@ const SYNC_WORDS = {
   error: 'Can\'t reach your account; trying again',
   choose: 'Choose how to combine your folds',
 };
+
+// "Patch notes", marked new until this browser has opened the latest ones (D-032).
+const patchLink = () => `<a href="${PATCH_NOTES_PATH}">Patch notes</a>${patchUnseen() ? '<span class="acct-new">new</span>' : ''}`;
 
 // A message that has to survive the page reloading (after an account is deleted). Fixed texts only.
 const PARTING = 'eightfold:parting';
@@ -96,7 +100,7 @@ export function createAccountMenu(slot, { page = 'app', onChoose, onLeave, toast
         <button class="seg-link acct-forget" type="button" data-acct-forget>Sign out and remove my folds from this browser</button>
         <p class="note">For a shared computer. Your folds stay in your account.</p>
         <button class="seg-link acct-delete" type="button" data-acct-delete>Delete my account</button>
-        <p class="acct-legal"><a href="${PRIVACY_PATH}">Privacy</a> · <a href="${TERMS_PATH}">Terms</a></p>`;
+        <p class="acct-legal">${patchLink()} · <a href="${PRIVACY_PATH}">Privacy</a> · <a href="${TERMS_PATH}">Terms</a></p>`;
     } else if (a.status === 'signed-out') {
       body = `<h2 id="acct-h">Keep your folds everywhere</h2>
         <p class="note">Sign in to have the same tracker on your phone and laptop. Optional: without an account, everything stays on this device.</p>
@@ -110,7 +114,8 @@ export function createAccountMenu(slot, { page = 'app', onChoose, onLeave, toast
           <p class="note">Open the link in this browser.</p>
         </form>
         <p class="note acct-legal">By signing in you agree to the <a href="${TERMS_PATH}">Terms</a> and the <a href="${PRIVACY_PATH}">Privacy</a> page.</p>
-        <button class="seg-link acct-later" type="button" data-acct-close>Not now, keep it on this device</button>`;
+        <button class="seg-link acct-later" type="button" data-acct-close>Not now, keep it on this device</button>
+        <p class="acct-legal">${patchLink()}</p>`;
     } else if (a.status === 'unavailable') {
       body = `<h2 id="acct-h">Account</h2><p class="note">Sign-in can't be reached right now. Everything still works on this device.</p>`;
     } else {

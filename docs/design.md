@@ -119,6 +119,17 @@ Shadows are allowed **only** on paper lying on paper. Buttons and controls are f
 - **Backup slip** (`.backup-bar`): a yamabuki strip with notched ends above the month board, only
   when a backup is due and data is local. One primary (sumi) button and a text link to snooze.
 
+## Patch notes page (D-032)
+
+- One torn white sheet per version, newest first, tilted a little in turn, tape at the top.
+- **Hanko stamp:** an 84px slightly off-round shu seal with "Patch" and the number in the display
+  face, pressed a few degrees crooked. 66px on phones, above the text.
+- A katakana sticker per patch at the sheet's top-right corner, outside the torn sheet (its
+  clip-path would cut it). "Latest" is a sumi pill beside the newest date.
+- Lines start with a bold lead ("Delete my account.") and carry on in plain words. Witty, never
+  technical; the voice rules above still apply.
+- Ends with a sakura "Next on the folding table" slip: promises, not dates.
+
 ## Charts
 
 - Charts are cut paper, not chart-library defaults: hills for the daily score, mountains for the

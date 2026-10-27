@@ -3,11 +3,38 @@
 What changed, for people using the app. Why it changed lives in [docs/decisions.md](docs/decisions.md).
 Dates are when the work landed.
 
-## Unreleased
+## 0.9.0 — 28 October 2026
+
+### Added
+- **Patch notes**, at /patch-notes: what's new in each version, in plain and slightly silly words,
+  linked from the landing page's footer and the account chit, which marks a patch you haven't
+  read yet. (D-032)
+
+### Docs
+- The plan for buddies, buddy and gang challenges, user tags, the crane note, and notifications
+  with the app closed (reminders, a daily summary, a weekly recap) is agreed (D-028 to D-031).
+  Nothing is built yet.
+- End-to-end encryption of habit names is written up as a parked idea in the vision, with why it
+  waits (one key on several devices at once).
+
+## 0.8.0 — 25 October 2026
+
+### Added
+- **Privacy and Terms pages**, in plain words, linked from the footer and the account menu. Signing
+  in now says that it means agreeing to them. (D-026)
+- **Delete my account**, in the account chit: removes your account and every habit, fold and wish
+  in it, from the servers and from this browser, after a confirmation with "Save a backup first".
+  (D-025)
+- **Sign out and remove your folds from this browser**, for a shared computer. Your folds stay in
+  your account; if some changes haven't reached it yet, you're asked first.
 
 ### Changed
 - **The fonts come from Eightfold itself**, not Google Fonts, so no other company sees your visits.
   The security policy no longer allows any third-party style or font origin. (D-027)
+
+## 0.7.0 — 24 October 2026
+
+### Changed
 - Landing page: the demo is "Try it with these six", and "Your day, in order" describes the
   feature for everyone rather than the sheet's habit names. "Streaks that survive the 1st" is now
   "Habits on your schedule" (chosen days, times a week, weekly, monthly); the zine's streaks panel
@@ -33,13 +60,6 @@ Dates are when the work landed.
   advisories. Nothing visitors download changed.
 
 ### Added
-- **Privacy and Terms pages**, in plain words, linked from the footer and the account menu. Signing
-  in now says that it means agreeing to them. (D-026)
-- **Delete my account**, in the account chit: removes your account and every habit, fold and wish
-  in it, from the servers and from this browser, after a confirmation with "Save a backup first".
-  (D-025)
-- **Sign out and remove your folds from this browser**, for a shared computer. Your folds stay in
-  your account; if some changes haven't reached it yet, you're asked first.
 - **Why a thousand cranes?** The story behind the name, on a paper scroll: the crane, senbazuru,
   the 1797 folding book, Sadako Sasaki, "fall seven, rise eight", and how Eightfold folds. Open it
   from the folded note on the landing page's wish card, from the crane once you've ticked the six,
@@ -58,10 +78,6 @@ Dates are when the work landed.
   year's wish. Your current wish stays with 2026. (D-017)
 
 ### Docs
-- A plan for buddies, challenges and notifications with the app closed (reminders, a daily
-  summary, a weekly recap), for review. Nothing is built yet.
-- End-to-end encryption of habit names is written up as a parked idea in the vision, with why it
-  waits (one key on several devices at once).
 - D-018: the accounts database (tables, limits and row-level security), ready to run in Supabase.
   Nothing changes in the app yet.
 - D-015: the product keeps the name **Eightfold**; onemorefold.com is its address. Eightfold is

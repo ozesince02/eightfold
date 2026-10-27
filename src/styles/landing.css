@@ -308,6 +308,8 @@ section { scroll-margin-top: 24px; }
 .piece--later { grid-column: 6 / 13; }
 .later { margin: 14px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 24px; font-weight: 700; }
 .later li { padding-left: 26px; position: relative; }
+.later-link { margin-top: 18px; }
+.later-link a { color: var(--sumi); font-weight: 700; text-underline-offset: 3px; }
 .later li::before { content: ''; position: absolute; left: 0; top: .3em; width: 14px; height: 14px; background: var(--sumi); clip-path: polygon(0 0, 100% 0, 100% 60%, 60% 100%, 0 100%); }
 .dayline { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 4px; }
 .dayline li { display: grid; grid-template-columns: 54px 14px 1fr; gap: 10px; align-items: center; font-size: 15px; font-weight: 700; }

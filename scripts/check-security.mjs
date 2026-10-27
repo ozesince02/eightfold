@@ -91,7 +91,7 @@ console.log('env: only public settings');
 const headers = readFileSync(new URL('../public/_headers', import.meta.url), 'utf8');
 assert.match(headers, /font-src 'self';/, "the CSP allows fonts only from 'self'");
 assert.match(headers, /style-src 'self' 'unsafe-inline';/, 'the CSP allows styles only from this site');
-for (const page of ['index.html', 'app.html', 'privacy.html', 'terms.html', '404.html']) {
+for (const page of ['index.html', 'app.html', 'privacy.html', 'terms.html', 'patch-notes.html', '404.html']) {
   const html = readFileSync(new URL(`../${page}`, import.meta.url), 'utf8');
   assert.doesNotMatch(html, /fonts\.googleapis|fonts\.gstatic/, `${page} doesn't load Google Fonts`);
   assert.match(html, /\/src\/styles\/fonts\.css/, `${page} uses the self-hosted fonts`);
