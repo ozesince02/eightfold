@@ -34,10 +34,10 @@ const SYNC_WORDS = {
   choose: 'Choose how to combine your folds',
 };
 
-// A message that has to survive the page reloading (after an account is deleted). Fixed texts only.
 // "Patch notes", marked new until this browser has opened the latest ones (D-032).
 const patchLink = () => `<a href="${PATCH_NOTES_PATH}">Patch notes</a>${patchUnseen() ? '<span class="acct-new">new</span>' : ''}`;
 
+// A message that has to survive the page reloading (after an account is deleted). Fixed texts only.
 const PARTING = 'eightfold:parting';
 const PARTING_TEXT = { deleted: 'Your account and everything in it are deleted. Eightfold still works on this device, starting empty.' };
 
