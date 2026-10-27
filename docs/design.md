@@ -69,6 +69,8 @@ From [src/styles/paper.css](../src/styles/paper.css) and [src/ui/paper.js](../sr
 | `.nudge` | Reminder note | Taped slip, bottom right, max three |
 | `.fold-note` | Envelope-folded note with a 千 seal | Opens flap by flap; one per page, for the cranes story (D-023) |
 | `.story` | Hanging scroll (`<dialog>`) | Aged paper between two rods; unrolls down, rolls up to close (D-023) |
+| `.note-crane` | The way into a crane note | A washi pill with the crane mark and a label ("Why buddies?"); the crane hops every 7s in stop-motion. `noteTrigger(id, label)` |
+| `.cnote` | Crane note (`<dialog>`), the info popup | A 3D crane flies in from the trigger, unfolds into a square, turns over, and the square opens into a white letter with faint creases; closing folds it back and it flies off (D-031) |
 
 Shadows are allowed **only** on paper lying on paper. Buttons and controls are flat.
 
@@ -119,6 +121,16 @@ Shadows are allowed **only** on paper lying on paper. Buttons and controls are f
 - **Backup slip** (`.backup-bar`): a yamabuki strip with notched ends above the month board, only
   when a backup is due and data is local. One primary (sumi) button and a text link to snooze.
 
+## Crane notes (D-031)
+
+- **When:** a feature that deserves a word from the maker (why it exists, what it's for) gets a
+  `.note-crane` beside its heading. One per feature, never inside a list.
+- **Words:** a letter from oze in the first person, three short paragraphs at most, signed. The
+  kicker always reads "A note from the folding table". Text lives in `src/data/notes.js`.
+- **Motion:** fly in about 0.85s, unfold 0.8s, turn over 0.4s, then the letter opens downwards from
+  the fold. Closing: fold the letter up, turn over, fold into a crane, fly off top right.
+- Without WebGL or with reduced motion, the letter just fades in and closes at once.
+
 ## Patch notes page (D-032)
 
 - One torn white sheet per version, newest first, tilted a little in turn, tape at the top.
@@ -156,6 +168,7 @@ Shadows are allowed **only** on paper lying on paper. Buttons and controls are f
 - Feedback on every control: press scale, hover lift, a fold flip on ticking.
 - Things that open unfold the way paper would: the account chit flips down, the folded note opens
   flap by flap, the story scroll unrolls downwards. Closing reverses it, quicker (about 300ms).
+  The crane note is the one longer piece (about 2s each way), because the flight is the point.
 - `prefers-reduced-motion`: no travel, no boil, no confetti, crane renders static. Content never
   depends on an animation finishing.
 

@@ -1,0 +1,62 @@
+/* The crane note (D-031): a letter folded from the crane's square of paper. The dialog covers the
+   screen so the 3D crane can fly anywhere; the letter's top square is exactly where the paper
+   lands, and the rest of the letter opens downwards from the fold. */
+
+.cnote {
+  --side: min(520px, calc(100vw - 32px), calc(100svh - 48px));
+  position: fixed; inset: 0; width: 100vw; height: 100svh; max-width: none; max-height: none;
+  margin: 0; padding: 24px 16px; border: 0; background: transparent; color: var(--sumi);
+  overflow: auto; overscroll-behavior: contain;
+}
+.cnote::backdrop { background: rgba(30, 27, 24, .5); animation: cnote-fade .35s ease both; }
+.cnote.is-folding::backdrop { animation: cnote-fade .3s ease reverse both; }
+.cnote-sky { position: fixed; inset: 0; width: 100vw; height: 100svh; pointer-events: none; z-index: 2; visibility: hidden; }
+.cnote.is-flying .cnote-sky { visibility: visible; }
+
+.cnote-letter {
+  position: relative; z-index: 1; width: var(--side); min-height: var(--side); margin: 0 auto;
+  background: var(--white-paper); filter: var(--lift-high);
+  /* Faint creases of the crane's square, left over from the folding. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cg stroke='%231E1B18' stroke-opacity='.07' stroke-width='.35' fill='none' vector-effect='non-scaling-stroke'%3E%3Cpath d='M0 0L100 100M100 0L0 100M50 0V100M0 50H100M50 0L100 50L50 100L0 50Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: var(--side) var(--side); background-repeat: no-repeat;
+  opacity: 0;
+}
+/* Where the square folded onto the rest of the letter. */
+.cnote-letter::after {
+  content: ''; position: absolute; left: 0; right: 0; top: var(--side); height: 1px;
+  background: rgba(30, 27, 24, .1);
+}
+.cnote.is-open .cnote-letter { opacity: 1; animation: cnote-open .55s cubic-bezier(.3, .75, .25, 1) .08s backwards; }
+.cnote.is-still.is-open .cnote-letter { animation: cnote-fade .2s ease both; }
+.cnote.is-folding .cnote-letter { opacity: 1; animation: cnote-shut .28s cubic-bezier(.5, 0, .75, .3) both; }
+
+/* The square first; the part below the fold opens down from it. */
+@keyframes cnote-open {
+  from { clip-path: inset(0 0 calc(100% - var(--side)) 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+@keyframes cnote-shut {
+  from { clip-path: inset(0 0 0 0); }
+  to { clip-path: inset(0 0 calc(100% - var(--side)) 0); }
+}
+@keyframes cnote-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.cnote-text { padding: clamp(28px, 6vw, 48px) clamp(22px, 6vw, 48px) clamp(26px, 5vw, 40px); }
+.cnote-kicker { font-size: 14px; font-weight: 700; color: var(--shu-ink); }
+.cnote h2 { margin-top: 8px; font-size: clamp(28px, 5vw, 38px); line-height: 1.08; padding-right: 36px; }
+.cnote-text > p:not(.cnote-kicker):not(.cnote-sign) { margin-top: 14px; font-size: 17px; line-height: 1.65; }
+.cnote-sign { margin-top: 22px; font-weight: 700; color: var(--sumi-2); }
+.cnote-sign::before { content: '— '; }
+.cnote-actions { margin-top: 24px; }
+.cnote-actions .btn { min-height: 44px; padding: 0 20px; font-size: 15px; }
+
+.cnote-x {
+  position: absolute; top: 12px; right: 12px; z-index: 1; width: 44px; height: 44px; border: 0;
+  border-radius: 50%; background: transparent; color: var(--sumi-2); font-size: 18px; cursor: pointer;
+}
+.cnote-x:hover { background: var(--washi-2); color: var(--sumi); }
+.cnote button:focus-visible { outline: 3px solid var(--ai); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cnote::backdrop, .cnote.is-open .cnote-letter, .cnote.is-folding .cnote-letter { animation: none; }
+}

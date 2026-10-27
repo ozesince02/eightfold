@@ -9,6 +9,9 @@ Dates are when the work landed.
 - **Patch notes**, at /patch-notes: what's new in each version, in plain and slightly silly words,
   linked from the landing page's footer and the account chit, which marks a patch you haven't
   read yet. (D-032)
+- **Crane notes**, the app's way of explaining itself: tap the little crane by a feature and a paper
+  crane flies in and unfolds into a note from oze on why it exists, then folds back up and flies
+  away. The first one is on the patch notes page. (D-031)
 
 ### Docs
 - The plan for buddies, buddy and gang challenges, user tags, the crane note, and notifications
