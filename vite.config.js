@@ -64,6 +64,7 @@ export default defineConfig(({ command, mode }) => {
           app: resolve(import.meta.dirname, 'app.html'),
           privacy: resolve(import.meta.dirname, 'privacy.html'),
           terms: resolve(import.meta.dirname, 'terms.html'),
+          patchNotes: resolve(import.meta.dirname, 'patch-notes.html'),
           // Cloudflare serves dist/404.html for unknown addresses (wrangler.jsonc). Built like the
           // other pages so it gets the self-hosted fonts.
           notFound: resolve(import.meta.dirname, '404.html'),

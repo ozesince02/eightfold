@@ -518,3 +518,20 @@ Accepted · 28 Oct 2026
   language: paper that folds. It reuses the crane fold engine, so the folds are real.
 - Reduced motion or no WebGL: the note just appears. Escape, ✕, the button or a tap outside close it
   at any point. Note texts are written in the code, never read from storage.
+
+## D-032 Patch notes, for people rather than developers
+Accepted · 28 Oct 2026
+
+- **Decision (the user's):** a patch notes page (`/patch-notes`) telling people what was added
+  and when, in a witty, friendly voice, with no technical detail. User-facing changes only;
+  CHANGELOG.md stays the full record for the project.
+- **One sheet per version,** newest first: a red hanko stamp with the number, the date, a title,
+  a few lines, a katakana sticker. A "Next on the folding table" slip at the end, without dates.
+  The text lives in `src/data/patch-notes.js` and is escaped when shown.
+- **Versions:** the unreleased work was cut into 0.7.0 (24 October: accounts and sync) and 0.8.0
+  (25 October: privacy), and this is 0.9.0. Each release adds a patch here and in the changelog.
+- **Found from** the landing page's footer and "Next on the folding table" card, and the account
+  chit, which marks "new" until this browser has opened the latest patch (a per-device key under
+  `eightfold:v1:`, so removing your folds from a browser clears it too).
+- **The voice still follows the design rules:** sentence case, no exclamation marks outside
+  katakana stickers, every number says what it counts, a miss is never a failure.

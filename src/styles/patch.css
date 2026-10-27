@@ -1,0 +1,64 @@
+/* Patch notes (D-032): each version a torn sheet on the table, with a red hanko stamp for its
+   number and a katakana sticker. Builds on legal.css for the bar and the reading measure. */
+
+.patch-bar, .patch { max-width: 820px; }
+.patch { margin: 0 auto; padding: 8px var(--gutter) 88px; overflow-x: clip; }
+
+.patch-head { position: relative; padding: 12px 0 8px; }
+.patch-head h1 { font-size: clamp(44px, 9vw, 76px); line-height: 1; letter-spacing: -.02em; }
+.patch-sfx { position: absolute; top: 18px; right: 2%; font-size: clamp(26px, 4.5vw, 40px); }
+.patch-lede { margin-top: 16px; max-width: 52ch; font-size: var(--step-1); line-height: 1.5; color: var(--sumi-2); }
+
+.patches { list-style: none; margin: 40px 0 0; padding: 0; display: grid; gap: 40px; }
+.patch-item { position: relative; }
+.patch-item > .tape { top: -13px; }
+.patch-item .sheet {
+  display: grid; grid-template-columns: 88px 1fr; gap: 6px 26px;
+  padding: clamp(26px, 5vw, 40px) clamp(20px, 5vw, 44px) clamp(30px, 5vw, 44px);
+}
+
+/* The version as a hanko: a red seal, slightly off-round, pressed a little crooked. */
+.patch-stamp {
+  width: 84px; height: 84px; display: grid; place-content: center; text-align: center;
+  background: var(--shu); color: var(--white-paper); border-radius: 46% 54% 50% 50% / 52% 48% 52% 48%;
+  font-family: var(--display); font-size: 30px; line-height: .95; letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums; rotate: -6deg; box-shadow: inset 0 0 0 3px var(--shu), inset 0 0 0 5px var(--white-paper);
+}
+.patch-stamp small { display: block; font-family: var(--text); font-weight: 700; font-size: 13px; letter-spacing: 0; margin-bottom: 4px; }
+.patch-item:nth-child(even) .patch-stamp { rotate: 5deg; }
+
+.patch-date { font-size: 14px; font-weight: 700; color: var(--sumi-2); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.patch-latest { background: var(--sumi); color: var(--washi); padding: 3px 10px; border-radius: 999px; font-size: 13px; }
+.patch-body h2 { font-size: clamp(24px, 3.6vw, 32px); line-height: 1.1; margin-top: 6px; padding-right: 64px; }
+.patch-body ul { margin: 16px 0 0; padding-left: 20px; }
+.patch-body li { font-size: 17px; line-height: 1.6; }
+.patch-body li + li { margin-top: 8px; }
+.patch-body li::marker { color: var(--shu); }
+.patch-body b { font-weight: 900; }
+
+/* The sticker lives outside the torn sheet so its clip-path can't cut it. */
+.patch-item-sfx { position: absolute; top: -10px; right: 14px; z-index: 4; font-size: 26px; rotate: 8deg; }
+.patch-item:nth-child(even) .patch-item-sfx { rotate: -6deg; }
+
+.patch-noscript { list-style: none; font-size: 17px; }
+.patch a, .patch-noscript a { color: var(--ai); font-weight: 700; text-underline-offset: 3px; }
+.patch a:focus-visible { outline: 3px solid var(--ai); outline-offset: 2px; }
+
+.patch-next { position: relative; margin-top: 56px; }
+.patch-next > .tape { top: -13px; }
+.patch-next .sheet { padding: 30px clamp(20px, 5vw, 44px) 28px; }
+.patch-next h2 { font-size: clamp(22px, 3.2vw, 28px); }
+.patch-next ul { margin: 14px 0 0; padding-left: 20px; }
+.patch-next li { font-size: 17px; line-height: 1.6; }
+.patch-next-note { margin-top: 14px; font-size: 14px; font-weight: 700; color: var(--sumi-2); }
+
+@media (max-width: 560px) {
+  .patch-item .sheet { grid-template-columns: 1fr; }
+  .patch-stamp { width: 66px; height: 66px; font-size: 24px; }
+  .patch-stamp small { font-size: 11px; margin-bottom: 2px; }
+  .patch-sfx { position: static; display: inline-block; margin-top: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .patch-sfx { animation: none; }
+}

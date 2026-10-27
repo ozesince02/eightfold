@@ -13,6 +13,8 @@ export const APP_PATH = env.DEV ? '/app.html' : '/app';
 // The Privacy and Terms pages (D-026), the same way.
 export const PRIVACY_PATH = env.DEV ? '/privacy.html' : '/privacy';
 export const TERMS_PATH = env.DEV ? '/terms.html' : '/terms';
+// What's new, version by version (D-032).
+export const PATCH_NOTES_PATH = env.DEV ? '/patch-notes.html' : '/patch-notes';
 
 // ---------- Product ----------
 export const APP_NAME = 'Eightfold';

@@ -3,7 +3,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { store, STORE_KEY } from './lib/store.js';
 import { monthName, monthShort, minutesOf } from './lib/dates.js';
 import { yearStats, percent } from './lib/stats.js';
-import { CRANE_GOAL, CRANE_GOAL_TEXT, AUTHOR, PRIVACY_PATH, TERMS_PATH } from './config.js';
+import { CRANE_GOAL, CRANE_GOAL_TEXT, AUTHOR, PRIVACY_PATH, TERMS_PATH, PATCH_NOTES_PATH } from './config.js';
 import { tearAll, craneMark, sfxPop, confetti, rng, inkOn } from './ui/paper.js';
 import { hills, mountains } from './ui/charts.js';
 import { featuredMonth, daysLeftInYear } from './ui/insights.js';
@@ -217,7 +217,8 @@ $('[data-confetti]').addEventListener('click', (e) => { confetti(); sfxPop(e.cli
 
 // Who made this (config.js): plain text and two fixed link shapes, nothing from outside.
 $('[data-author]').innerHTML = `Made by ${esc(AUTHOR.nickname)} (${esc(AUTHOR.name)}), folded out of ${esc(AUTHOR.nickname)}'s Habit Tracker v2.`;
-$('[data-author-links]').innerHTML = `<a href="mailto:${esc(AUTHOR.email)}">${esc(AUTHOR.email)}</a><a href="${esc(AUTHOR.github)}" rel="noopener">GitHub</a><a href="${PRIVACY_PATH}">Privacy</a><a href="${TERMS_PATH}">Terms</a>`;
+$('[data-author-links]').innerHTML = `<a href="mailto:${esc(AUTHOR.email)}">${esc(AUTHOR.email)}</a><a href="${esc(AUTHOR.github)}" rel="noopener">GitHub</a><a href="${PATCH_NOTES_PATH}">Patch notes</a><a href="${PRIVACY_PATH}">Privacy</a><a href="${TERMS_PATH}">Terms</a>`;
+$('[data-patch-link]').href = PATCH_NOTES_PATH;
 
 tearAll();
 
