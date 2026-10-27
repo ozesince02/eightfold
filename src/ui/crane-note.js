@@ -168,7 +168,7 @@ const scaleFor = (px, size) => (px * unit()) / size;
 // ---------- Opening ----------
 
 export function openCraneNote(id, from) {
-  const note = NOTES[id];
+  const note = Object.hasOwn(NOTES, id) ? NOTES[id] : null;
   if (!note) return;
   if (!el) build();
   if (state !== 'closed') return;
