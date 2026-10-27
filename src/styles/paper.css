@@ -89,3 +89,24 @@
 @media (prefers-reduced-motion: reduce) {
   .boil { animation: none; transform: rotate(var(--r, 0deg)); }
 }
+
+/* The way into a crane note (D-031): a small paper crane and a label. The crane hops now and
+   then, in stop-motion, so it's noticed without shouting. */
+.note-crane {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px 0 8px;
+  border: 0; border-radius: 999px; background: var(--washi-2); color: var(--sumi);
+  font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
+  transition: background-color .15s, transform .2s var(--ease-paper);
+}
+.note-crane:hover { background: var(--washi-3); transform: translateY(-1px); }
+.note-crane:active { transform: translateY(1px) scale(.98); }
+.note-crane:focus-visible { outline: 3px solid var(--ai); outline-offset: 2px; }
+.note-crane .crane-mark { width: 34px; height: auto; flex: none; animation: note-hop 7s steps(1) infinite; }
+@keyframes note-hop {
+  0%, 86%, 100% { transform: none; }
+  88% { transform: translateY(-4px) rotate(-8deg); }
+  90% { transform: translateY(-7px) rotate(-4deg); }
+  92% { transform: translateY(-3px) rotate(3deg); }
+  94% { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) { .note-crane .crane-mark { animation: none; } }

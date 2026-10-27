@@ -5,6 +5,7 @@ import { APP_PATH } from './config.js';
 import { esc } from './lib/sanitize.js';
 import { tearAll } from './ui/paper.js';
 import { markPatchSeen } from './lib/patches.js';
+import { noteTrigger, wireCraneNotes } from './ui/note-trigger.js';
 
 const $ = (s) => document.querySelector(s);
 const longDate = (iso) => new Date(`${iso}T12:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -28,6 +29,10 @@ $('[data-patches]').innerHTML = PATCHES.map((p, i) => `
   </li>`).join('');
 
 $('[data-next]').innerHTML = NEXT.map((n) => `<li>${esc(n)}</li>`).join('');
+
+// Why this page exists, from the person who made it: a crane note (D-031).
+$('[data-note-slot]').innerHTML = noteTrigger('patch-notes', 'Why patch notes?');
+wireCraneNotes();
 
 tearAll();
 markPatchSeen();

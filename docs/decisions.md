@@ -508,7 +508,7 @@ Accepted · 28 Oct 2026 · not built yet · plan: [buddies-and-notifications.md]
   Anyone can leave; their ticks stay theirs.
 
 ## D-031 The crane note: the app's info popup
-Accepted · 28 Oct 2026
+Accepted and built · 28 Oct 2026 · `src/ui/crane-note.js`, first used on the patch notes page
 
 - **Decision (the user's design):** features explain themselves with a crane note. A small paper
   crane beside a feature's heading opens it: a 3D paper crane flies in, unfolds into a square, turns
@@ -517,7 +517,14 @@ Accepted · 28 Oct 2026
 - **Why:** the user wants people to hear the maker's reasons for a feature, in the app's own
   language: paper that folds. It reuses the crane fold engine, so the folds are real.
 - Reduced motion or no WebGL: the note just appears. Escape, ✕, the button or a tap outside close it
-  at any point. Note texts are written in the code, never read from storage.
+  at any point (a tap outside counts only after the first half second, so the second click of a
+  double-click doesn't close it). Note texts are written in the code, never read from storage.
+- **How the paper lands exactly on the letter:** the camera looks straight at a plane, so a square
+  on it projects as a square; the crane is scaled so its sheet is as wide as the letter and placed
+  under the letter's top square. The 3D canvas is hidden whenever nothing flies, so a frame left
+  from a paused tab can't cover the letter. Three.js loads only when a trigger is hovered, focused
+  or tapped. If the animation stalls (a background tab), it jumps to the letter after 4.5s and
+  finishes closing after 3.5s.
 
 ## D-032 Patch notes, for people rather than developers
 Accepted · 28 Oct 2026

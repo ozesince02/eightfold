@@ -12,6 +12,7 @@ export const PATCHES = [
     sticker: 'メモ',
     notes: [
       ['Patch notes.', "You're reading them. Every update gets one from now on: what's new, in plain words, with the occasional bad joke."],
+      ['Notes that arrive by crane.', 'Tap the little crane next to "Why patch notes?" and a paper crane flies in and unfolds into a note. Close it and it folds itself back up and leaves. Very dramatic, for a sheet of paper.'],
       ['A peek at the folding table.', "The next few patches are planned: see the end of this page. No dates, because we've met ourselves."],
     ],
   },
