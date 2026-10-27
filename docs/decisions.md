@@ -464,3 +464,57 @@ Accepted · 25 Oct 2026
   too. `check-security.mjs` fails if a page loads Google Fonts again or the CSP loosens.
 - **Cost:** the deploy carries ~8 MB of font slices (489 files) that visitors fetch only as needed.
 
+
+## D-028 Notifications with the app closed: a job every 30 minutes
+Accepted · 28 Oct 2026 · not built yet · plan: [buddies-and-notifications.md](buddies-and-notifications.md)
+
+- **Decision (the user's):** Web Push sent by a Supabase Edge Function that Supabase Cron starts
+  every 30 minutes, not every minute. Each run reminds habits due in the next half hour, so a
+  reminder arrives up to 30 minutes early and names the time ("German at 7:00"). The notification's
+  snooze is "Later", since the next run can be up to 30 minutes away.
+- **No duplicates, nothing stale:** each send re-checks the habit (still due, not ticked, not
+  deleted or moved) and a sent log allows one reminder per habit per day; a tab on a device with
+  push on stops showing its own system notifications.
+- **Summaries:** a daily summary at a time each person picks (default 21:30) and a weekly recap on
+  Sunday, each switched on separately, all off by default. At most 30 notifications a person a day.
+- **Why not every minute:** exact times aren't needed for habits; the interval can shrink later
+  without changing anything else.
+
+## D-029 Buddies: invite links, three sharing levels, user tags
+Accepted · 28 Oct 2026 · not built yet · plan: [buddies-and-notifications.md](buddies-and-notifications.md)
+
+- **Decision (the user's ideas):** several buddies, added only by a one-time invite link (no
+  search, community or chat; removing is enough, so no blocking). For each buddy, one of three
+  levels: Just buddies, How I'm doing (7- and 30-day consistency, trend, longest current run, no
+  habit names), My habits (chosen habits by name). New buddies start at How I'm doing. Private
+  habits are never shown to anyone. Up to 50 buddies.
+- **Replaces "misses are never shown to buddies"** (data-storage.md): a buddy should be able to
+  notice someone struggling, so consistency is shown, but only as totals, never which days.
+- **User tags instead of display names:** `name#TAG`, like a Valorant Riot ID, unique ignoring
+  capitals, chosen the first time someone uses buddies or challenges, changeable any time, never
+  searchable. Emails are never shown to buddies.
+- **In the database:** buddies never read habit tables; one function per view checks the
+  relationship and level on every call and returns only the totals allowed.
+- **Nudges between buddies are out of the first version** (vision.md).
+
+## D-030 Buddy and gang challenges
+Accepted · 28 Oct 2026 · not built yet · plan: [buddies-and-notifications.md](buddies-and-notifications.md)
+
+- **Decision (the user's idea):** a challenge is a habit two people (buddy challenge) or up to ten
+  (gang challenge) take on together, for a week, a month, a year or custom dates. Each member ticks
+  their own, as a normal habit in their tracker; everyone in it sees everyone's progress on that
+  habit only. Members don't have to be buddies; anyone in a challenge can invite with a link.
+- The maker can rename it, extend it and remove members; the schedule is fixed once it starts.
+  Anyone can leave; their ticks stay theirs.
+
+## D-031 The crane note: the app's info popup
+Accepted · 28 Oct 2026
+
+- **Decision (the user's design):** features explain themselves with a crane note. A small paper
+  crane beside a feature's heading opens it: a 3D paper crane flies in, unfolds into a square, turns
+  over and opens into a letter from oze on why the feature exists. Closing folds it back into a
+  crane that flies away. It is the default info popup for the app; buddies and gangs each get one.
+- **Why:** the user wants people to hear the maker's reasons for a feature, in the app's own
+  language: paper that folds. It reuses the crane fold engine, so the folds are real.
+- Reduced motion or no WebGL: the note just appears. Escape, ✕, the button or a tap outside close it
+  at any point. Note texts are written in the code, never read from storage.

@@ -1,7 +1,7 @@
 # Buddies, challenges and notifications
 
-Status: **proposal, for review.** Written 27 October 2026 from the user's ideas. Nothing here is
-built. Once the open questions are settled, the choices move into [decisions.md](decisions.md).
+Status: **agreed 28 October 2026, not built yet.** Written 27 October 2026 from the user's ideas;
+the open questions were settled on 28 October (D-028 to D-031 in [decisions.md](decisions.md)).
 Builds on [data-storage.md](data-storage.md) (accounts, sync, the tables) and
 [security.md](security.md).
 
@@ -10,9 +10,14 @@ Builds on [data-storage.md](data-storage.md) (accounts, sync, the tables) and
 Eightfold helps people build habits together, without becoming a social network.
 
 - **Buddies:** add several people you already know. For each buddy, choose how much they see:
-  nothing, how consistent you are, or chosen habits by name.
-- **Challenges:** a habit two or more people take on together ("run every day in November"), each
-  ticking their own progress, everyone seeing everyone's progress on that one habit.
+  nothing, how consistent you are, or chosen habits by name. Everyone appears by a **user tag**,
+  like a gamer tag (`oze#1000`).
+- **Challenges:** a habit two people (a **buddy challenge**) or a group of up to ten (a **gang
+  challenge**) take on together ("run every day in November"), each ticking their own progress,
+  everyone seeing everyone's progress on that one habit.
+- **A note from the folding table:** each of these features carries a small crane. Tap it and a
+  paper crane flies in and unfolds into a note from the person who made Eightfold, on why the
+  feature exists (section 5).
 - **Notifications with the app closed:** habit reminders, a daily summary and a weekly recap, each
   switched on or off separately.
 
@@ -71,7 +76,7 @@ Also:
   "Today" and "7:00" are always in the person's own time zone, daylight saving included.
 - **Dead devices:** when the push service says an address no longer exists, its row is deleted.
 
-### Done and "In 10 minutes" from a closed app
+### Done and "Later" from a closed app
 The buttons need to work without the app open or anyone signed in. Each notification carries a
 single-use token that allows exactly one thing (tick this habit today, or snooze it once) and
 expires at the end of the day. The tick is written on the server and reaches the app through
@@ -128,12 +133,33 @@ share my habits with you while you share only your consistency with me.
 - **Private habits:** any habit can be marked private, and is then never shown to any buddy at any
   level, nor counted by name.
 - **Default for a new buddy:** "How I'm doing". You can change it at any time, for each buddy.
-- **Names, not emails:** buddies see a display name you choose (first name by default). Your email
-  is never shown to them.
+- **Tags, not emails:** buddies see your user tag (below). Your email is never shown to them.
 - **Figures, not grids:** buddies see totals and trends, never day-by-day grids, times or wishes.
   This changes an earlier rule ("misses are never shown to buddies", [data-storage.md](data-storage.md)):
   the user wants a buddy to notice when someone is struggling, so consistency is shown, but only as
   a total over days, never as a list of the days that were missed.
+
+### User tags
+Inspired by gamer tags (Valorant's Riot ID): a name and a short tag, joined by `#`.
+
+- **Shape:** `name#TAG`, for example `oze#1000` or `Asha Rao#RUN`.
+  - **Name:** 3 to 16 characters: letters (any language), numbers and single spaces, not starting
+    or ending with a space.
+  - **Tag:** 3 to 5 letters or numbers, shown in capitals. Suggested at random (four digits), yours
+    to change.
+- **Unique:** no two people share the same name and tag (ignoring capitals), so two Rahuls in one
+  gang can be told apart.
+- **Chosen when you first need it:** the first time you open Buddies or join a challenge. Nobody is
+  given a tag made from their email or Google name.
+- **Change it any time,** from the account chit. Buddies and gangs see the new one straight away.
+- **Not searchable.** Adding someone still takes an invite link; nobody can look you up by tag.
+  Picking a tag can show that a tag is taken, which says nothing else about anyone.
+- **Not allowed:** invisible or direction-changing characters, emoji, and names that pass as the
+  team: `eightfold`, `onemorefold`, `admin`, `support`. Checked in the browser and again by the
+  database.
+- **In the database:** two columns on `profiles`, with a unique index and the same checks as
+  constraints. Only you can read your own profile; buddies and gang members get your tag through the
+  functions below, never the table.
 
 ### Stopping
 - **Stop sharing:** set a buddy to "Just buddies".
@@ -151,7 +177,7 @@ share my habits with you while you share only your consistency with me.
 - Tested on the PGlite stand-in like the rest: a stranger sees nothing; a removed buddy sees
   nothing; "How I'm doing" never returns a habit name; a private habit never appears.
 
-## 4. Challenges (two people or a group)
+## 4. Buddy and gang challenges
 
 One idea covers both: a buddy challenge is a challenge with two members, a group (gang) challenge
 has more.
@@ -181,51 +207,84 @@ has more.
 - As for buddies, members read each other's progress only through a function that checks
   membership and returns only that challenge's figures.
 
-## 5. Privacy and terms
+## 5. A note from the folding table: the crane note
+
+The app's standard way of explaining itself (D-031). Buddies and gangs get one each, written as a
+note from oze on why the feature exists; any later feature can carry one too.
+
+- **The way in:** a small paper crane (the Eightfold mark, in shu) beside a feature's heading, with
+  a short label such as "Why buddies?". It hops now and then, so it's noticed without shouting.
+  Like the folded note on the landing page, it says there's a story here if you want it.
+- **Opening:** a paper crane flies in from the little crane, across the page, to the middle. It
+  unfolds in the air back into a square sheet, the sheet turns over to its white side, and the
+  square opens downwards into the note.
+- **Reading:** a white paper letter showing the crane's creases faintly, a heading, a few short
+  paragraphs, signed "oze, who made Eightfold". One button ("Fold it back") and an ✕.
+- **Closing:** the reverse: the letter folds up into the square, turns over, folds into a crane, and
+  the crane flies off the page.
+- **Built from the same fold engine** as today's crane ([crane.js](../src/three/crane.js)), so the
+  folds are the real ones.
+- **With reduced motion, or without WebGL:** no flight; the note simply appears and disappears.
+- **Never in the way:** Escape, ✕, the button or a tap outside close it at any point, even
+  mid-flight; focus goes back to the little crane; the text is there for screen readers from the
+  start.
+- **Notes are written in the code,** never taken from stored data.
+
+**Draft for buddies** (for oze to rewrite in his own words):
+> I built Eightfold for my eighth try, and the tries that lasted were never the ones I made alone.
+> A friend who notices you've gone quiet and asks "everything okay?" is worth more than any streak.
+> So buddies aren't followers and this isn't a feed. Add the people you'd text anyway. Share as
+> much or as little as you like. If you see a friend's folds slowing down, don't nudge them here:
+> call them.
+
+**Draft for gangs:**
+> Some habits are easier with company. Five friends in five cities can still run together if they
+> all fold the same habit. A gang challenge keeps everyone's own progress and puts it side by
+> side, not to rank anyone, just so nobody runs alone.
+
+## 6. Privacy and terms
 
 When this ships, the Privacy page needs to say:
-- buddies and challenge members see what you choose to share, and your display name;
+- buddies and challenge members see what you choose to share, and your user tag;
 - push notifications go through the browser's push service (Google, Apple or Mozilla);
 - we store your time zone and your devices' push addresses.
 
 Encryption stays parked, so the owner can still technically read the data, as the Privacy page
 already says.
 
-## 6. Order of work
+## 7. Order of work
 
 Each step is its own PR (or a few), tested and merged before the next.
 
-1. **Groundwork:** display name and time zone in the profile; reminder settings in the account;
-   private habit flag; web app manifest.
-2. **Closed-app reminders:** push subscriptions, the Edge Function and the 30-minute job, the sent
-   log, Done and Later from the notification, no doubles with an open tab, the iPhone guide,
-   Privacy page update.
+Each step brings only what it uses, so nothing waits on groundwork it doesn't need.
+
+1. **The crane note** (D-031): the component, first used on the patch notes page.
+2. **Closed-app reminders:** time zone and reminder settings in the account, push subscriptions,
+   the Edge Function and the 30-minute job, the sent log, Done and Later from the notification, no
+   doubles with an open tab, a web app manifest and the iPhone guide, Privacy page update.
 3. **Daily summary and weekly recap.**
-4. **Buddies:** invites, the three levels, a buddy's view, remove.
-5. **Challenges:** two to ten members, invites, the shared view, ending a challenge.
+4. **Buddies:** user tags, private habits, invites, the three levels, a buddy's view, remove, and
+   its crane note.
+5. **Buddy and gang challenges:** two to ten members, invites, the shared view, ending a
+   challenge, and its crane note.
 6. **Challenges and buddies in the summaries.**
 
 **Later, not now:** nudges between buddies (noted in [vision.md](vision.md): a nudge sent while
 someone is already doing the habit would irritate more than help), a family circle with one shared
 wish, exact-time reminders, end-to-end encryption.
 
-## 7. Open questions
+## 8. Settled on 28 October 2026
 
-My recommendation is given for each one.
+The user agreed to all seven recommendations:
 
-1. **Reminders up to 30 minutes early**, naming the time ("German at 7:00"): fine? *Recommended:
-   yes.*
-2. **"Later" instead of "In 10 minutes"** on closed-app reminders, since the next run is up to 30
-   minutes away. *Recommended: yes.*
-3. **What "How I'm doing" shows:** 7- and 30-day totals, the trend and the longest current run, no
-   day-by-day grid. *Recommended: yes; it lets a buddy notice a hard patch without seeing which
-   days.*
-4. **Default level for a new buddy:** "How I'm doing", or "Just buddies" (safest).
-   *Recommended: "How I'm doing", since accountability is why people add buddies; it's shown
-   clearly when accepting.*
-5. **Challenge members don't have to be buddies.** *Recommended: yes, so a group of five doesn't
-   need ten buddy links first.*
-6. **Limits:** 50 buddies, 10 people per challenge, 30 notifications a day. *Recommended as
-   starting points.*
-7. **Summary time:** one time for both, chosen by each person, default 21:30; weekly recap on
-   Sunday. *Recommended.*
+1. Reminders arrive up to 30 minutes early and name the time ("German at 7:00").
+2. "Later" instead of "In 10 minutes" on closed-app reminders.
+3. "How I'm doing" shows 7- and 30-day totals, the trend and the longest current run, with no
+   day-by-day grid.
+4. A new buddy starts at "How I'm doing", shown clearly when accepting.
+5. Challenge members don't have to be buddies.
+6. Limits to start with: 50 buddies, 10 people per challenge, 30 notifications a day.
+7. One summary time for both, chosen by each person, default 21:30; the weekly recap on Sunday.
+
+Also on 28 October: user tags instead of display names (section 3), and the crane note as the app's
+info popup (section 5).
