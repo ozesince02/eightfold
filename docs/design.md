@@ -231,7 +231,7 @@ Shadows are allowed **only** on paper lying on paper. Buttons and controls are f
 ## How to check a change
 
 ```bash
-node scripts/check-stats.mjs && node scripts/check-reminders.mjs
+node scripts/check-stats.mjs && node scripts/check-reminders.mjs && node scripts/check-story.mjs
 npm run build
 ```
 

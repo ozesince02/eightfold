@@ -228,13 +228,13 @@ holds on every branch.
 
 ### Accepted risks (owner's decision, 24 Oct 2026, D-016)
 
-- The repository is public, and its **history** still contains the owner's January–October 2026
-  habit data (names, times, ticks). Since 29 Oct (D-036) the current code holds none of it: the
-  landing page and the checks use an invented example year, and the licence (MIT, from the same
-  date) covers the code as it is from then on. Rewriting history would need force pushes the
-  rulesets forbid, and existing clones and forks would keep copies anyway, so the owner left it.
+- The repository is public and holds the owner's January–October 2026 habit log (names, times,
+  ticks) in `src/data/story.js`, which the landing page tells its story with. The owner shares it
+  on purpose. Since 29 Oct (D-036) it's excluded from the MIT licence by name, and nothing else
+  uses it: the tracker never loads it, and the checks use an invented year. Revisit before any
+  sensitive habit is added.
 - ~~Until accounts ship, onemorefold.com shows that data to any visitor with nothing saved.~~ No
-  longer: new trackers start empty (D-020), and the landing page shows the example.
+  longer: new trackers start empty (D-020); only the landing page shows it.
 
 ### Still to do (tracked)
 - Before accounts: Supabase row-level security on every table, the publishable key as a build setting, the Supabase

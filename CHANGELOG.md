@@ -13,8 +13,8 @@ Dates are when the work landed.
 - Eightfold can be added to the Home Screen as an app (a web app manifest).
 
 ### Changed
-- The landing page's numbers now come from an invented example year, and say so; the real
-  habit data that used to sit in the code is gone. (D-036)
+- The checks run on an invented example year instead of oze's own log. The log stays, renamed
+  `story.js`, for the landing page's story, and is kept out of the open-source licence. (D-036)
 - The Privacy page says what closed-app reminders keep and that the browser's push service
   delivers them, encrypted.
 

@@ -103,7 +103,7 @@ npm audit
 ```
 
 `npm run check` covers a lot:
-- the statistics against hand-counted cases;
+- the statistics against hand-counted cases, and oze's transcribed log against the original sheet;
 - reminder timing;
 - hostile input to the backup loader;
 - secrets and env files;

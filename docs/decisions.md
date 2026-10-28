@@ -28,7 +28,7 @@ Accepted · 23 Oct 2026 · will be extended by D-008
 ## D-003 Seeded from the Google Sheet, January to October 2026
 Accepted · 23 Oct 2026
 
-- **Decision (replaced by D-036, 29 Oct):** the sheet's ticks were copied by hand into `src/data/seed.js`, with habit ids
+- **Decision:** the sheet's ticks were copied by hand into `src/data/seed.js` (now `story.js`, D-036), with habit ids
   (`move`, `dsa`, `german`...) that link renamed habits across months.
   `scripts/check-seed.mjs` recomputes every month against the sheet's printed success rate.
 - **Known difference:** January shows 44% against the sheet's 45%. The sheet counted one stray tick
@@ -217,7 +217,7 @@ Accepted · 24 Oct 2026 · replaces the earlier plan (same day) to rename the pr
 Accepted · 24 Oct 2026 · revisit when accounts ship
 
 - **Context:** with the site live on onemorefold.com, the app falls back to the January–October
-  sheet data (`src/data/seed.js`, removed by D-036) for any visitor with nothing saved, and the landing page quotes
+  sheet data (`src/data/seed.js`, now `story.js`, D-036) for any visitor with nothing saved, and the landing page quotes
   the owner's habits, times and numbers. The GitHub repository is public, so the data is also in
   its history.
 - **Decisions by the owner:**
@@ -330,7 +330,7 @@ Accepted · 24 Oct 2026
   before the account's copy replaces local rows the account refused, the browser's data is kept
   aside under a dated key.
 - **New visitors start empty (D-016).** The tracker no longer falls back to the sheet's data, and
-  "Reset to the sheet" is gone. The landing page still tells the sheet's story from `seedState()` (an invented example since D-036).
+  "Reset to the sheet" is gone. The landing page still tells the sheet's story from `seedState()` (now `sheetState()` in `story.js`, D-036).
 - **Tested** by `scripts/check-sync.mjs`: the real engine against the real schema and RLS, with
   several devices, a second person, offline edits across a reload, conflicting offline ticks, both
   first-sign-in choices, more than 1,000 rows and the broadcast. Skipping deletes in the engine
@@ -344,7 +344,7 @@ Accepted · 24 Oct 2026
   everyone, a first-time visitor couldn't tell whose numbers these were.
 - **Decision:** the numbers stay real (they're the story) but are **labelled as oze's**, from
   1 January to 22 October 2026, the day before Eightfold was born, and computed **as of that date**
-  (`STORY_DATE`), so they never drift. **Habit names are everyday stand-ins** (D-036 replaced the real data with an invented year; `STORY_ALIASES` in
+  (`STORY_DATE`), so they never drift. **Habit names are everyday stand-ins** (`STORY_ALIASES` in
   `src/data/demo.js`: "Read ten pages", "Walk outside"...), and the page says so. The closing
   speaks to new visitors and quotes oze. The footer names the author from `AUTHOR` in config.js.
 - **Layout:** the space between sections is margin (64–128px by screen width), not padding, so the
@@ -653,7 +653,7 @@ Accepted · 29 Oct 2026 · replaces the committed `.env` of D-019
   history wasn't rewritten. No secret was ever committed: the whole history of every env file was
   searched for secret-shaped values on 29 Oct.
 
-## D-036 Open source under MIT; no real habit data in the code
+## D-036 Open source under MIT; the owner's log stays for the story only
 Accepted · 29 Oct 2026
 
 - **Licence:** MIT, chosen by the owner, who has no plans to make money from Eightfold. AGPL was
@@ -663,12 +663,13 @@ Accepted · 29 Oct 2026
 - **Not licensed:** the name "Eightfold", onemorefold.com, the crane mark and wordmark, and the app
   icons. They're reserved so a copy can't pass as this one. "The design concept" isn't reserved:
   ideas and styles can't be, and the concrete design is the licensed code.
-- **The owner's real habit data left the code:** `src/data/seed.js` (January–October 2026 from
-  the Google Sheet) and its transcription check are gone. The owner's data lives in their account.
-  The landing page and the checks use `src/data/sample.js`, an invented year with everyday habits,
-  generated once from a seeded random walk and written out as plain data. Counts the checks rely on
-  are pinned so every check kept its meaning: September's walk at 13 of 30, October's 80 of 132
-  boxes, January's 270% goal, and a few perfect days. The landing page says its numbers are an
-  example.
-- **History** still has the old data; see the accepted risk in [security.md](security.md).
+- **The owner's habit log stays, for the landing page only:** it tells the owner's own story there,
+  which they're happy to share. It moved from `seed.js` to `src/data/story.js`, and it's excluded
+  from the licence by name: it's personal data, not code to reuse. `check-story.mjs` still checks
+  the transcription against the sheet.
+- **The checks no longer use it:** tests shouldn't depend on anyone's personal data. They run on
+  `src/data/sample.js`, an invented year with everyday habits. It was generated once from a seeded
+  random walk and written out as plain data. The counts the checks rely on are pinned, so every
+  check kept its meaning: September's walk at 13 of 30, October's 80 of 132 boxes, January's 270%
+  goal, and a few perfect days.
 
