@@ -301,7 +301,8 @@ Accepted · 24 Oct 2026
 - **Settings:** deployment values live in `.env` and are read only through `src/config.js`,
   together with product constants (`CRANE_GOAL`, `STORE_KEY`, `BACKUP_EVERY_DAYS`). `.env` is
   committed because everything in it is public and ends up in the built site anyway (Vite's
-  convention); secrets go in `.env.local` or the dashboards. Guards: `npm run check` fails if `.env`
+  convention); secrets go in `.env.local` or the dashboards. **Superseded by D-035 (29 Oct): `.env`
+  is no longer in git.** Guards: `npm run check` fails if `.env`
   holds any name other than the two public settings or a value that looks like a key; the build
   fails if they're missing or the key isn't a publishable one; the CSP's Supabase entries are filled
   from `.env` so the two can't drift apart.
@@ -605,10 +606,31 @@ Accepted · 28 Oct 2026
   Production still deploys only from `main` with `npx wrangler deploy`.
   - workers.dev Preview URLs are public and send `X-Robots-Tag: noindex`; Cloudflare Access can
     put them behind a sign-in if that's ever wanted.
-  - **The preview uses the live Supabase project** (same `.env`). Signing in there reads and
+  - **The preview uses the live Supabase project** (same build variables, D-035). Signing in there reads and
     writes real accounts, so try risky changes there with a throwaway account. A separate
     Supabase project for previews is the fix if that becomes a problem.
   - Sign-in returns to `location.origin + /app`, so the preview address must be on Supabase's
     redirect list, or Supabase sends people to the live site instead.
   - Earlier branch builds (before 24 Oct) failed under the old preview model, and branch builds
     were then switched off; the dashboard steps are in CLAUDE.md under "Hosting".
+
+## D-035 No env file in git; build settings are variables
+Accepted · 29 Oct 2026 · replaces the committed `.env` of D-019
+
+- **Context:** since D-019, `.env` was committed. It held only public values: the Supabase URL
+  and the publishable key, which ship in the site's JavaScript anyway. A check refused anything
+  secret-looking. The user objected, rightly: a tracked `.env` normalises the most common way
+  secrets leak, and one check is a thin wall against a future mistake.
+- **Decision:** no env file is ever tracked. `.env` and `.env.*` are ignored, except
+  `.env.example`, which lists the names with placeholder values. The hosted builds get the values
+  as variables: Cloudflare Workers Builds' build variables (production and the preview branch)
+  and GitHub repository variables for CI. Locally, copy `.env.example` to `.env`. Vite's `loadEnv`
+  reads the process environment as well as files, so the build code is unchanged.
+- **Guards:**
+  - `check-security.mjs` fails if `.env`, `.env.local`, `.env.production` or the push secret files
+    are tracked.
+  - It checks `.env.example` (and a local `.env`) for public names and secret-shaped values.
+  - The build stops with a message naming the missing setting.
+- **History:** the old commit still shows the two public values. They're public by design, so the
+  history wasn't rewritten. No secret was ever committed: the whole history of every env file was
+  searched for secret-shaped values on 29 Oct.

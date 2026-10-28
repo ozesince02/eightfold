@@ -65,15 +65,19 @@ Two long-lived branches, and work flows one way: **work branch → `preview` →
 
 ## Configuration
 
-- **[.env](.env):** deployment settings Vite builds into the site (`VITE_*` only). Committed, so
-  it holds **public values only** (the Supabase URL and publishable key); `npm run check` fails if
-  anything secret-looking appears. Secrets live in the Supabase / Cloudflare dashboards or in
-  `.env.local` (ignored). A build with these settings missing or malformed fails on purpose.
+- **Build settings (D-035):** the `VITE_*` values Vite builds into the site (Supabase URL,
+  publishable key, VAPID public key). **No env file is ever in git**, `.env` included.
+  [.env.example](.env.example) lists the names. Locally, copy it to `.env`. The hosted builds read
+  them as variables: Cloudflare → Workers Builds → build variables, and GitHub → repository
+  variables for CI. Only public values go there; `npm run check` fails on anything secret-looking,
+  and on a tracked `.env`. Secrets live only in the Supabase / Cloudflare dashboards (and the
+  git-ignored files `npm run vapid` writes). A build with the settings missing or malformed fails
+  on purpose.
 - **[src/config.js](src/config.js):** the one place code reads settings from (`SUPABASE_URL`,
   `CRANE_GOAL`, `STORE_KEY`, ...). Don't hard-code a value used in more than one place; add a named
   constant there. Validation limits stay in `LIMITS` in `src/lib/sanitize.js`.
 - **CSP:** `public/_headers` names Supabase with placeholders that `vite.config.js` fills from
-  `.env` after the build.
+  the build settings after the build.
 
 ## When you change something
 
