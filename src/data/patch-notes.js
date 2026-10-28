@@ -6,7 +6,7 @@
 
 export const PATCHES = [
   {
-    version: '0.10',
+    version: '0.11',
     date: '2026-10-28',
     title: 'Reminders that find you',
     sticker: 'ピンポン',
@@ -14,6 +14,18 @@ export const PATCHES = [
       ['Reminders with Eightfold closed.', 'Turn them on under Habits, Reminders, and a nudge arrives up to half an hour before each habit, even with no tab open. Your laptop no longer has to babysit a browser tab.'],
       ['Device by device.', "Each phone or laptop opts in on its own. Sign out and that device goes quiet straight away, so a shared computer won't start reminding your flatmate about your German."],
       ['iPhone and iPad too,', 'once Eightfold is on your Home Screen: Share, then Add to Home Screen. Apple insists, and we have learnt not to argue with Apple.'],
+    ],
+  },
+  {
+    version: '0.10',
+    date: '2026-10-28',
+    title: 'Three papers to read on',
+    sticker: 'ヨル',
+    notes: [
+      ['Light, Warm and Dark.', 'Open the account chit in the corner and pick your paper under "Paper". Auto, the default, follows your device.'],
+      ['Warm', 'is the same sheet under a desk lamp: sepia, softer, with less blue. For evenings, and for people who find white a bit much.'],
+      ['Dark', 'is black washi by lamplight. Warm charcoal rather than pitch black, so it\'s gentler at night and still looks like paper. The coloured papers dim a little so nothing glares at midnight.'],
+      ['It remembers.', 'Each device keeps its own choice, because your phone in bed and your laptop at noon want different things.'],
     ],
   },
   {

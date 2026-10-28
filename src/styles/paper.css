@@ -4,23 +4,23 @@
    because a clip-path also clips box-shadow. */
 .sheet-wrap { filter: var(--lift); }
 .sheet-wrap--high { filter: var(--lift-high); }
-.sheet { background: var(--white-paper); position: relative; }
+.sheet { background: var(--sheet); position: relative; }
 .sheet--sora { background: var(--sora); }
-.sheet--washi { background: var(--washi-2); }
+.sheet--washi { background: var(--bg-2); }
 .sheet--kraft { background: var(--kraft); }
-.sheet--shu { background: var(--shu); color: var(--white-paper); }
-.sheet--ai { background: var(--ai); color: var(--white-paper); }
+.sheet--shu { background: var(--accent); color: var(--on-color); }
+.sheet--ai { background: var(--ai); color: var(--on-color); }
 .sheet--matcha { background: var(--matcha); }
 .sheet--yamabuki { background: var(--yamabuki); }
 .sheet--sakura { background: var(--sakura); }
-.sheet--sumi { background: var(--sumi); color: var(--washi); }
+.sheet--sumi { background: var(--inverse); color: var(--on-inverse); }
 
 /* Masking tape: a translucent strip with ragged ends. */
 .tape {
   position: absolute; width: 112px; height: 30px;
-  background: rgba(233, 214, 170, .78);
+  background: var(--tape);
   clip-path: polygon(3% 8%, 9% 0, 15% 9%, 22% 1%, 30% 6%, 100% 0, 97% 18%, 100% 35%, 96% 52%, 100% 70%, 97% 86%, 100% 100%, 88% 93%, 80% 100%, 70% 92%, 0 100%, 4% 80%, 0 62%, 3% 45%, 0 28%);
-  mix-blend-mode: multiply;
+  mix-blend-mode: var(--tape-blend);
   z-index: 3;
 }
 
@@ -33,8 +33,8 @@
 }
 
 /* Cut-out photographs: printed, a little desaturated, with a white paper border. */
-.cutout { background: var(--white-paper); padding: 10px; }
-.cutout img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.85) contrast(1.04); }
+.cutout { background: var(--sheet); padding: 10px; }
+.cutout img { width: 100%; height: 100%; object-fit: cover; filter: var(--media); }
 
 /* Stop-motion "boil": a sheet nudges a pixel or so eight times a second, like a collage
    animated frame by frame. */
@@ -51,8 +51,8 @@
 /* Anime sound effects in katakana, set like a manga panel's lettering. */
 .sfx {
   font-family: var(--display);
-  color: var(--white-paper);
-  -webkit-text-stroke: 2px var(--sumi);
+  color: var(--on-color);
+  -webkit-text-stroke: 2px var(--paper-ink);
   paint-order: stroke fill;
   letter-spacing: .02em;
   line-height: 1;
@@ -70,21 +70,21 @@
 }
 .nudge { pointer-events: auto; filter: var(--lift-high); transform: rotate(-1.5deg); position: relative; }
 .nudge-sheet {
-  position: relative; background: var(--white-paper); padding: 20px 20px 18px 24px;
+  position: relative; background: var(--sheet); padding: 20px 20px 18px 24px;
   clip-path: polygon(0 0, 100% 0, 100% 100%, 92% 98%, 84% 100%, 75% 97.5%, 66% 100%, 56% 98%, 46% 100%, 36% 97.5%, 26% 100%, 16% 98%, 8% 100%, 0 98%);
 }
-.nudge-sheet::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: var(--c, var(--shu)); }
-.nudge-time { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; color: var(--sumi-2); font-variant-numeric: tabular-nums; }
-.nudge-time i { width: 10px; height: 10px; border-radius: 50%; background: var(--c, var(--shu)); }
+.nudge-sheet::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: var(--c, var(--accent)); }
+.nudge-time { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.nudge-time i { width: 10px; height: 10px; border-radius: 50%; background: var(--c, var(--accent)); }
 .nudge-title { font-size: 22px; line-height: 1.1; margin-top: 6px; }
 .nudge-body { margin-top: 8px; font-size: 15px; line-height: 1.45; }
 .nudge-actions { display: flex; gap: 8px; align-items: center; margin-top: 14px; }
 .nudge-actions .btn { min-height: 40px; padding: 0 16px; font-size: 15px; }
 .nudge-close {
   margin-left: auto; width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent;
-  font-size: 22px; line-height: 1; cursor: pointer; color: var(--sumi-2);
+  font-size: 22px; line-height: 1; cursor: pointer; color: var(--ink-2);
 }
-.nudge-close:hover { background: var(--washi-2); color: var(--sumi); }
+.nudge-close:hover { background: var(--bg-2); color: var(--ink); }
 
 @media (prefers-reduced-motion: reduce) {
   .boil { animation: none; transform: rotate(var(--r, 0deg)); }
@@ -94,13 +94,13 @@
    then, in stop-motion, so it's noticed without shouting. */
 .note-crane {
   display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px 0 8px;
-  border: 0; border-radius: 999px; background: var(--washi-2); color: var(--sumi);
+  border: 0; border-radius: 999px; background: var(--bg-2); color: var(--ink);
   font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
   transition: background-color .15s, transform .2s var(--ease-paper);
 }
-.note-crane:hover { background: var(--washi-3); transform: translateY(-1px); }
+.note-crane:hover { background: var(--bg-3); transform: translateY(-1px); }
 .note-crane:active { transform: translateY(1px) scale(.98); }
-.note-crane:focus-visible { outline: 3px solid var(--ai); outline-offset: 2px; }
+.note-crane:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
 .note-crane .crane-mark { width: 34px; height: auto; flex: none; animation: note-hop 7s steps(1) infinite; }
 @keyframes note-hop {
   0%, 86%, 100% { transform: none; }

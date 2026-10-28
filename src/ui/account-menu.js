@@ -6,6 +6,7 @@ import { esc } from '../lib/sanitize.js';
 import { signInWithGoogle, sendSignInLink, signOut, deleteAccount } from '../lib/auth.js';
 import { APP_PATH, PRIVACY_PATH, TERMS_PATH, PATCH_NOTES_PATH } from '../config.js';
 import { patchUnseen } from '../lib/patches.js';
+import { THEMES, themeChoice, setTheme } from '../lib/theme.js';
 import { store } from '../lib/store.js';
 
 // A crumpled ball: an uneven outline cut into facets of three paper tones, with crease lines.
@@ -36,6 +37,15 @@ const SYNC_WORDS = {
 
 // "Patch notes", marked new until this browser has opened the latest ones (D-032).
 const patchLink = () => `<a href="${PATCH_NOTES_PATH}">Patch notes</a>${patchUnseen() ? '<span class="acct-new">new</span>' : ''}`;
+
+// The paper to read on (D-033): Auto follows the device; Light, Warm and Dark stay put.
+const themeRow = () => {
+  const choice = themeChoice();
+  return `<div class="acct-theme" role="group" aria-labelledby="acct-theme-h">
+    <p class="acct-theme-h" id="acct-theme-h">Paper</p>
+    <div class="acct-seg">${THEMES.map((t) => `<button type="button" aria-pressed="${t.id === choice}" data-theme-pick="${esc(t.id)}" title="${esc(t.hint)}">${esc(t.label)}</button>`).join('')}</div>
+  </div>`;
+};
 
 // A message that has to survive the page reloading (after an account is deleted). Fixed texts only.
 const PARTING = 'eightfold:parting';
@@ -121,7 +131,7 @@ export function createAccountMenu(slot, { page = 'app', onChoose, onLeave, toast
     } else {
       body = `<h2 id="acct-h">Account</h2><p class="note">Checking your account…</p>`;
     }
-    chit.innerHTML = `<span class="tape" aria-hidden="true"></span><div class="acct-sheet">${body}<p class="acct-notice" role="status">${esc(notice)}</p></div>`;
+    chit.innerHTML = `<span class="tape" aria-hidden="true"></span><div class="acct-sheet">${body}${confirmDelete ? '' : themeRow()}<p class="acct-notice" role="status">${esc(notice)}</p></div>`;
   }
 
   function setOpen(next, { focus = true } = {}) {
@@ -169,6 +179,10 @@ export function createAccountMenu(slot, { page = 'app', onChoose, onLeave, toast
       removeAccount();
     } else if (e.target.closest('[data-acct-close]')) {
       setOpen(false);
+    } else if (e.target.closest('[data-theme-pick]')) {
+      const pick = e.target.closest('[data-theme-pick]').dataset.themePick;
+      setTheme(pick);
+      chit.querySelectorAll('[data-theme-pick]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.themePick === pick)));
     } else {
       const choose = e.target.closest('[data-acct-choose]');
       if (choose) onChoose?.(choose.dataset.acctChoose);

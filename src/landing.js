@@ -14,9 +14,11 @@ import { seedState, STORY_DATE, STORY_SPAN } from './data/seed.js';
 import { DEMO_HABITS, STORY_ALIASES } from './data/demo.js';
 import { createAccountMenu } from './ui/account-menu.js';
 import { startAuth } from './lib/auth.js';
+import { watchTheme } from './lib/theme.js';
 
 gsap.registerPlugin(ScrollTrigger);
 window.__oz = true;
+watchTheme();
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -42,7 +44,7 @@ $$('[data-mark]').forEach((el) => { el.innerHTML = craneMark(); });
 function cloud(seed) {
   const r = rng(seed);
   const bumps = Array.from({ length: 5 }, (_, i) => ({ cx: 30 + i * 34 + r() * 8, cy: 52 - Math.sin((i / 4) * Math.PI) * 22 - r() * 6, r: 22 + r() * 12 }));
-  return `<svg viewBox="0 0 220 90">${bumps.map((b) => `<circle cx="${b.cx}" cy="${b.cy}" r="${b.r}" fill="#FBF8F2"/>`).join('')}<rect x="14" y="52" width="192" height="30" rx="15" fill="#FBF8F2"/></svg>`;
+  return `<svg viewBox="0 0 220 90">${bumps.map((b) => `<circle cx="${b.cx}" cy="${b.cy}" r="${b.r}" fill="var(--paper-back)"/>`).join('')}<rect x="14" y="52" width="192" height="30" rx="15" fill="var(--paper-back)"/></svg>`;
 }
 $$('[data-cloud]').forEach((el, i) => { el.innerHTML = cloud(i * 13 + 5); });
 
@@ -57,7 +59,7 @@ if (lines) {
     const x1 = 300 + Math.cos(a) * inner, y1 = 300 + Math.sin(a) * inner;
     const x2 = 300 + Math.cos(a - 0.012 * w) * outer, y2 = 300 + Math.sin(a - 0.012 * w) * outer;
     const x3 = 300 + Math.cos(a + 0.012 * w) * outer, y3 = 300 + Math.sin(a + 0.012 * w) * outer;
-    s += `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)} L${x2.toFixed(1)} ${y2.toFixed(1)} L${x3.toFixed(1)} ${y3.toFixed(1)} Z" fill="#FBF8F2"/>`;
+    s += `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)} L${x2.toFixed(1)} ${y2.toFixed(1)} L${x3.toFixed(1)} ${y3.toFixed(1)} Z" fill="var(--paper-back)"/>`;
   }
   lines.innerHTML = s;
 }

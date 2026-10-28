@@ -560,3 +560,33 @@ Accepted · 28 Oct 2026
   `eightfold:v1:`, so removing your folds from a browser clears it too).
 - **The voice still follows the design rules:** sentence case, no exclamation marks outside
   katakana stickers, every number says what it counts, a miss is never a failure.
+
+## D-033 Light, warm and dark papers
+Accepted · 28 Oct 2026
+
+- **Context:** people look at screens most of the day and late into the night. The user asked for
+  a dark mode and a warm mode alongside the light one, kept in Eightfold's paper look, and built so
+  future components get them for free.
+- **Decision:** three themes on `<html data-theme>`: **Light** (unchanged), **Warm** (sepia, every
+  surface with clearly less blue, brown-black ink) and **Dark** (warm charcoal, never pure black,
+  off-white ink, sheets one step lighter than the ground, papers dimmed). Plus **Auto**, the
+  default, which follows the device's light or dark setting and changes with it.
+- **What the research supports, and what it doesn't:** dark surfaces should be dark grey, not
+  black (Material's #121212), with lighter surfaces for nearer things and softer accent tones.
+  Sepia pages (Kindle uses roughly #FBF0D9 with #5F4B32 text) reduce glare. But the evidence that
+  filtering blue light prevents eye strain is weak (a 2023 Cochrane review of 17 trials found no
+  short-term benefit), and dark mode reads worse than light mode in bright rooms. So the themes are
+  offered as comfort for different rooms and hours, and Eightfold makes no health claims.
+- **Built as a system, not a skin:** components use role tokens (`--bg`, `--sheet`, `--ink`,
+  `--inverse`, `--on-color`, `--paper-ink`, `--accent`, `--link` ...), each theme sets them all,
+  and coloured papers re-point the ink roles for everything placed on them. The old material names
+  (`--washi`, `--sumi`, `--white-paper`) were used for several jobs each (white paper was both the
+  panel surface and the text on red buttons), so they were replaced rather than redefined.
+- **No flash:** `public/theme.js`, a plain blocking script (the CSP still forbids inline ones), sets
+  the theme before any stylesheet loads. `src/lib/theme.js` keeps it in step with the device and
+  other tabs, and updates the browser bar colour.
+- **Saved per device** (`eightfold:v1:theme`), like reminders: the right paper depends on the
+  room, not the account. Only the four known values are accepted.
+- **Kept honest by a check:** scripts/check-themes.mjs (in `npm run check`) tests contrast for
+  every text pair in every theme, that Warm has less blue, that each theme sets every role, that
+  every page loads theme.js before its stylesheets, and that no stylesheet hard-codes a colour.

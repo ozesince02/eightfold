@@ -1,3 +1,5 @@
+/* theme-fixed file: the scroll is an object, aged paper between wooden rods, and looks the same in
+   every theme (D-033); only its backdrop follows the theme. */
 /* The thousand cranes story (D-023): a hanging scroll of aged paper between two wooden rods. It
    unrolls downwards when it opens and rolls back up when it closes. Paper texture is CSS and one
    small SVG noise tile; no images except the 1797 page already on the site. */
@@ -6,8 +8,9 @@
   width: min(720px, calc(100vw - 2 * var(--gutter, 16px)));
   max-width: none; max-height: none; margin: auto; padding: 0; border: 0;
   background: transparent; overflow: visible; color: #2B241C;
+  --sheet: #FAF9F6; --link: #24496B; --accent-ink: #A3221F; --on-color: #FAF9F6;
 }
-.story::backdrop { background: rgba(30, 27, 24, .62); animation: story-fade .3s ease both; }
+.story::backdrop { background: var(--scrim); animation: story-fade .3s ease both; }
 .story.is-closing::backdrop { animation: story-fade .32s ease reverse both; }
 
 .story-scroll {
@@ -55,10 +58,10 @@
   background: rgba(251, 248, 242, .7); color: #2B241C; font: inherit; font-size: 18px; font-weight: 900;
   animation: story-fade .3s ease .6s both;
 }
-.story-x:hover { background: var(--white-paper); }
-.story-x:focus-visible, .story-paper a:focus-visible, .story-paper button:focus-visible { outline: 3px solid var(--ai); outline-offset: 2px; }
+.story-x:hover { background: var(--sheet); }
+.story-x:focus-visible, .story-paper a:focus-visible, .story-paper button:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
 
-.story-kicker { font-family: var(--display); font-size: 18px; letter-spacing: .3em; color: var(--shu-ink); }
+.story-kicker { font-family: var(--display); font-size: 18px; letter-spacing: .3em; color: var(--accent-ink); }
 .story h2 { font-size: clamp(32px, 5vw, 50px); margin-top: 6px; color: #241D16; }
 
 /* The 1797 page, printed onto the scroll rather than pasted on it. */
@@ -68,7 +71,7 @@
 .story-ch h3 { display: flex; align-items: center; gap: 12px; margin-top: 34px; font-size: clamp(20px, 2.6vw, 26px); color: #241D16; }
 .story-num {
   flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 4px;
-  background: var(--shu); color: var(--white-paper); font-size: 18px; rotate: -4deg;
+  background: var(--accent); color: var(--on-color); font-size: 18px; rotate: -4deg;
 }
 .story-ch p { margin-top: 12px; font-size: 17px; line-height: 1.7; }
 .story-ch i { font-style: italic; }
@@ -76,8 +79,8 @@
 .story-end { clear: both; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; margin-top: 40px; }
 .story-seal {
   width: 58px; height: 58px; display: grid; place-items: center; border-radius: 6px; rotate: -6deg;
-  background: var(--shu); color: var(--white-paper); font-family: var(--display); font-size: 30px;
-  box-shadow: inset 0 0 0 3px var(--shu), inset 0 0 0 5px rgba(251, 248, 242, .7);
+  background: var(--accent); color: var(--on-color); font-family: var(--display); font-size: 30px;
+  box-shadow: inset 0 0 0 3px var(--accent), inset 0 0 0 5px rgba(251, 248, 242, .7);
   opacity: .92; mix-blend-mode: multiply;
 }
 .story-actions { display: flex; flex-wrap: wrap; gap: 12px; }

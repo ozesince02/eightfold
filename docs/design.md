@@ -22,26 +22,55 @@ centre. Cute but sophisticated: never girly-pop, never childish.
 - Sentence case everywhere. No exclamation marks except inside katakana stickers.
 - Headlines two lines or fewer at every width.
 
-## Colour
+## Colour and themes (D-033)
 
-Tokens live in [src/styles/tokens.css](../src/styles/tokens.css). Use tokens, never raw hex in components.
+Three papers to read on, chosen in the account chit under **Paper** (Auto follows the device):
 
-| Token | Hex | Role |
+| Theme | The idea | Ground / sheet / ink |
 | --- | --- | --- |
-| `--washi` | `#E6E5E1` | Page ground (neutral stone paper) |
-| `--washi-2` | `#DAD8D2` | Quiet surfaces, tracks, unticked squares |
-| `--washi-3` | `#CAC7BF` | Hover on quiet surfaces, hairline outlines in data |
-| `--white-paper` | `#FAF9F6` | Panels and sheets |
-| `--sumi` | `#1E1B18` | Ink: text, selected states |
-| `--sumi-2` / `--sumi-3` | `#4A453F` / `#776F65` | Secondary text / muted |
-| `--shu` | `#C8302C` | **The one action colour**: primary buttons, the sun, the crane, perfect days |
-| `--shu-ink` | `#A3221F` | Hover on red, red text |
-| `--ai` | `#24496B` | Links, focus rings, weekly bars |
-| `--sora` `--matcha` `--yamabuki` `--kraft` `--sakura` | | Paper colours for habits, collage sheets and charts |
+| **Light** | Washi in daylight (the original look) | `#E6E5E1` / `#FAF9F6` / `#1E1B18` |
+| **Warm** | The same sheet under a lamp: sepia, less blue in every surface, brown-black ink | `#E7DAC1` / `#F5ECDA` / `#34281C` |
+| **Dark** | Black washi (kuro-washi) by lamplight: warm charcoal, never pure black; sheets one step lighter; off-white ink, never pure white | `#171513` / `#221F1B` / `#E8E3D9` |
 
-- Each habit owns one paper colour (`store.color(id)`); it marks that habit everywhere.
-- Text on a coloured paper uses `inkOn(hex)` from `src/ui/paper.js` to pick sumi or white.
+All values live in [src/styles/tokens.css](../src/styles/tokens.css). **Components use role tokens
+only**: never a hex, and never a paper's name for text or a surface.
+
+| Role | Use |
+| --- | --- |
+| `--bg` `--bg-2` `--bg-3` | The table: page ground; quiet surfaces (tracks, empty squares, quiet buttons); hover and hairlines in data |
+| `--sheet` | A sheet lying on it: panels, cards, chits, letters |
+| `--ink` `--ink-2` `--ink-3` | Text; secondary text; muted text |
+| `--inverse` / `--on-inverse` | A strong ink fill (selected chip, toast, `.btn--ink`, "Latest" pill) and its text |
+| `--on-color` | Text on the accent or a deep paper (red button, ai sheet): always light |
+| `--accent` / `--accent-hover` / `--accent-ink` | **The one action colour** (shu): fills; a pressed fill; red text |
+| `--link` | Links and focus rings |
+| `--good` | A number that went the right way |
+| `--paper-ink` `--paper-ink-2` `--paper-link` `--paper-red` | Ink on a coloured paper: always dark |
+| `--paper-back` | The white back of a paper, where a corner folds over (dog-ears, envelope flaps, snow caps) |
+| `--line` `--scrim` `--tape` `--media` `--lift` `--lift-high` | Hairlines, dialog backdrops, masking tape, photo treatment, cast shadows |
+
+Papers keep their names (`--sora` `--matcha` `--yamabuki` `--kraft` `--sakura` `--ai` `--shu`):
+they are the collage drawer. Each theme tunes them (a little warmer under the lamp, dimmer at night
+so a yellow sheet never glares).
+
+- **Coloured papers stay paper.** Anything painted in a paper colour joins the list in tokens.css
+  (or gets `.on-paper`), which re-points `--ink`, `--link` and friends to the paper inks, so text,
+  links and buttons placed on it read correctly in every theme with no extra rules.
+- **Fixed objects** look the same in every theme: the fake Google Sheets scrap and the wooden story
+  scroll. Their lines are marked `theme-fixed` (a whole file: `/* theme-fixed file`).
+- **Things drawn outside CSS** (the 3D crane, canvases) read a token with `token('sheet')` from
+  `src/lib/theme.js`, and can redraw on `onThemeChange()`.
+- Each habit owns one paper colour (`store.color(id)`); it marks that habit everywhere. Text on a
+  habit colour uses `inkOn(hex)` from `src/ui/paper.js`.
 - No gradients, no glows, no violet. Halftone dots are an SVG pattern, not a gradient.
+- `npm run check` (scripts/check-themes.mjs) checks every text pair in every theme for WCAG AA
+  contrast (4.5:1 text, 3:1 shapes), keeps body text below 17.5:1 (no harsh pure black on white),
+  checks Warm really has less blue, and fails on any colour written outside tokens.css.
+
+### Adding a component
+1. Pick roles, not colours: `background: var(--sheet); color: var(--ink);`.
+2. Painted in a paper colour? Add its selector to the paper list in tokens.css, or add `.on-paper`.
+3. Look at it in all three themes (the account chit's Paper switch), then run `npm run check`.
 
 ## Type
 
@@ -106,6 +135,8 @@ Shadows are allowed **only** on paper lying on paper. Buttons and controls are f
   yamabuki saving or offline, shu when the account can't be reached; its label says which.
 - **"Two sets of folds" slip:** the backup slip's shape above the month, only on a first sign-in
   where browser and account both have folds. "Keep both" (sumi) and a text link for the account's.
+- **Paper switch** (`.acct-seg`, in the account chit, D-033): Auto, Light, Warm, Dark as four
+  40px chips on a `--bg-2` track; the chosen one in `--inverse`. Saved per device.
 - **Account paper** (header, both pages, D-022): a 40px crumpled ball (three paper tones, sumi-3
   creases, a slow 3px float) when signed out; a shu square on its corner with the white initial and
   the sync dot when signed in. Opens a 330px chit (white paper, tape at the top, torn bottom,

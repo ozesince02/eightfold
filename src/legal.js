@@ -3,6 +3,9 @@
 // bottom of the home page".
 import { AUTHOR } from './config.js';
 import { esc } from './lib/sanitize.js';
+import { watchTheme } from './lib/theme.js';
+
+watchTheme();
 
 document.querySelectorAll('[data-contact]').forEach((el) => {
   el.innerHTML = `<a href="mailto:${esc(AUTHOR.email)}">${esc(AUTHOR.email)}</a>`;

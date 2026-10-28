@@ -3,7 +3,7 @@
 What changed, for people using the app. Why it changed lives in [docs/decisions.md](docs/decisions.md).
 Dates are when the work landed.
 
-## 0.10.0 — unreleased
+## 0.11.0 — unreleased
 
 ### Added
 - **Reminders with Eightfold closed.** Signed in, turn them on for each device under Habits →
@@ -15,6 +15,18 @@ Dates are when the work landed.
 ### Changed
 - The Privacy page says what closed-app reminders keep and that the browser's push service
   delivers them, encrypted.
+
+## 0.10.0 — 28 October 2026
+
+### Added
+- **Light, warm and dark papers.** Choose under **Paper** in the account chit: Auto (follows your
+  device, the default), Light, Warm (sepia, with less blue, for the evening) or Dark (black washi
+  for the night). Every page follows it, including the crane note and the patch notes; the choice
+  is kept on this device. (D-033)
+
+### Changed
+- Colours now come from role tokens that each theme fills in, and `npm run check` checks contrast
+  in all three themes and fails on stray colours. In light mode nothing should look different.
 
 ## 0.9.0 — 28 October 2026
 
