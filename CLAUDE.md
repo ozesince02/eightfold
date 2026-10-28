@@ -15,6 +15,9 @@ data, storage, rendering, auth or headers. Say plainly when something is a risk.
 
 ## Read before working
 
+- [CONTRIBUTING.md](CONTRIBUTING.md): the rules for everyone, human or AI; keep it in step with
+  this file when a rule changes. [README.md](README.md) and [SECURITY.md](SECURITY.md) are the
+  public face: update them when setup, scripts or reporting change.
 - [docs/security.md](docs/security.md): threat model, rules, audit log.
 - [docs/design.md](docs/design.md): the design system. Read it before any UI change.
 - [docs/decisions.md](docs/decisions.md): why things are the way they are (D-001...).

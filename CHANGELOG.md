@@ -31,6 +31,10 @@ Dates are when the work landed.
 - The `preview` branch gets its own preview site on Cloudflare (Worker Previews), so changes can
   be tried before they go live. Other branches don't make one. (D-034)
 
+### Docs
+- A new README, a contributing guide with the rules every change follows, a security policy for
+  reporting problems privately, and a pull request template.
+
 ## 0.10.0 — 28 October 2026
 
 ### Added
