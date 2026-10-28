@@ -211,9 +211,6 @@ signed-in people; and the sender, which runs with the service role and posts to 
   reminders for habits already done. The sender now reads every list page by page, a hundred people
   at a time. Also: each push gives up after 10 seconds, one person's odd data skips only them, and
   deleting an account takes the device off only after the delete succeeds.
-- Not done, judged unlikely: if signing out fails both to remove the device's address and to
-  unsubscribe (offline), that browser could keep getting the last person's reminders until the
-  sender finds the address dead. Browsers unsubscribe locally even offline.
 - Tests: `check-push.mjs` (RFC 8291 byte for byte, a browser-side decrypt, VAPID signature, the
   planner across time zones, daily cap, copies in sync), `check-schema.mjs` (RLS, register_push,
   every refused value, cascade on account deletion), `check-reminders.mjs` (the half-hour windows).
@@ -248,5 +245,5 @@ list moved to the owner's private list (see below):
 - The fonts are self-hosted (D-027).
 
 **Open weaknesses aren't listed here.** A public list of what isn't fixed yet is a map for
-attackers. Fixed problems go in the audit log above, in the open; open ones are tracked privately
-by the owner until they're fixed.
+attackers. Fixed problems go in the audit log above, in the open; open ones are kept in the owner's
+private docs (`private/`, ignored by git, D-037) until they're fixed.

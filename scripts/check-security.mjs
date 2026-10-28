@@ -93,10 +93,11 @@ for (const file of ['.env.example', '.env']) {
     if (name.trim() === 'VITE_VAPID_PUBLIC_KEY' && value) assert.match(value, /^B[A-Za-z0-9_-]{86}$/, `${file}: VITE_VAPID_PUBLIC_KEY must be the public key (87 characters, starting with B)`);
   }
 }
-// .env must never be tracked again (CI checks out a clean copy, so this holds there too).
-const tracked = execFileSync('git', ['ls-files', '--', '.env', '.env.local', '.env.production', 'supabase/.env.functions', 'supabase/schedule.local.sql'], { encoding: 'utf8' }).trim();
-assert.equal(tracked, '', `env and secret files must not be in git: ${tracked}`);
-console.log('env: only public settings, and no env file in git');
+// .env, the push secrets and the owner's private docs (D-037) must never be tracked (CI checks out a
+// clean copy, so this holds there too).
+const tracked = execFileSync('git', ['ls-files', '--', '.env', '.env.local', '.env.production', 'supabase/.env.functions', 'supabase/schedule.local.sql', 'private'], { encoding: 'utf8' }).trim();
+assert.equal(tracked, '', `env files, secrets and private docs must not be in git: ${tracked}`);
+console.log('env: only public settings, and no env file or private doc in git');
 
 // No third-party origins for styles or fonts (D-027): every page uses the self-hosted fonts, and
 // the CSP allows fonts only from this site. Nothing on a page may reach Google Fonts again.

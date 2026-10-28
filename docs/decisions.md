@@ -673,3 +673,15 @@ Accepted · 29 Oct 2026
   check kept its meaning: September's walk at 13 of 30, October's 80 of 132 boxes, January's 270%
   goal, and a few perfect days.
 
+## D-037 Two sets of docs: public in git, private on the owner's computer
+Accepted · 29 Oct 2026
+
+- **Context:** the repository is public (D-036). Some notes shouldn't be: open security weaknesses
+  (a public list of what isn't fixed is a map for attackers) and the owner's personal notes.
+- **Decision:** public docs stay in `docs/` and the repository root. Private ones go in `private/`
+  at the root, which `.gitignore` excludes and `check-security.mjs` refuses to see tracked. The
+  first file is `private/security-open.md`. A fixed weakness moves from there to the public audit
+  log. CLAUDE.md tells Claude to keep private things there and never quote them anywhere public.
+- **Cost:** the private folder lives on one computer, outside git, so it has no history or backup
+  unless the owner keeps one (for example a copy in a private cloud folder).
+

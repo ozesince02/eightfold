@@ -24,6 +24,8 @@ Dates are when the work landed.
   tracker's panels. (D-033)
 
 ### Tooling
+- Docs come in two sets: public ones in git, and the owner's private ones (open security
+  weaknesses, personal notes) in a `private/` folder that git ignores. (D-037)
 - **`.env` is no longer in git.** It only ever held public values, but no env file belongs in the
   repository. `.env.example` lists the settings; Cloudflare and GitHub provide them to the builds
   as variables. (D-035)
