@@ -23,9 +23,16 @@ data, storage, rendering, auth or headers. Say plainly when something is a risk.
   challenges and closed-app notifications.
 - [docs/vision.md](docs/vision.md): future ideas.
 
-## Branches
+## Branches (D-034)
 
-`main` is what gets hosted (Cloudflare Pages). Never commit to it directly.
+Two long-lived branches, and work flows one way: **work branch → `preview` → `main`**.
+
+- **`main`** is what gets hosted (Cloudflare). It changes only through a pull request **from
+  `preview`**; CI's "Release source" check fails any other PR into `main`.
+- **`preview`** is where finished work collects and gets tried before release. It changes only
+  through pull requests from work branches.
+- **Only the owner (Pulkit) pushes to `main` or `preview` directly**, via the ruleset bypass.
+  Claude never does, even though `gh` is signed in as the owner: always a PR.
 
 | Prefix | For | Example |
 | --- | --- | --- |
@@ -37,14 +44,24 @@ data, storage, rendering, auth or headers. Say plainly when something is a risk.
 | `chore/` | Dependencies, tooling, config | `chore/upgrade-vite` |
 
 - Lower-case, words joined by hyphens, short.
-- Branch from an up-to-date `main`; push the branch.
-- **`main` changes only through a pull request.** Open a PR into `main` with what changed, why, and
-  how it was tested (`gh pr create`; the GitHub CLI is installed and signed in). Merge it only when
-  the user agrees and the CI checks pass. Delete the branch after merging.
+- **Branch from an up-to-date `preview`**; push the branch.
+- **Open the PR into `preview`** (`gh pr create --base preview`) with what changed, why, and how it
+  was tested. Merge it only when the user agrees and CI passes. Delete the work branch after.
+- **Releasing:** when the user says so, open a PR from `preview` into `main` listing what it
+  ships; merge it with a merge commit once CI passes. Never delete `preview` (the ruleset blocks it).
+  Afterwards bring `preview` level with `main` by opening a PR from `main` into `preview` (or the
+  owner fast-forwards it).
+- **Hotfixes** take the same road, quickly: PR into `preview`, then straight on to `main`.
+- Rules are GitHub rulesets ("main: releases from preview", "preview: pull requests only"): no
+  deleting, no force pushes, a PR required, CI required. Check them with
+  `gh api repos/ozesince02/eightfold/rulesets`.
 - CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs `npm ci`, `npm run check`,
-  `npm run build` and `npm audit` on every PR and push to `main`. Keep its permissions read-only and
-  its actions pinned to commit SHAs; when bumping an action, update the SHA and the tag comment.
+  `npm run build` and `npm audit` on every PR and on pushes to `preview` and `main`, plus the
+  "Release source" check. Keep its permissions read-only and its actions pinned to commit SHAs;
+  when bumping an action, update the SHA and the tag comment.
 - Commit messages: a short summary line, a blank line, then why. Small, focused commits.
+- Another session may be working in its own git worktree (`git worktree list`). Check
+  `git status` before switching branches in a shared folder.
 
 ## Configuration
 
