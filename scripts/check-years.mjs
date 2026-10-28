@@ -1,18 +1,18 @@
 // Checks how years work (D-017): how far the tracker lets you go, draft months that are saved only
-// when edited, one wish per year, and folding a year. Runs the real store on the seed data.
+// when edited, one wish per year, and folding a year. Runs the real store on the example year.
 import assert from 'node:assert/strict';
 import { store } from '../src/lib/store.js';
 import { cleanState } from '../src/lib/sanitize.js';
-import { seedState } from '../src/data/seed.js';
+import { sampleState } from '../src/data/sample.js';
 import { firstMonthKey, lastMonthKey, clampKey, yearBounds, yearToFold, wishOf, foldedAt } from '../src/lib/years.js';
 
 const oct = { y: 2026, m: 10, d: 24 };
 const dec = { y: 2026, m: 12, d: 20 };
 const jan = { y: 2027, m: 1, d: 3 };
 const state = () => store.get();
-// New visitors start empty (D-016); these checks run on the sheet's data.
+// New visitors start empty (D-016); these checks run on the example year.
 assert.equal(Object.keys(state().months).length, 0, 'a new tracker starts empty');
-store.replaceState(seedState());
+store.replaceState(sampleState());
 
 // Bounds: from the first month with habits to next month.
 assert.equal(firstMonthKey(state(), oct), '2026-01', 'nothing before the first month of data');

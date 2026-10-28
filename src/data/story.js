@@ -1,4 +1,7 @@
-// Transcribed from "oze's Habit Tracker v2" (Google Sheets), Jan–Oct 2026.
+// oze's own habit log, January to 22 October 2026, transcribed from "oze's Habit Tracker v2" (Google
+// Sheets). It tells the landing page's story (D-016, D-021), shared by its owner for that purpose.
+// **Not covered by the MIT licence** (D-036): it's personal data, not code to reuse. The tracker never
+// loads it, and the checks use the invented year in sample.js instead.
 // Each habit lists the days of the month that were ticked. The ids link the same
 // habit across months even when its name changed, so streaks can cross the 1st.
 // `start` marks a habit added mid-month (the sheet had no checkbox before it).
@@ -114,7 +117,7 @@ export const SHEET_RATES = { 1: 45, 2: 44, 3: 57, 4: 42, 5: 37, 6: 37, 7: 37, 8:
 
 // The sheet's data as a tracker state. The landing page tells its story with it (D-016); the
 // tracker itself starts empty for everyone.
-export function seedState() {
+export function sheetState() {
   const months = {};
   for (const [key, habits] of Object.entries(SEED_MONTHS)) {
     months[key] = {

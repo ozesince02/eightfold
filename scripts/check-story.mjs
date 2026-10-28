@@ -1,5 +1,5 @@
-// Recomputes each month from the transcribed seed and compares with the sheet's own totals.
-import { SEED_MONTHS, SHEET_RATES } from '../src/data/seed.js';
+// Recomputes each month of oze's transcribed log (src/data/story.js) and compares with the sheet's own totals.
+import { SEED_MONTHS, SHEET_RATES } from '../src/data/story.js';
 import { monthStats } from '../src/lib/stats.js';
 const now = { y: 2026, m: 10, d: 23 };
 let total = 0;

@@ -6,7 +6,7 @@ import { supabaseStandIn } from './lib/supabase-stand-in.mjs';
 import { createSync } from '../src/lib/sync/engine.js';
 import { stateToRows, rowsToState, TABLES } from '../src/lib/sync/rows.js';
 import { cleanState } from '../src/lib/sanitize.js';
-import { seedState } from '../src/data/seed.js';
+import { sampleState } from '../src/data/sample.js';
 import { localAdapter } from '../src/lib/adapters/local.js';
 
 const { db, as, addUser } = await supabaseStandIn();
@@ -104,12 +104,12 @@ async function accountState(uid) {
 const count = async (uid, table) => (await as(uid, `select count(*)::int as n from public.${table}`)).rows[0].n;
 const tick = (state, key, id, day) => { const c = state.months[key].checks[id]; if (!c.includes(day)) c.push(day); };
 
-// 1. The owner's browser (the sheet's data) signs in to an empty account: everything is uploaded.
-const laptop = device('laptop', seedState());
+// 1. The owner's browser (the example year) signs in to an empty account: everything is uploaded.
+const laptop = device('laptop', sampleState());
 await laptop.sync.start(api(OWNER), OWNER);
 assert.equal(laptop.status().state, 'synced', 'first sign-in uploads and is in step');
-const seedTicks = Object.values(seedState().months).reduce((n, m) => n + Object.values(m.checks).reduce((a, d) => a + d.length, 0), 0);
-assert.equal(await count(OWNER, 'ticks'), seedTicks, 'every tick reached the account');
+const sampleTicks = Object.values(sampleState().months).reduce((n, m) => n + Object.values(m.checks).reduce((a, d) => a + d.length, 0), 0);
+assert.equal(await count(OWNER, 'ticks'), sampleTicks, 'every tick reached the account');
 assert.deepEqual(rowsOf(await accountState(OWNER)), rowsOf(laptop.store.get()), 'the account matches the browser exactly');
 
 // 2. A new phone signs in: it takes the account's folds.
@@ -119,7 +119,7 @@ assertSame(phone, laptop, 'the phone has the same folds');
 
 // 3. Edits on the laptop reach the phone through the broadcast.
 laptop.store.edit((s) => {
-  tick(s, '2026-10', 'german', 24);
+  tick(s, '2026-10', 'bed', 24);
   s.months['2026-10'].habits[0].name = 'Gym, run or swim';
   s.months['2026-10'].checks.read = s.months['2026-10'].checks.read.filter((d) => d !== 1);
   s.years = { 2026: { wish: 'a trip to Kyoto' } };
@@ -133,19 +133,19 @@ assertSame(phone, laptop, 'the phone has the laptop\'s edits (rename, tick, unti
 // 4. Removing a habit from a month and adding one.
 laptop.store.edit((s) => {
   const oct = s.months['2026-10'];
-  oct.habits = oct.habits.filter((h) => h.id !== 'core');
-  delete oct.checks.core;
+  oct.habits = oct.habits.filter((h) => h.id !== 'stretch');
+  delete oct.checks.stretch;
   oct.habits.push({ id: 'stretch-ab12', name: 'Stretch', goal: 20, time: '06:45', start: 1, cadence: 'weekdays', weekdays: [1, 3, 5] });
   oct.checks['stretch-ab12'] = [2, 5];
 });
 await laptop.sync.flush();
 await phone.sync.pull();
 assertSame(phone, laptop, 'removed and added habits, with schedules, arrive');
-assert.equal((await as(OWNER, `select count(*)::int as n from public.ticks where slug = 'core' and month = '2026-10-01'`)).rows[0].n, 0, 'the removed habit\'s ticks are gone from the account');
+assert.equal((await as(OWNER, `select count(*)::int as n from public.ticks where slug = 'stretch' and month = '2026-10-01'`)).rows[0].n, 0, 'the removed habit\'s ticks are gone from the account');
 
 // 5. Offline: edits are kept and queued, survive a reload, and are sent when back online.
 phone.goOffline();
-phone.store.edit((s) => { tick(s, '2026-10', 'dsa', 24); });
+phone.store.edit((s) => { tick(s, '2026-10', 'learn', 24); });
 await phone.sync.flush();
 assert.equal(phone.status().state, 'offline', 'offline is reported');
 assert.ok(Object.keys(phone.saved.value.ops || {}).length > 0, 'the queue is saved on the device');
@@ -154,14 +154,14 @@ phoneAgain.goOffline();
 await phoneAgain.sync.start(api(OWNER), OWNER);
 phoneAgain.goOnline();
 await phoneAgain.sync.pull();
-assert.ok((await accountState(OWNER)).months['2026-10'].checks.dsa.includes(24), 'the offline tick reached the account after the reload');
+assert.ok((await accountState(OWNER)).months['2026-10'].checks.learn.includes(24), 'the offline tick reached the account after the reload');
 assert.equal(Object.keys(phoneAgain.saved.value.ops).length, 0, 'and the queue is empty');
 
 // 6. Both devices offline, ticking different days: both ticks survive.
 laptop.goOffline();
 phoneAgain.goOffline();
-laptop.store.edit((s) => { tick(s, '2026-10', 'sysdesign', 23); });
-phoneAgain.store.edit((s) => { tick(s, '2026-10', 'german', 23); });
+laptop.store.edit((s) => { tick(s, '2026-10', 'skill', 23); });
+phoneAgain.store.edit((s) => { tick(s, '2026-10', 'bed', 23); });
 laptop.goOnline();
 phoneAgain.goOnline();
 await laptop.sync.pull();
@@ -169,10 +169,10 @@ await phoneAgain.sync.pull();
 await laptop.sync.pull();
 assertSame(laptop, phoneAgain, 'after both sync, both devices agree');
 const octTicks = laptop.store.get().months['2026-10'].checks;
-assert.ok(octTicks.sysdesign.includes(23) && octTicks.german.includes(23), 'and neither tick was lost');
+assert.ok(octTicks.skill.includes(23) && octTicks.bed.includes(23), 'and neither tick was lost');
 
 // 7. First sign-in on a browser that has its own different folds: the person chooses.
-const extra = seedState();
+const extra = sampleState();
 extra.months['2025-12'] = { habits: [{ id: 'walk', name: 'Walk', goal: 20, time: '', start: 1 }], checks: { walk: [1, 2, 3] } };
 const tablet = device('tablet', extra);
 await tablet.sync.start(api(OWNER), OWNER);
@@ -180,7 +180,7 @@ assert.equal(tablet.status().state, 'choose', 'two different sets of folds: ask'
 await tablet.sync.choose('merge');
 const merged = await accountState(OWNER);
 assert.deepEqual(merged.months['2025-12'].checks.walk, [1, 2, 3], 'keep both adds the tablet\'s month to the account');
-assert.ok(merged.months['2026-10'].checks.german.includes(24), 'and keeps the account\'s ticks');
+assert.ok(merged.months['2026-10'].checks.bed.includes(24), 'and keeps the account\'s ticks');
 assertSame(tablet, { store: { get: () => merged } }, 'the tablet matches the account');
 assert.equal(tablet.aside.length, 1, 'keep both also keeps the browser’s copy as it was');
 
