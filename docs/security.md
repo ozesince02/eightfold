@@ -36,7 +36,8 @@ the rules every change follows, and the record of what has been checked.
 3. **No inline scripts, no `eval`, no new third-party scripts.** The Content-Security-Policy in
    [public/_headers](../public/_headers) forbids them. A new external origin (fonts, Supabase) is
    added to the policy deliberately, with a note here.
-4. **Secrets never in git.** Keys live in `.env` files (ignored). The Supabase *anon* key is
+4. **Secrets never in git, and no env file in git at all** (D-035). Build settings are variables
+   in Cloudflare and GitHub; `.env.example` lists their names. The Supabase *publishable* key is
    public by design; the *service-role* key never reaches the browser or the repository.
 5. **Least privilege in the database.** Every table has row-level security on, with
    `user_id = auth.uid()` policies. Buddy access is read-only and exposes only what was shared.
@@ -143,8 +144,8 @@ redirects only to this page (and Supabase accepts only the listed redirect URLs)
 descriptions from the URL are never shown; email checked for shape and length before sending;
 the signed-in email is escaped; the client loads from our own origin (bundled, no CDN). The strict
 CSP (no inline or third-party scripts) is what keeps the session token out of reach of injected
-script, so it stays non-negotiable. `.env` is committed with public values only, guarded by
-`check-security.mjs`; the build refuses a non-publishable key.
+script, so it stays non-negotiable. `.env` was committed with public values only, guarded by
+`check-security.mjs` (no longer: D-035); the build refuses a non-publishable key.
 
 ### 24 October 2026 — sync (branch `feature/accounts-sync`)
 
@@ -182,6 +183,49 @@ the CSP still forbids inline scripts; no new origins. "Remove my folds from this
 the key with the rest of `eightfold:v1:*`. The 404 page now uses the shared tokens; its small
 inline `<style>` was already allowed (`style-src 'unsafe-inline'`). Test: check-themes.mjs.
 
+### 28 October 2026 — reminders with the app closed (branch `feature/closed-app-reminders`)
+
+New inputs: a device's push address and keys, reminder settings and a time zone, all written by
+signed-in people; and the sender, which runs with the service role and posts to those addresses.
+- **The sender can't be aimed elsewhere:** `push_subscriptions.endpoint` must be an https address at
+  Google's, Mozilla's, Apple's or Microsoft's push service; the sender never follows redirects.
+- **Devices only through `register_push()`** (SECURITY DEFINER, signed-in only): it may take over an
+  address from another account, because the address is an unguessable secret of that browser; ten
+  devices a person at most. People can read and delete only their own rows; `push_log` has no
+  policies and no grants.
+- **Every column checked by the database:** key and secret lengths, time zone names, and the list of
+  habits switched off (ids only; a test caught that one element could hide a comma, so the list
+  must also split back into exactly as many ids).
+- **The sender** is called only with the cron secret (compared by hash, so timing says nothing),
+  deployed without JWT checks for that reason. It logs counts only, never names or addresses, sends
+  at most 30 notifications a person a day, and claims each reminder in the log before sending.
+- **Messages** are encrypted per device (RFC 8291) and signed (VAPID); the service worker still
+  checks every field before showing it.
+- **Leaving:** signing out, removing folds from a browser and deleting the account take the device's
+  address off before the session ends, so a shared computer stops getting someone's reminders.
+- **Secrets:** made on the owner's computer by `npm run vapid` into git-ignored files, never printed.
+  `.env` may hold only the VAPID *public* key, and `check-security.mjs` and the build refuse
+  anything shaped like the private one.
+- **Review (28 Oct), fixed before merging:** the API returns at most 1,000 rows per request, even
+  to the service role, and drops the rest silently; with a few people's ticks that would have meant
+  reminders for habits already done. The sender now reads every list page by page, a hundred people
+  at a time. Also: each push gives up after 10 seconds, one person's odd data skips only them, and
+  deleting an account takes the device off only after the delete succeeds.
+- Not done, judged unlikely: if signing out fails both to remove the device's address and to
+  unsubscribe (offline), that browser could keep getting the last person's reminders until the
+  sender finds the address dead. Browsers unsubscribe locally even offline.
+- Tests: `check-push.mjs` (RFC 8291 byte for byte, a browser-side decrypt, VAPID signature, the
+  planner across time zones, daily cap, copies in sync), `check-schema.mjs` (RLS, register_push,
+  every refused value, cascade on account deletion), `check-reminders.mjs` (the half-hour windows).
+### 29 October 2026 — `.env` out of git (branch `chore/untrack-env`)
+
+The owner flagged that `.env` was tracked. It held only the Supabase URL and publishable key, both
+public, and a search of every env file's history for secret-shaped values found none. It's now
+untracked and ignored; `.env.example` lists the names, and the hosted builds read Cloudflare and
+GitHub variables (D-035). `check-security.mjs` now fails if any env or push-secret file is
+tracked. The ignore rule for `*.local.sql` (the cron SQL with its secret) is added here too, so it
+holds on every branch.
+
 ### Accepted risks (owner's decision, 24 Oct 2026, D-016)
 
 - The repository is public, and its history contains the owner's January–October 2026 habit data
@@ -189,7 +233,7 @@ inline `<style>` was already allowed (`style-src 'unsafe-inline'`). Test: check-
 - Until accounts ship, onemorefold.com shows that data to any visitor with nothing saved.
 
 ### Still to do (tracked)
-- Before accounts: Supabase row-level security on every table, the anon key in `.env`, the Supabase
+- Before accounts: Supabase row-level security on every table, the publishable key as a build setting, the Supabase
   URL in `connect-src`, auth redirect URLs locked to our domain, rate limits on magic-link email.
 - When hosting: confirm the headers on the live site (securityheaders.com), enable Cloudflare's
   "Always use HTTPS".

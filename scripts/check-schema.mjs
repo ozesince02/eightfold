@@ -85,6 +85,47 @@ await onTopic(A, `user:${A}`, `insert into realtime.messages (topic, extension) 
 await rejects(onTopic(A, `user:${B}`, `insert into realtime.messages (topic, extension) values ($1, 'broadcast')`, [`user:${B}`]), /row-level security/, "A can't send on B's topic");
 await rejects(onTopic('anon', `user:${A}`, 'select * from realtime.messages'), /permission denied/, "anon can't listen");
 
+// Closed-app reminders (D-028): devices, settings and the send log.
+const key = 'B' + 'x'.repeat(85);           // 87 characters, like a P-256 public key
+const secret = 'y'.repeat(22);              // 22 characters, like 16 random bytes
+const fcm = (n) => `https://fcm.googleapis.com/fcm/send/device-${n}:APA91b_token`;
+await as(A, 'select public.register_push($1, $2, $3)', [fcm(1), key, secret]);
+assert.equal((await as(A, 'select count(*)::int as n from public.push_subscriptions')).rows[0].n, 1, 'A signs a device up');
+assert.equal((await as(A, 'select reminders from public.push_settings')).rows[0].reminders, false, 'signing up makes settings, reminders off until asked');
+assert.equal((await as(B, 'select count(*)::int as n from public.push_subscriptions')).rows[0].n, 0, "B can't see A's devices");
+assert.equal((await as(B, 'select count(*)::int as n from public.push_settings')).rows[0].n, 0, "B can't see A's settings");
+assert.equal((await as(B, 'delete from public.push_subscriptions')).affectedRows, 0, "B can't remove A's devices");
+await rejects(as(A, 'insert into public.push_subscriptions (user_id, endpoint, p256dh, auth) values ($1, $2, $3, $4)', [A, fcm(2), key, secret]), /permission denied/, 'devices are added only through register_push');
+await rejects(as('anon', 'select public.register_push($1, $2, $3)', [fcm(3), key, secret]), /permission denied/, "anon can't sign a device up");
+for (const t of ['push_settings', 'push_subscriptions', 'push_log']) {
+  await rejects(as('anon', `select * from public.${t}`), /permission denied/, `anon can't read ${t}`);
+}
+await rejects(as(A, 'select * from public.push_log'), /permission denied/, 'the send log is for the sender only');
+// The same browser, signed in as someone else later: the address moves to the new account.
+await as(B, 'select public.register_push($1, $2, $3)', [fcm(1), key, secret]);
+assert.equal((await as(A, 'select count(*)::int as n from public.push_subscriptions')).rows[0].n, 0, 'a browser belongs to whoever signed it up last');
+assert.equal((await as(B, 'select count(*)::int as n from public.push_subscriptions')).rows[0].n, 1, 'and now it is B\'s');
+// At most ten devices: the oldest makes room.
+for (let n = 10; n < 22; n++) await as(A, 'select public.register_push($1, $2, $3)', [fcm(n), key, secret]);
+assert.equal((await as(A, 'select count(*)::int as n from public.push_subscriptions')).rows[0].n, 10, 'at most ten devices a person');
+assert.equal((await as(A, 'select count(*)::int as n from public.push_subscriptions where endpoint = $1', [fcm(21)])).rows[0].n, 1, 'the newest stays');
+// Settings: own row only, and only sane values.
+await as(A, `update public.push_settings set reminders = true, off = '{german,dsa}', time_zone = 'Asia/Kolkata'`);
+assert.deepEqual((await as(A, 'select off from public.push_settings')).rows[0].off, ['german', 'dsa'], 'A switches habits off');
+const badPush = [
+  ['select public.register_push($1, $2, $3)', ['https://evil.example.com/collect', key, secret], 'only real push services'],
+  ['select public.register_push($1, $2, $3)', ['http://fcm.googleapis.com/fcm/send/x', key, secret], 'https only'],
+  ['select public.register_push($1, $2, $3)', [fcm(99), 'short', secret], 'a real public key'],
+  ['select public.register_push($1, $2, $3)', [fcm(99), key, 'bad secret!'], 'a real auth secret'],
+  [`update public.push_settings set off = '{"Bad Slug"}'`, [], 'habit ids only'],
+  [`update public.push_settings set off = '{"a,b"}'`, [], 'no commas smuggled into an id'],
+  [`update public.push_settings set time_zone = 'Asia/Kolkata; drop table x'`, [], 'time zone names only'],
+];
+for (const [sql, params, what] of badPush) {
+  await rejects(as(A, sql, params), /violates|constraint|invalid/, `refused: ${what}`);
+}
+await rejects(as(B, `insert into public.push_settings (user_id) values ($1)`, [A]), /row-level security|duplicate/, "B can't write A's settings");
+
 // Removing a habit from a month removes its ticks; deleting the account removes everything.
 await as(A, `delete from public.habit_months where slug = 'dsa' and month = '2026-10-01'`);
 assert.equal((await as(A, `select count(*)::int as n from public.ticks where slug = 'dsa'`)).rows[0].n, 0, 'ticks go with their habit month');
@@ -96,7 +137,7 @@ assert.equal((await db.query(`select count(*)::int as n from auth.users where id
 assert.ok((await db.query(`select count(*)::int as n from public.ticks where user_id = '${A}'`)).rows[0].n > 0, "A's ticks are untouched");
 await as(A, 'select public.delete_my_account()');
 assert.equal((await db.query(`select count(*)::int as n from public.profiles where id = '${A}'`)).rows[0].n, 0, 'account deletion clears the profile');
-for (const t of ['years', 'habits', 'months', 'habit_months', 'ticks']) {
+for (const t of ['years', 'habits', 'months', 'habit_months', 'ticks', 'push_settings', 'push_subscriptions', 'push_log']) {
   assert.equal((await db.query(`select count(*)::int as n from public.${t} where user_id = '${A}'`)).rows[0].n, 0, `account deletion clears ${t}`);
 }
 await rejects(as(A, `insert into public.years (user_id, year) values ($1, 2027)`, [A]), /foreign key/, "a deleted account can't write again with its old token");

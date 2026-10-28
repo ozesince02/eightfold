@@ -161,8 +161,9 @@ tested on real Postgres by [scripts/check-schema.mjs](../scripts/check-schema.mj
 - **Row-level security on every table:** a signed-in user reads and writes only rows with their own
   `user_id`; signed-out visitors (`anon`) have no grants at all; a profile can't be deleted by its
   user (deleting the account cascades instead).
-- **Not in the cloud:** reminder settings and the reminder log stay on each device (notifications
-  are per device), and so do backup reminders. Streaks, percentages and scores stay computed by
+- **Not in the cloud:** the in-tab reminder settings and their log stay on each device, and so do
+  backup reminders. Reminders with the app closed (D-028) add `push_settings`, `push_subscriptions`
+  and a server-only `push_log`; see [push-setup.md](push-setup.md). Streaks, percentages and scores stay computed by
   [stats.js](../src/lib/stats.js).
 - **Realtime** (`supabase_realtime` publication) is added with the sync adapter, in its own
   migration.

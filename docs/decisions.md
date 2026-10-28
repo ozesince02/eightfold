@@ -301,7 +301,8 @@ Accepted · 24 Oct 2026
 - **Settings:** deployment values live in `.env` and are read only through `src/config.js`,
   together with product constants (`CRANE_GOAL`, `STORE_KEY`, `BACKUP_EVERY_DAYS`). `.env` is
   committed because everything in it is public and ends up in the built site anyway (Vite's
-  convention); secrets go in `.env.local` or the dashboards. Guards: `npm run check` fails if `.env`
+  convention); secrets go in `.env.local` or the dashboards. **Superseded by D-035 (29 Oct): `.env`
+  is no longer in git.** Guards: `npm run check` fails if `.env`
   holds any name other than the two public settings or a value that looks like a key; the build
   fails if they're missing or the key isn't a publishable one; the CSP's Supabase entries are filled
   from `.env` so the two can't drift apart.
@@ -466,7 +467,7 @@ Accepted · 25 Oct 2026
 
 
 ## D-028 Notifications with the app closed: a job every 30 minutes
-Accepted · 28 Oct 2026 · not built yet · plan: [buddies-and-notifications.md](buddies-and-notifications.md)
+Accepted · 28 Oct 2026 · reminders built 28 Oct (summaries next) · plan: [buddies-and-notifications.md](buddies-and-notifications.md), setup: [push-setup.md](push-setup.md)
 
 - **Decision (the user's):** Web Push sent by a Supabase Edge Function that Supabase Cron starts
   every 30 minutes, not every minute. Each run reminds habits due in the next half hour, so a
@@ -479,6 +480,24 @@ Accepted · 28 Oct 2026 · not built yet · plan: [buddies-and-notifications.md]
   Sunday, each switched on separately, all off by default. At most 30 notifications a person a day.
 - **Why not every minute:** exact times aren't needed for habits; the interval can shrink later
   without changing anything else.
+- **As built (28 Oct):**
+  - **No Web Push library.** `supabase/functions/_shared/webpush.js` does RFC 8291 encryption and
+    RFC 8292 VAPID with WebCrypto alone, checked byte for byte against RFC 8291's worked example.
+  - **One set of rules.** The sender runs exact copies of the app's own `dates`, `schedule`,
+    `reminders-core` and `sync/rows` modules (`npm run shared`; a check fails if a copy drifts), so
+    it and the tracker agree on what's due. It reads each person's clock in their own time zone.
+  - **Tables** (`20261028120000_push_reminders.sql`): `push_settings` (on or off, habits off, time
+    zone), `push_subscriptions` (one row per device, added only through `register_push()`, ten at
+    most, and only addresses at the browsers' own push services, so the sender can't be pointed at
+    anything else), and `push_log` (server only, kept two weeks). The sender claims each reminder in
+    the log before sending, so two overlapping runs can't both send it.
+  - **Per device:** each device opts in. Signing out, "remove my folds from this browser" and
+    deleting the account take the device off first. A device that gets closed-app reminders stops
+    sending its own system notifications from the tab; the paper note on an open page stays.
+  - **The notification** names the time ("Next up: German at 07:00") and opens the tracker. Done
+    and Later buttons on it come later: they need a single-use token from the server.
+  - **Secrets** (VAPID private key, cron secret) are made by `npm run vapid` on the owner's
+    computer into git-ignored files, and live as Edge Function secrets and in Supabase Vault.
 
 ## D-029 Buddies: invite links, three sharing levels, user tags
 Accepted · 28 Oct 2026 · not built yet · plan: [buddies-and-notifications.md](buddies-and-notifications.md)
@@ -605,10 +624,31 @@ Accepted · 28 Oct 2026
   Production still deploys only from `main` with `npx wrangler deploy`.
   - workers.dev Preview URLs are public and send `X-Robots-Tag: noindex`; Cloudflare Access can
     put them behind a sign-in if that's ever wanted.
-  - **The preview uses the live Supabase project** (same `.env`). Signing in there reads and
+  - **The preview uses the live Supabase project** (same build variables, D-035). Signing in there reads and
     writes real accounts, so try risky changes there with a throwaway account. A separate
     Supabase project for previews is the fix if that becomes a problem.
   - Sign-in returns to `location.origin + /app`, so the preview address must be on Supabase's
     redirect list, or Supabase sends people to the live site instead.
   - Earlier branch builds (before 24 Oct) failed under the old preview model, and branch builds
     were then switched off; the dashboard steps are in CLAUDE.md under "Hosting".
+
+## D-035 No env file in git; build settings are variables
+Accepted · 29 Oct 2026 · replaces the committed `.env` of D-019
+
+- **Context:** since D-019, `.env` was committed. It held only public values: the Supabase URL
+  and the publishable key, which ship in the site's JavaScript anyway. A check refused anything
+  secret-looking. The user objected, rightly: a tracked `.env` normalises the most common way
+  secrets leak, and one check is a thin wall against a future mistake.
+- **Decision:** no env file is ever tracked. `.env` and `.env.*` are ignored, except
+  `.env.example`, which lists the names with placeholder values. The hosted builds get the values
+  as variables: Cloudflare Workers Builds' build variables (production and the preview branch)
+  and GitHub repository variables for CI. Locally, copy `.env.example` to `.env`. Vite's `loadEnv`
+  reads the process environment as well as files, so the build code is unchanged.
+- **Guards:**
+  - `check-security.mjs` fails if `.env`, `.env.local`, `.env.production` or the push secret files
+    are tracked.
+  - It checks `.env.example` (and a local `.env`) for public names and secret-shaped values.
+  - The build stops with a message naming the missing setting.
+- **History:** the old commit still shows the two public values. They're public by design, so the
+  history wasn't rewritten. No secret was ever committed: the whole history of every env file was
+  searched for secret-shaped values on 29 Oct.

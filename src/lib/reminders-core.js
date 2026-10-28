@@ -1,6 +1,6 @@
 // When is a habit due? Pure functions of the data and a Date, so they can be tested in Node.
 import { monthKey, minutesOf, pad } from './dates.js';
-import { isFlexible, isDueDay, flexibleOpen } from './schedule.js';
+import { isFlexible, isDueDay, flexibleOpen, unitOf } from './schedule.js';
 
 export const LATE_WINDOW = 120; // minutes after the nudge during which a missed one still fires
 export const SNOOZE_MINUTES = 10;
@@ -51,4 +51,27 @@ export function nextReminder(state, date = new Date()) {
     .map((h) => ({ habit: h, at: minutesOf(h.time) - r.lead }))
     .filter((x) => x.at > mins)
     .sort((a, b) => a.at - b.at)[0] || null;
+}
+
+// ---------- Closed-app reminders (D-028) ----------
+// The sender runs every 30 minutes, at :00 and :30. Each run reminds habits due after its half
+// hour began, up to and including the next one: (slot, slot + 30]. A run that starts late still
+// covers its own half hour, and the 00:00 run also takes habits at exactly 00:00.
+export const PUSH_WINDOW = 30;
+
+// date: the person's wall clock (dates.js wallClock). off: their habits switched off.
+export function upcomingReminders(state, date, off = {}) {
+  const mins = date.getHours() * 60 + date.getMinutes();
+  const slot = Math.floor(mins / PUSH_WINDOW) * PUSH_WINDOW;
+  return candidates({ ...state, reminders: { ...DEFAULTS, enabled: true, off } }, date).filter((h) => {
+    const at = minutesOf(h.time);
+    return (at > slot && at <= slot + PUSH_WINDOW) || (slot === 0 && at === 0);
+  });
+}
+
+// What the notification says. It may arrive up to half an hour early, so it names the time.
+export function pushText(habit) {
+  const unit = unitOf(habit);
+  const when = unit === 'day' ? '' : ` Any day this ${unit} counts.`;
+  return { title: `${habit.name} · ${habit.time}`, body: `Next up: ${habit.name} at ${habit.time}.${when}` };
 }

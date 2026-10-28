@@ -14,7 +14,8 @@ import { startAuth, getClient } from './lib/auth.js';
 import { createAccountMenu } from './ui/account-menu.js';
 import { watchTheme } from './lib/theme.js';
 import { createSync, supabaseApi } from './lib/sync/engine.js';
-import { startReminders, enableReminders, disableReminders, sendTestReminder, permissionState, nextReminder } from './ui/reminders.js';
+import { startReminders, enableReminders, disableReminders, sendTestReminder, permissionState, nextReminder, setPushHere } from './ui/reminders.js';
+import { pushSupported, needsHomeScreen, pushState, enablePush, disablePush, saveSettings } from './lib/push.js';
 
 watchTheme();
 const $ = (s, r = document) => r.querySelector(s);
@@ -34,7 +35,7 @@ const icon = {
 $$('[data-mark]').forEach((el) => { el.innerHTML = craneMark(); });
 
 let now = today();
-let ui = { swatchFor: null, pct: null, protection: null, account: { status: 'loading' }, sync: { state: 'off', pending: 0 } };
+let ui = { swatchFor: null, pct: null, protection: null, account: { status: 'loading' }, sync: { state: 'off', pending: 0 }, push: 'unknown' };
 let stage = null;
 let lastProgress = -1;
 
@@ -681,8 +682,10 @@ function onAccount(account) {
   menu.update({ account });
   if (account.status === 'signed-in' && account.id) {
     getClient().then((sb) => sync.start(supabaseApi(sb, account.id), account.id)).catch(() => {});
+    if (was.status !== 'signed-in') checkPush(account);
   } else if (account.status === 'signed-out' && was.status === 'signed-in') {
     sync.stop();
+    setPush('off');
   }
   scheduleRender();
 }
@@ -733,6 +736,67 @@ function percentagesPanel() {
   </section>`;
 }
 
+// ---------- Reminders with the app closed (D-028) ----------
+function setPush(state) {
+  ui.push = state;
+  setPushHere(state === 'on');
+  scheduleRender();
+}
+
+// Whether this device is signed up, and keep the account's time zone current while it is.
+function checkPush(account) {
+  if (!pushSupported()) return setPush('unsupported');
+  getClient()
+    .then(async (sb) => {
+      const state = await pushState(sb);
+      setPush(state);
+      if (state === 'on') await saveSettings(sb, account.id, store.reminders().off);
+    })
+    .catch(() => setPush('off'));
+}
+
+async function togglePush(on) {
+  const account = ui.account;
+  if (account.status !== 'signed-in') return;
+  setPush('busy');
+  try {
+    const sb = await getClient();
+    if (on) {
+      await enablePush(sb, account.id, store.reminders().off);
+      setPush('on');
+      toast('Reminders will reach this device, even with Eightfold closed.');
+    } else {
+      await disablePush(sb, account.id);
+      setPush('off');
+      toast('This device won\'t get reminders while Eightfold is closed.');
+    }
+  } catch (err) {
+    setPush(Notification.permission === 'denied' ? 'denied' : 'off');
+    toast(err.message || 'That didn\'t work. Try again in a moment.');
+  }
+}
+
+// The part of the Reminders panel about closed-app reminders. Shown only once the site has a VAPID key.
+function closedAppReminders() {
+  if (!pushSupported()) return '';
+  let body;
+  if (ui.account.status !== 'signed-in') {
+    body = '<p class="note">Sign in from the paper ball at the top, and reminders can reach this device even with Eightfold closed.</p>';
+  } else if (needsHomeScreen()) {
+    body = '<p class="note">On iPhone and iPad, reminders reach Eightfold only from the Home Screen. In Safari, tap Share, then Add to Home Screen, open Eightfold from there and turn this on.</p>';
+  } else if (ui.push === 'on') {
+    body = `<p class="note">On for this device. Each reminder arrives up to 30 minutes before its habit's time, even with Eightfold closed, for the habits ticked below.</p>
+      <div class="backup-actions"><button class="btn btn--quiet" type="button" data-push="off">Turn off on this device</button></div>`;
+  } else if (ui.push === 'denied') {
+    body = '<p class="note">Notifications are blocked for this site. Allow them in the browser\'s site settings, then come back here.</p>';
+  } else {
+    const busy = ui.push === 'busy' || ui.push === 'unknown';
+    body = `<p class="note">Get a reminder up to 30 minutes before each habit's time, even when Eightfold isn't open. Each device you turn it on for gets them.</p>
+      <div class="backup-actions"><button class="btn" type="button" data-push="on" ${busy ? 'disabled' : ''}>${ui.push === 'busy' ? 'Turning on…' : 'Remind me when Eightfold is closed'}</button></div>`;
+  }
+  return `<div class="push-box"><h3>When Eightfold is closed</h3>${body}</div>`;
+}
+
 function remindersPanel(month) {
   const rem = store.reminders();
   const perm = permissionState();
@@ -757,7 +821,8 @@ function remindersPanel(month) {
     <fieldset class="rem-list"><legend>Nudge me for</legend>
       ${timed.map((h) => `<label style="--c:${store.color(h.id)}"><input type="checkbox" data-rem-habit="${h.id}" ${rem.off[h.id] ? '' : 'checked'}><i></i><time>${esc(h.time)}</time><span>${esc(h.name)}</span></label>`).join('') || '<p class="note">No habit has a time yet.</p>'}
     </fieldset>
-    <p class="note">${untimed ? `${untimed} habit${untimed === 1 ? ' has' : 's have'} no time, so ${untimed === 1 ? 'it gets' : 'they get'} no nudge. ` : ''}Browsers only send nudges while an Eightfold tab is open; it can sit in the background. A missed nudge still arrives for two hours after its time.</p>
+    <p class="note">${untimed ? `${untimed} habit${untimed === 1 ? ' has' : 's have'} no time, so ${untimed === 1 ? 'it gets' : 'they get'} no nudge. ` : ''}${ui.push === 'on' ? 'With a tab open in front, nudges also show as a note on the page.' : 'Without the setting below, browsers only send nudges while an Eightfold tab is open; it can sit in the background. A missed nudge still arrives for two hours after its time.'}</p>
+    ${closedAppReminders()}
   </section>`;
 }
 
@@ -886,6 +951,8 @@ view.addEventListener('click', (e) => {
     ui.pct = null;
     return toast(`${VIEW_LABELS[pctView()]} is now your default view.`);
   }
+  const push = e.target.closest('[data-push]');
+  if (push) return togglePush(push.dataset.push === 'on');
   const rem = e.target.closest('[data-rem]');
   if (rem) {
     const act = rem.dataset.rem;
@@ -916,7 +983,13 @@ view.addEventListener('change', (e) => {
     return toast(`${VIEW_LABELS[e.target.value]} is now your default view.`);
   }
   if (e.target.matches('[data-rem-lead]')) return store.setReminders({ lead: Number(e.target.value) });
-  if (e.target.matches('[data-rem-habit]')) return store.setHabitReminder(e.target.dataset.remHabit, e.target.checked);
+  if (e.target.matches('[data-rem-habit]')) {
+    store.setHabitReminder(e.target.dataset.remHabit, e.target.checked);
+    if (ui.push === 'on' && ui.account.status === 'signed-in') {
+      getClient().then((sb) => saveSettings(sb, ui.account.id, store.reminders().off)).catch(() => toast('That change couldn\'t reach your account just now.'));
+    }
+    return;
+  }
   const file = e.target.closest('[data-import]');
   if (file?.files?.[0]) {
     file.files[0].text().then((text) => {
