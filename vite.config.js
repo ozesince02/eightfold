@@ -11,7 +11,8 @@ function checkEnv(env) {
   if (!/^sb_publishable_[A-Za-z0-9_-]+$/.test(key)) throw new Error('VITE_SUPABASE_PUBLISHABLE_KEY in .env must be a publishable key (sb_publishable_...), never a secret one');
   // Optional until reminders with the app closed are set up (D-028); when present, the public key.
   const vapid = env.VITE_VAPID_PUBLIC_KEY;
-  if (vapid !== undefined && !/^B[A-Za-z0-9_-]{86}$/.test(vapid)) throw new Error('VITE_VAPID_PUBLIC_KEY in .env must be the VAPID public key (87 characters), never the private one');
+  // CI passes an unset GitHub variable as an empty string, which counts as not set (D-035).
+  if (vapid && !/^B[A-Za-z0-9_-]{86}$/.test(vapid)) throw new Error('VITE_VAPID_PUBLIC_KEY in .env must be the VAPID public key (87 characters), never the private one');
   return new URL(url);
 }
 

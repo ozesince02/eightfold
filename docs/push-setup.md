@@ -63,8 +63,9 @@ or in your own dashboard: no secret ever goes into git, chat or the site.
    the `pg_cron` and `pg_net` extensions if they aren't on yet, keeps the secret in Supabase Vault,
    and schedules the job.
 
-8. **Ship the public key.** Commit the `.env` change from step 2 with the rest of this feature (or
-   tell Claude to); the setting appears on the site once that's deployed.
+8. **Ship the public key.** Step 2 put `VITE_VAPID_PUBLIC_KEY` in your local `.env` (never in git,
+   D-035). Add the same name and value as a build variable in Cloudflare (Workers Builds) and as a
+   GitHub repository variable; the setting appears on the site after the next deploy.
 
 ## Checking it works
 
