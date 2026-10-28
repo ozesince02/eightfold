@@ -36,3 +36,6 @@ desktop.ini
 # Editors
 .vscode/
 .idea/
+
+# Supabase CLI local state
+supabase/.temp/
