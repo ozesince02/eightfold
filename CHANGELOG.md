@@ -3,6 +3,18 @@
 What changed, for people using the app. Why it changed lives in [docs/decisions.md](docs/decisions.md).
 Dates are when the work landed.
 
+## 0.10.0 — 28 October 2026
+
+### Added
+- **Light, warm and dark papers.** Choose under **Paper** in the account chit: Auto (follows your
+  device, the default), Light, Warm (sepia, with less blue, for the evening) or Dark (black washi
+  for the night). Every page follows it, including the crane note and the patch notes; the choice
+  is kept on this device. (D-033)
+
+### Changed
+- Colours now come from role tokens that each theme fills in, and `npm run check` checks contrast
+  in all three themes and fails on stray colours. In light mode nothing should look different.
+
 ## 0.9.0 — 28 October 2026
 
 ### Added

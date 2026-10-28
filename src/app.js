@@ -12,9 +12,11 @@ import { CRANE_GOAL, CRANE_GOAL_TEXT } from './config.js';
 import { createCraneStage } from './three/stage.js';
 import { startAuth, getClient } from './lib/auth.js';
 import { createAccountMenu } from './ui/account-menu.js';
+import { watchTheme } from './lib/theme.js';
 import { createSync, supabaseApi } from './lib/sync/engine.js';
 import { startReminders, enableReminders, disableReminders, sendTestReminder, permissionState, nextReminder } from './ui/reminders.js';
 
+watchTheme();
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const view = $('#view');
@@ -180,7 +182,7 @@ function todayPanel(key, s, color) {
   const tag = (h, note) => {
     const run = streakOf(state, h.id, now);
     const right = note || (run.n ? runWords(run) : h === next ? 'next' : '');
-    return `<li><button class="tag${h === next ? ' is-next' : ''}" type="button" aria-pressed="${h.cells[d - 1]}" data-toggle="${h.id}:${d}" data-focus="tag:${h.id}" style="--c:${color(h.id)}">
+    return `<li><button class="tag${h === next ? ' is-next on-paper' : ''}" type="button" aria-pressed="${h.cells[d - 1]}" data-toggle="${h.id}:${d}" data-focus="tag:${h.id}" style="--c:${color(h.id)}">
       <span class="tag-box" aria-hidden="true"></span>
       <span class="tag-time">${esc(h.time) || '—'}</span>
       <span class="tag-name">${esc(h.name)}</span>
@@ -373,7 +375,7 @@ function gridPanel(key, s, color) {
         <tfoot>${doneRow}${barRow}</tfoot>
       </table>
     </div>
-    <div class="grid-legend"><span><i style="background:var(--ai)"></i>Day's score</span><span><i style="background:var(--shu)"></i>Perfect day</span><span><i style="outline:1px solid var(--washi-3);outline-offset:-1px"></i>Still to come</span><span>% due counts today once it's ticked; dots are rest days</span>${pctView() === 'days' ? '' : '<span>Left shows +n once a goal is passed</span>'}</div>
+    <div class="grid-legend"><span><i style="background:var(--ai)"></i>Day's score</span><span><i style="background:var(--shu)"></i>Perfect day</span><span><i style="outline:1px solid var(--bg-3);outline-offset:-1px"></i>Still to come</span><span>% due counts today once it's ticked; dots are rest days</span>${pctView() === 'days' ? '' : '<span>Left shows +n once a goal is passed</span>'}</div>
   </section>`;
 }
 

@@ -173,6 +173,15 @@ Who can see a person's habits, checked end to end. Other accounts and signed-out
 | 3 | Low | Google Fonts sees every visitor's IP address on every page load. | Fonts served from our own site (Fontsource, woff2 only); CSP `font-src 'self'`, Google origins removed from `style-src`. (branch `chore/self-host-fonts`, D-027) | `check-security.mjs` (fonts); production build: no font requests leave the site, no CSP violations |
 | 4 | Info | The owner (dashboard, secret key) can read everyone's rows; RLS protects users from each other, not from the operator. | Stated in the privacy policy; two-factor sign-in on every admin account. End-to-end encryption is a possible later "private mode" (docs/vision.md). | — |
 
+### 28 October 2026 — themes (branch `feature/light-warm-dark`)
+
+New input: `eightfold:v1:theme` in localStorage. Both readers (public/theme.js before paint,
+src/lib/theme.js after) accept only `light`, `warm`, `dark` (anything else means auto), and the
+value only ever becomes a `data-theme` attribute, never HTML. theme.js is a same-origin file, so
+the CSP still forbids inline scripts; no new origins. "Remove my folds from this browser" clears
+the key with the rest of `eightfold:v1:*`. The 404 page now uses the shared tokens; its small
+inline `<style>` was already allowed (`style-src 'unsafe-inline'`). Test: check-themes.mjs.
+
 ### Accepted risks (owner's decision, 24 Oct 2026, D-016)
 
 - The repository is public, and its history contains the owner's January–October 2026 habit data

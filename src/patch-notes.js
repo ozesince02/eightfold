@@ -6,6 +6,9 @@ import { esc } from './lib/sanitize.js';
 import { tearAll } from './ui/paper.js';
 import { markPatchSeen } from './lib/patches.js';
 import { noteTrigger, wireCraneNotes } from './ui/note-trigger.js';
+import { watchTheme } from './lib/theme.js';
+
+watchTheme();
 
 const $ = (s) => document.querySelector(s);
 const longDate = (iso) => new Date(`${iso}T12:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });

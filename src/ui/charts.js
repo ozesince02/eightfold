@@ -1,7 +1,8 @@
 // Charts cut from paper: hills for the daily score, mountains for the year, a ring for goals.
 import { raggedPath } from './paper.js';
 
-const MOUNTAIN_PAPERS = ['#8EA46B', '#24496B', '#C9A57A', '#6E8C8A', '#E9B33F', '#E8C3BC'];
+// Paper tokens, so the mountains dim with the theme (D-033). #6E8C8A is the drawer's grey-green.
+const MOUNTAIN_PAPERS = ['var(--matcha)', 'var(--ai)', 'var(--kraft)', '#6E8C8A', 'var(--yamabuki)', 'var(--sakura)'];
 
 // Daily score as one torn paper hill. values: 0..1 per day (null for days not reached yet).
 export function hills(values, { width = 600, height = 160, color = 'var(--matcha)', seed = 3, today = null } = {}) {
@@ -13,7 +14,7 @@ export function hills(values, { width = 600, height = 160, color = 'var(--matcha
   const lastX = pts[pts.length - 1][0];
   const d = raggedPath(pts, { amp: 1.6, step: 9, seed, close: [lastX, height] });
   const marks = today !== null && values[today - 1] !== null
-    ? `<circle cx="${(today - 1) * step}" cy="${height - 8 - values[today - 1] * (height - 24)}" r="5" fill="var(--sumi)"/>` : '';
+    ? `<circle cx="${(today - 1) * step}" cy="${height - 8 - values[today - 1] * (height - 24)}" r="5" fill="var(--ink)"/>` : '';
   return `<svg viewBox="0 0 ${width} ${height}" class="hills" role="img" aria-label="Daily score">
     <path d="${d}" fill="${color}" style="filter:drop-shadow(0 -2px 2px rgba(30,27,24,.15))"/>${marks}</svg>`;
 }
@@ -43,17 +44,17 @@ export function mountains(months, { width = 1200, height = 420, current = null, 
       const t = capH / h;
       const lx = peak[0] + (cx - half - peak[0]) * t, rx = peak[0] + (cx + half - peak[0]) * t;
       const cap = raggedPath([[lx, peak[1] + capH], [peak[0], peak[1]], [rx, peak[1] + capH]], { amp: 2, step: 8, seed: 200 + i });
-      out += `<path class="mtn cap" fill="#FBF8F2" d="${cap} L${(lx + rx) / 2 + 6} ${peak[1] + capH * 0.7} Z"/>`;
+      out += `<path class="mtn cap" fill="var(--paper-back)" d="${cap} L${(lx + rx) / 2 + 6} ${peak[1] + capH * 0.7} Z"/>`;
     }
     if (current === mo.m && !mini) {
-      out += `<g transform="translate(${peak[0]} ${peak[1] - 4})"><g class="peak-flag"><path d="M0 0 V-34" stroke="var(--sumi)" stroke-width="3"/><path d="M0 -34 L26 -27 L0 -20 Z" fill="var(--shu)"/></g></g>`;
+      out += `<g transform="translate(${peak[0]} ${peak[1] - 4})"><g class="peak-flag"><path d="M0 0 V-34" stroke="var(--ink)" stroke-width="3"/><path d="M0 -34 L26 -27 L0 -20 Z" fill="var(--accent)"/></g></g>`;
     }
   });
   return out;
 }
 
 // A paper ring: done against goal.
-export function ring(fraction, { size = 120, stroke = 16, color = 'var(--shu)', track = 'rgba(30,27,24,.1)' } = {}) {
+export function ring(fraction, { size = 120, stroke = 16, color = 'var(--shu)', track = 'var(--line)' } = {}) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const f = Math.max(0, Math.min(1, fraction));

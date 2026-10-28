@@ -6,6 +6,18 @@
 
 export const PATCHES = [
   {
+    version: '0.10',
+    date: '2026-10-28',
+    title: 'Three papers to read on',
+    sticker: 'ヨル',
+    notes: [
+      ['Light, Warm and Dark.', 'Open the account chit in the corner and pick your paper under "Paper". Auto, the default, follows your device.'],
+      ['Warm', 'is the same sheet under a desk lamp: sepia, softer, with less blue. For evenings, and for people who find white a bit much.'],
+      ['Dark', 'is black washi by lamplight. Warm charcoal rather than pitch black, so it\'s gentler at night and still looks like paper. The coloured papers dim a little so nothing glares at midnight.'],
+      ['It remembers.', 'Each device keeps its own choice, because your phone in bed and your laptop at noon want different things.'],
+    ],
+  },
+  {
     version: '0.9',
     date: '2026-10-28',
     title: 'Patch notes, with notes',

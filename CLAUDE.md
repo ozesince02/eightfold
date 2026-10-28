@@ -68,6 +68,9 @@ data, storage, rendering, auth or headers. Say plainly when something is a risk.
 - Add new ideas the user mentions to docs/vision.md.
 - Add to the audit log in docs/security.md when you find or fix a security issue.
 - Every percentage on screen must say what it counts (D-006).
+- Colours come from role tokens only (`--bg`, `--sheet`, `--ink`, `--accent`, `--link` ...; see
+  docs/design.md and D-033). Look at every UI change in Light, Warm and Dark (the Paper switch in
+  the account chit); `npm run check` fails on hard-coded colours and low contrast.
 
 ## Checks
 

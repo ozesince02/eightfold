@@ -35,3 +35,5 @@ export const AUTHOR = {
 // ---------- Storage ----------
 export const STORE_KEY = 'eightfold:v1';
 export const LEGACY_STORE_KEY = 'orizuru:v1'; // the app's working name before it became Eightfold
+// The reader's paper: light, warm or dark (D-033). Per device; public/theme.js reads it too.
+export const THEME_KEY = `${STORE_KEY}:theme`;
