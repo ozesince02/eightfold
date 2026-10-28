@@ -67,6 +67,15 @@ for (const role of ['bg', 'bg-2', 'sheet']) {
   assert.ok(blue(THEMES.warm[role]) < blue(light[role]) - 20, `warm --${role} has clearly less blue than light`);
 }
 
+// ---------- The paper list stays on its own page ----------
+// tokens.css loads on every page, so a position-only selector there (.panel:nth-child(3n)) can
+// match another page's markup: it once turned the tracker's own panels dark-on-dark. Each one
+// must name its parent (.zine > .panel:nth-child(3n)).
+const paperList = tokens.slice(tokens.indexOf('.on-paper,'), tokens.indexOf('{', tokens.indexOf('.on-paper,')));
+for (const sel of paperList.split(',').map((x) => x.trim()).filter(Boolean)) {
+  if (/:nth-(child|of-type)/.test(sel)) assert.match(sel, /\S\s*>\s*\S|\S\s+\S/, `paper list: "${sel}" names its parent`);
+}
+
 // ---------- No stray colours ----------
 // Colours live in tokens.css. A line elsewhere may name one only when it is a fixed object that
 // looks the same in every light (the fake spreadsheet, the wooden scroll rods), marked

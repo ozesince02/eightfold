@@ -170,10 +170,12 @@
 
 /* Coloured papers stay paper in every theme: dark ink on them, and anything placed on one picks up
    that ink through the role tokens, so a link or a dark button on a yellow slip just works.
-   EVERY element painted in a paper colour joins this list (or carries the .on-paper class). */
+   EVERY element painted in a paper colour joins this list (or carries the .on-paper class).
+   Scope each selector to its page's own markup: tokens.css loads everywhere, and a bare
+   .panel:nth-child(3n) once darkened the tracker's own panels too. */
 .on-paper,
 .sheet--sora, .sheet--kraft, .sheet--matcha, .sheet--yamabuki, .sheet--sakura,
-.ticket:nth-child(1), .ticket:nth-child(2), .panel:nth-child(3n), .panel:nth-child(5),
+.tickets > .ticket:nth-child(1), .tickets > .ticket:nth-child(2), .zine > .panel:nth-child(3n), .zine > .panel:nth-child(5),
 .backup-bar-sheet, .legal-short, .year-range, .danger:hover {
   --ink: var(--paper-ink); --ink-2: var(--paper-ink-2); --ink-3: var(--paper-ink-2);
   --link: var(--paper-link); --accent-ink: var(--paper-red);
