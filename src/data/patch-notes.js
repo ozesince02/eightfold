@@ -6,6 +6,17 @@
 
 export const PATCHES = [
   {
+    version: '0.11',
+    date: '2026-10-28',
+    title: 'Reminders that find you',
+    sticker: 'ピンポン',
+    notes: [
+      ['Reminders with Eightfold closed.', 'Turn them on under Habits, Reminders, and a nudge arrives up to half an hour before each habit, even with no tab open. Your laptop no longer has to babysit a browser tab.'],
+      ['Device by device.', "Each phone or laptop opts in on its own. Sign out and that device goes quiet straight away, so a shared computer won't start reminding your flatmate about your German."],
+      ['iPhone and iPad too,', 'once Eightfold is on your Home Screen: Share, then Add to Home Screen. Apple insists, and we have learnt not to argue with Apple.'],
+    ],
+  },
+  {
     version: '0.10',
     date: '2026-10-28',
     title: 'Three papers to read on',
@@ -125,7 +136,7 @@ export const PATCHES = [
 
 // What's being folded next (see docs/buddies-and-notifications.md). Promises, not dates.
 export const NEXT = [
-  'Reminders that arrive with the app closed',
+  'Done and Later, right on the reminder',
   'A daily summary and a weekly recap',
   'Buddies, with user tags like oze#1000',
   'Buddy and gang challenges: one habit, up to ten people',

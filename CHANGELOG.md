@@ -3,7 +3,18 @@
 What changed, for people using the app. Why it changed lives in [docs/decisions.md](docs/decisions.md).
 Dates are when the work landed.
 
-## Unreleased
+## 0.11.0 — unreleased
+
+### Added
+- **Reminders with Eightfold closed.** Signed in, turn them on for each device under Habits →
+  Reminders: a notification arrives up to 30 minutes before each habit's time, even when no
+  Eightfold tab is open. On iPhone and iPad, from Eightfold added to the Home Screen. Signing out
+  stops them on that device. (D-028; setup: docs/push-setup.md)
+- Eightfold can be added to the Home Screen as an app (a web app manifest).
+
+### Changed
+- The Privacy page says what closed-app reminders keep and that the browser's push service
+  delivers them, encrypted.
 
 ### Fixed
 - In Dark (and slightly in Warm), the tracker's "This month", "Daily score" and "Weeks" cards

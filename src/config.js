@@ -7,6 +7,10 @@ const env = import.meta.env ?? {};
 export const SUPABASE_URL = env.VITE_SUPABASE_URL || '';
 export const SUPABASE_PUBLISHABLE_KEY = env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
 export const ACCOUNTS_ENABLED = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
+// Reminders with the app closed (D-028): the public half of the VAPID key. Until it's set (npm run
+// vapid), the tracker doesn't offer them.
+export const VAPID_PUBLIC_KEY = /^B[A-Za-z0-9_-]{86}$/.test(env.VITE_VAPID_PUBLIC_KEY || '') ? env.VITE_VAPID_PUBLIC_KEY : '';
+export const PUSH_ENABLED = ACCOUNTS_ENABLED && Boolean(VAPID_PUBLIC_KEY);
 // Where the tracker lives: /app on the live site (Cloudflare drops .html), /app.html on the dev
 // server. Sign-in always comes back here; both are on Supabase's redirect list.
 export const APP_PATH = env.DEV ? '/app.html' : '/app';

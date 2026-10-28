@@ -13,6 +13,10 @@ import { esc, isId, isDate } from '../lib/sanitize.js';
 const supported = () => typeof window !== 'undefined' && 'Notification' in window;
 let registration = null;
 let notify = () => {};
+// This device gets reminders from the server with the app closed (D-028), so the tab doesn't send
+// system notifications of its own: only the paper note while the page is in front.
+let pushHere = false;
+export const setPushHere = (on) => { pushHere = on; };
 
 export function permissionState() {
   if (!supported()) return 'unsupported';
@@ -132,6 +136,7 @@ async function fire(item, { test = false } = {}) {
   const text = message(item, settingsOf(store.get()).lead);
   if (!test) store.logReminder(item.key, { firedAt: Date.now(), snoozeUntil: null });
   const inFront = document.visibilityState === 'visible';
+  if (pushHere && !test) { if (inFront) showNote(item, text); return; }
   const sent = (!inFront || test) && await systemNotify(item, text);
   // In front, the note is enough; in the background without permission, the note waits on the page.
   if (inFront || !sent) showNote(item, text);

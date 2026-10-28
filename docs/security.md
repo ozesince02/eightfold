@@ -183,6 +183,40 @@ the CSP still forbids inline scripts; no new origins. "Remove my folds from this
 the key with the rest of `eightfold:v1:*`. The 404 page now uses the shared tokens; its small
 inline `<style>` was already allowed (`style-src 'unsafe-inline'`). Test: check-themes.mjs.
 
+### 28 October 2026 — reminders with the app closed (branch `feature/closed-app-reminders`)
+
+New inputs: a device's push address and keys, reminder settings and a time zone, all written by
+signed-in people; and the sender, which runs with the service role and posts to those addresses.
+- **The sender can't be aimed elsewhere:** `push_subscriptions.endpoint` must be an https address at
+  Google's, Mozilla's, Apple's or Microsoft's push service; the sender never follows redirects.
+- **Devices only through `register_push()`** (SECURITY DEFINER, signed-in only): it may take over an
+  address from another account, because the address is an unguessable secret of that browser; ten
+  devices a person at most. People can read and delete only their own rows; `push_log` has no
+  policies and no grants.
+- **Every column checked by the database:** key and secret lengths, time zone names, and the list of
+  habits switched off (ids only; a test caught that one element could hide a comma, so the list
+  must also split back into exactly as many ids).
+- **The sender** is called only with the cron secret (compared by hash, so timing says nothing),
+  deployed without JWT checks for that reason. It logs counts only, never names or addresses, sends
+  at most 30 notifications a person a day, and claims each reminder in the log before sending.
+- **Messages** are encrypted per device (RFC 8291) and signed (VAPID); the service worker still
+  checks every field before showing it.
+- **Leaving:** signing out, removing folds from a browser and deleting the account take the device's
+  address off before the session ends, so a shared computer stops getting someone's reminders.
+- **Secrets:** made on the owner's computer by `npm run vapid` into git-ignored files, never printed.
+  `.env` may hold only the VAPID *public* key, and `check-security.mjs` and the build refuse
+  anything shaped like the private one.
+- **Review (28 Oct), fixed before merging:** the API returns at most 1,000 rows per request, even
+  to the service role, and drops the rest silently; with a few people's ticks that would have meant
+  reminders for habits already done. The sender now reads every list page by page, a hundred people
+  at a time. Also: each push gives up after 10 seconds, one person's odd data skips only them, and
+  deleting an account takes the device off only after the delete succeeds.
+- Not done, judged unlikely: if signing out fails both to remove the device's address and to
+  unsubscribe (offline), that browser could keep getting the last person's reminders until the
+  sender finds the address dead. Browsers unsubscribe locally even offline.
+- Tests: `check-push.mjs` (RFC 8291 byte for byte, a browser-side decrypt, VAPID signature, the
+  planner across time zones, daily cap, copies in sync), `check-schema.mjs` (RLS, register_push,
+  every refused value, cascade on account deletion), `check-reminders.mjs` (the half-hour windows).
 ### 29 October 2026 — `.env` out of git (branch `chore/untrack-env`)
 
 The owner flagged that `.env` was tracked. It held only the Supabase URL and publishable key, both
