@@ -211,9 +211,6 @@ signed-in people; and the sender, which runs with the service role and posts to 
   reminders for habits already done. The sender now reads every list page by page, a hundred people
   at a time. Also: each push gives up after 10 seconds, one person's odd data skips only them, and
   deleting an account takes the device off only after the delete succeeds.
-- Not done, judged unlikely: if signing out fails both to remove the device's address and to
-  unsubscribe (offline), that browser could keep getting the last person's reminders until the
-  sender finds the address dead. Browsers unsubscribe locally even offline.
 - Tests: `check-push.mjs` (RFC 8291 byte for byte, a browser-side decrypt, VAPID signature, the
   planner across time zones, daily cap, copies in sync), `check-schema.mjs` (RLS, register_push,
   every refused value, cascade on account deletion), `check-reminders.mjs` (the half-hour windows).
@@ -228,13 +225,25 @@ holds on every branch.
 
 ### Accepted risks (owner's decision, 24 Oct 2026, D-016)
 
-- The repository is public, and its history contains the owner's January–October 2026 habit data
-  (names, times, ticks). The owner judged this harmless. Revisit before any sensitive habit is added.
-- Until accounts ship, onemorefold.com shows that data to any visitor with nothing saved.
+- The repository is public and holds the owner's January–October 2026 habit log (names, times,
+  ticks) in `src/data/story.js`, which the landing page tells its story with. The owner shares it
+  on purpose. Since 29 Oct (D-036) it's excluded from the MIT licence by name, and nothing else
+  uses it: the tracker never loads it, and the checks use an invented year. Revisit before any
+  sensitive habit is added.
+- ~~Until accounts ship, onemorefold.com shows that data to any visitor with nothing saved.~~ No
+  longer: new trackers start empty (D-020); only the landing page shows it.
 
-### Still to do (tracked)
-- Before accounts: Supabase row-level security on every table, the publishable key as a build setting, the Supabase
-  URL in `connect-src`, auth redirect URLs locked to our domain, rate limits on magic-link email.
-- When hosting: confirm the headers on the live site (securityheaders.com), enable Cloudflare's
-  "Always use HTTPS".
-- ~~Consider self-hosting the two fonts~~: done 25 Oct 2026 (D-027).
+### Earlier to-do list, closed 29 October 2026
+
+Done, and checked on 29 October where it can be checked from outside. Anything left from the old
+list moved to the owner's private list (see below):
+
+- Row-level security on every table, the publishable key as a build setting, Supabase in
+  `connect-src`, and sign-in redirect URLs limited to our own addresses (D-018, D-019, D-035).
+- The live site's headers: HSTS, the CSP above, `X-Frame-Options: DENY`, `nosniff`, the referrer and
+  permissions policies, all served on onemorefold.com. Plain `http://` redirects to `https://` (301).
+- The fonts are self-hosted (D-027).
+
+**Open weaknesses aren't listed here.** A public list of what isn't fixed yet is a map for
+attackers. Fixed problems go in the audit log above, in the open; open ones are kept in the owner's
+private docs (`private/`, ignored by git, D-037) until they're fixed.

@@ -186,7 +186,7 @@ tested on real Postgres by [scripts/check-schema.mjs](../scripts/check-schema.mj
 
 ## Decided
 
-Settled with the user on 23 October 2026.
+Settled with the owner on 23 October 2026.
 
 ### Sign-in: Google and email link
 - **Google** for one-tap sign-in, and an **emailed magic link** for anyone who'd rather not use

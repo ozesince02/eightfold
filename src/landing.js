@@ -10,7 +10,7 @@ import { featuredMonth, daysLeftInYear } from './ui/insights.js';
 import { createCraneStage } from './three/stage.js';
 import { startReminders } from './ui/reminders.js';
 import { esc, safeColor } from './lib/sanitize.js';
-import { seedState, STORY_DATE, STORY_SPAN } from './data/seed.js';
+import { sheetState, STORY_DATE, STORY_SPAN } from './data/story.js';
 import { DEMO_HABITS, STORY_ALIASES } from './data/demo.js';
 import { createAccountMenu } from './ui/account-menu.js';
 import { startAuth } from './lib/auth.js';
@@ -26,7 +26,7 @@ const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 // The page tells the story of the sheet this app grew from (D-016, D-021): oze's real numbers up
 // to 22 October 2026, the day before Eightfold was born, under everyday habit names.
 function storyState() {
-  const s = seedState();
+  const s = sheetState();
   for (const month of Object.values(s.months)) {
     for (const h of month.habits) Object.assign(h, STORY_ALIASES[h.id] || { name: 'A habit', time: '' });
   }

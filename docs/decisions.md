@@ -28,7 +28,7 @@ Accepted · 23 Oct 2026 · will be extended by D-008
 ## D-003 Seeded from the Google Sheet, January to October 2026
 Accepted · 23 Oct 2026
 
-- **Decision:** the sheet's ticks were copied by hand into `src/data/seed.js`, with habit ids
+- **Decision:** the sheet's ticks were copied by hand into `src/data/seed.js` (now `story.js`, D-036), with habit ids
   (`move`, `dsa`, `german`...) that link renamed habits across months.
   `scripts/check-seed.mjs` recomputes every month against the sheet's printed success rate.
 - **Known difference:** January shows 44% against the sheet's 45%. The sheet counted one stray tick
@@ -47,7 +47,7 @@ Accepted · 23 Oct 2026
 ## D-005 The look: paper-cut collage, origami and anime touches
 Accepted · 23 Oct 2026
 
-- **Decision:** the user asked for a Vox-style paper collage with origami and anime vibes, cute but
+- **Decision:** the owner asked for a Vox-style paper collage with origami and anime vibes, cute but
   not girly. The full system is in [design.md](design.md).
 - **Deliberate departures from the design-taste skill's house rules:** paper sheets cast shadows,
   because a shadow is what makes paper read as paper; torn edges and tape are decorative by nature.
@@ -59,7 +59,7 @@ Accepted · 23 Oct 2026
 ## D-006 Three ways to read a percentage: days, goal, both
 Accepted · 23 Oct 2026
 
-- **Context:** the user saw September's gym at 65% after 13 days in a 30-day month. 65% was 13
+- **Context:** the owner saw September's gym at 65% after 13 days in a 30-day month. 65% was 13
   against the sheet's 20-day goal. The app mixed three denominators without saying which.
 - **Decision:**
   - **Days** (default): ticks against the days so far. Today counts only once it's ticked, so an
@@ -96,7 +96,7 @@ Accepted · 23 Oct 2026 · not built yet
   built-in auth and sessions, row-level security) behind the same `store.js` API, syncing a local copy.
   Full comparison with Firebase, PocketBase and Cloudflare D1, the schema, and the phases are in
   [data-storage.md](data-storage.md).
-- **Settled with the user:**
+- **Settled with the owner:**
   - **Sign-in:** Google and emailed magic links; no passwords. Email needs a custom SMTP provider,
     because Supabase's built-in email only reaches the project's own team, 2 messages an hour.
   - **Sharing:** every account private at launch. Opt-in buddies come later; the schema keeps
@@ -107,7 +107,7 @@ Accepted · 23 Oct 2026 · not built yet
 ## D-009 The name: Eightfold
 Accepted · 23 Oct 2026
 
-- **Context:** working name was Orizuru (paper crane). The user wanted something personal and global:
+- **Context:** working name was Orizuru (paper crane). The owner wanted something personal and global:
   they were inconsistent for years and are now building discipline.
 - **Decision:** Eightfold. Fall seven times, rise eight: this is the eighth rise. It also means
   folding (every tick is a fold), and nods to the Eightfold Path, which began in India.
@@ -123,14 +123,14 @@ Accepted · 24 Oct 2026
 - **Decision:** the repository lives at github.com/ozesince02/eightfold. `main` is what Cloudflare
   Pages hosts and is never committed to directly. Work happens on `feature/`, `fix/`, `hotfix/`,
   `docs/`, `refactor/` or `chore/` branches (conventions in [CLAUDE.md](../CLAUDE.md)) and merges
-  into `main` once checks and the build pass and the user agrees.
+  into `main` once checks and the build pass and the owner agrees.
 - **Why:** hosting from a branch that only receives finished, checked work keeps the live app stable.
-- **Update, 24 Oct 2026:** `main` changes only through pull requests, merged when the user agrees.
+- **Update, 24 Oct 2026:** `main` changes only through pull requests, merged when the owner agrees.
 
 ## D-011 Security and reliability before features
 Accepted · 24 Oct 2026
 
-- **Context:** the app will hold family and friends' personal data. The user set the priority:
+- **Context:** the app will hold family and friends' personal data. The owner set the priority:
   "features are secondary but reliability is primary".
 - **Decision:** every change follows [security.md](security.md): validate input through
   `src/lib/sanitize.js`, escape output, a strict Content-Security-Policy and security headers
@@ -145,14 +145,14 @@ Accepted · 24 Oct 2026
 - **Decision:** storage goes through an adapter (`src/lib/adapters/local.js`). The app asks the
   browser for persistent storage after a real click (Firefox may show a prompt, so never on load),
   reports a refused save once, and nudges for a JSON backup every 7 days with a one-day snooze.
-- **The user's rule:** once data is on Supabase, changes sync in real time, or as soon as there is a
+- **The owner's rule:** once data is on Supabase, changes sync in real time, or as soon as there is a
   network, and the backup nudge goes away. The nudge is tied to `adapter.mode === 'local'`.
 - **Checks:** `scripts/check-backup.mjs`.
 
 ## D-013 Habit schedules: chosen days, times a week, weekly and monthly
 Accepted · 24 Oct 2026
 
-- **Context:** the user wants long-term goals (weekly, monthly) beside daily ones, and habits that
+- **Context:** the owner wants long-term goals (weekly, monthly) beside daily ones, and habits that
   belong only on some days ("Monday and Wednesday"), shown gracefully in the data and the UI.
 - **Decision:** each month's habit has a cadence (`src/lib/schedule.js`):
   - **Every day** (`daily`, the default; existing data has no cadence key and stays daily).
@@ -195,7 +195,7 @@ Accepted · 24 Oct 2026 · refines D-008's "Cloudflare Pages"
 ## D-015 The product stays Eightfold; onemorefold.com is the domain
 Accepted · 24 Oct 2026 · replaces the earlier plan (same day) to rename the product to One More Fold
 
-- **Context:** `eightfold.com` and `eightfold.app` are taken. The user bought **onemorefold.com**,
+- **Context:** `eightfold.com` and `eightfold.app` are taken. The owner bought **onemorefold.com**,
   and the Cloudflare Worker is called `onemorefold`. The first plan was to rename the product to
   One More Fold once setup was done.
 - **Decision:** the product keeps the name **Eightfold**; **onemorefold.com** is only its address.
@@ -203,7 +203,7 @@ Accepted · 24 Oct 2026 · replaces the earlier plan (same day) to rename the pr
   is one more fold after seven. Nothing is renamed: not the code, the storage key, the docs or the
   GitHub repository (`ozesince02/eightfold`). The Worker keeps its name `onemorefold` (D-014).
 - **The landing page can say so.** A "why this name" section can later connect the name and the
-  domain, and bring in the words that matter in the user's life:
+  domain, and bring in the words that matter in the owner's life:
   - "Thoughts become things" (*The Secret*): every fold turns an intention into something real;
     the thousandth is the wish.
   - "The only way to eat an elephant is one bite at a time" (heard in the film *The Six Triple Eight*):
@@ -211,13 +211,13 @@ Accepted · 24 Oct 2026 · replaces the earlier plan (same day) to rename the pr
   - "To lose patience is to lose the battle": not one big effort, just one more.
   - *Make Your Bed*: start with one small task, done today.
   - *Ikigai*: steady, unhurried practice as a way of living.
-- **Ask the user to review that copy** before merging it.
+- **Ask the owner to review that copy** before merging it.
 
 ## D-016 What personal data is public, for now
 Accepted · 24 Oct 2026 · revisit when accounts ship
 
 - **Context:** with the site live on onemorefold.com, the app falls back to the January–October
-  sheet data (`src/data/seed.js`) for any visitor with nothing saved, and the landing page quotes
+  sheet data (`src/data/seed.js`, now `story.js`, D-036) for any visitor with nothing saved, and the landing page quotes
   the owner's habits, times and numbers. The GitHub repository is public, so the data is also in
   its history.
 - **Decisions by the owner:**
@@ -245,7 +245,7 @@ Accepted · 24 Oct 2026
     sheet, so reminders and the Today list work from the 1st. Once synced, browsing never writes
     rows to the database.
   - **Limits:** the tracker opens months from the first one with a habit in it (nothing before
-    the user started) up to next month (so it can be set up ahead). Years go from the first year up
+    the person started) up to next month (so it can be set up ahead). Years go from the first year up
     to this one. An address outside that lands on the nearest month or year that is allowed.
   - **One wish per year:** `years["2026"].wish`. Crane 1,000 of each year is for something new;
     past years keep theirs. An old backup's single `wish` moves to the latest year that has months.
@@ -330,7 +330,7 @@ Accepted · 24 Oct 2026
   before the account's copy replaces local rows the account refused, the browser's data is kept
   aside under a dated key.
 - **New visitors start empty (D-016).** The tracker no longer falls back to the sheet's data, and
-  "Reset to the sheet" is gone. The landing page still tells the sheet's story from `seedState()`.
+  "Reset to the sheet" is gone. The landing page still tells the sheet's story from `seedState()` (now `sheetState()` in `story.js`, D-036).
 - **Tested** by `scripts/check-sync.mjs`: the real engine against the real schema and RLS, with
   several devices, a second person, offline edits across a reload, conflicting offline ticks, both
   first-sign-in choices, more than 1,000 rows and the broadcast. Skipping deletes in the engine
@@ -469,7 +469,7 @@ Accepted · 25 Oct 2026
 ## D-028 Notifications with the app closed: a job every 30 minutes
 Accepted · 28 Oct 2026 · reminders built 28 Oct (summaries next) · plan: [buddies-and-notifications.md](buddies-and-notifications.md), setup: [push-setup.md](push-setup.md)
 
-- **Decision (the user's):** Web Push sent by a Supabase Edge Function that Supabase Cron starts
+- **Decision (the owner's):** Web Push sent by a Supabase Edge Function that Supabase Cron starts
   every 30 minutes, not every minute. Each run reminds habits due in the next half hour, so a
   reminder arrives up to 30 minutes early and names the time ("German at 7:00"). The notification's
   snooze is "Later", since the next run can be up to 30 minutes away.
@@ -502,7 +502,7 @@ Accepted · 28 Oct 2026 · reminders built 28 Oct (summaries next) · plan: [bud
 ## D-029 Buddies: invite links, three sharing levels, user tags
 Accepted · 28 Oct 2026 · not built yet · plan: [buddies-and-notifications.md](buddies-and-notifications.md)
 
-- **Decision (the user's ideas):** several buddies, added only by a one-time invite link (no
+- **Decision (the owner's ideas):** several buddies, added only by a one-time invite link (no
   search, community or chat; removing is enough, so no blocking). For each buddy, one of three
   levels: Just buddies, How I'm doing (7- and 30-day consistency, trend, longest current run, no
   habit names), My habits (chosen habits by name). New buddies start at How I'm doing. Private
@@ -519,7 +519,7 @@ Accepted · 28 Oct 2026 · not built yet · plan: [buddies-and-notifications.md]
 ## D-030 Buddy and gang challenges
 Accepted · 28 Oct 2026 · not built yet · plan: [buddies-and-notifications.md](buddies-and-notifications.md)
 
-- **Decision (the user's idea):** a challenge is a habit two people (buddy challenge) or up to ten
+- **Decision (the owner's idea):** a challenge is a habit two people (buddy challenge) or up to ten
   (gang challenge) take on together, for a week, a month, a year or custom dates. Each member ticks
   their own, as a normal habit in their tracker; everyone in it sees everyone's progress on that
   habit only. Members don't have to be buddies; anyone in a challenge can invite with a link.
@@ -529,11 +529,11 @@ Accepted · 28 Oct 2026 · not built yet · plan: [buddies-and-notifications.md]
 ## D-031 The crane note: the app's info popup
 Accepted and built · 28 Oct 2026 · `src/ui/crane-note.js`, first used on the patch notes page
 
-- **Decision (the user's design):** features explain themselves with a crane note. A small paper
+- **Decision (the owner's design):** features explain themselves with a crane note. A small paper
   crane beside a feature's heading opens it: a 3D paper crane flies in, unfolds into a square, turns
   over and opens into a letter from oze on why the feature exists. Closing folds it back into a
   crane that flies away. It is the default info popup for the app; buddies and gangs each get one.
-- **Why:** the user wants people to hear the maker's reasons for a feature, in the app's own
+- **Why:** the owner wants people to hear the maker's reasons for a feature, in the app's own
   language: paper that folds. It reuses the crane fold engine, so the folds are real.
 - Reduced motion or no WebGL: the note just appears. Escape, ✕, the button or a tap outside close it
   at any point (a tap outside counts only after the first half second, so the second click of a
@@ -548,7 +548,7 @@ Accepted and built · 28 Oct 2026 · `src/ui/crane-note.js`, first used on the p
 ## D-032 Patch notes, for people rather than developers
 Accepted · 28 Oct 2026
 
-- **Decision (the user's):** a patch notes page (`/patch-notes`) telling people what was added
+- **Decision (the owner's):** a patch notes page (`/patch-notes`) telling people what was added
   and when, in a witty, friendly voice, with no technical detail. User-facing changes only;
   CHANGELOG.md stays the full record for the project.
 - **One sheet per version,** newest first: a red hanko stamp with the number, the date, a title,
@@ -565,7 +565,7 @@ Accepted · 28 Oct 2026
 ## D-033 Light, warm and dark papers
 Accepted · 28 Oct 2026
 
-- **Context:** people look at screens most of the day and late into the night. The user asked for
+- **Context:** people look at screens most of the day and late into the night. The owner asked for
   a dark mode and a warm mode alongside the light one, kept in Eightfold's paper look, and built so
   future components get them for free.
 - **Decision:** three themes on `<html data-theme>`: **Light** (unchanged), **Warm** (sepia, every
@@ -596,7 +596,7 @@ Accepted · 28 Oct 2026
 Accepted · 28 Oct 2026
 
 - **Context:** until now every branch went straight into `main`, which Cloudflare serves to
-  everyone. The user wants a stage between work and the live site, and only themselves able to
+  everyone. The owner wants a stage between work and the live site, and only themselves able to
   push to `main` directly.
 - **Decision:** a long-lived **`preview`** branch. Work branches open pull requests into
   `preview`; `main` takes pull requests only from `preview`. Two GitHub rulesets enforce it:
@@ -604,15 +604,15 @@ Accepted · 28 Oct 2026
     CI checks "Check, build and audit" and "Release source" must pass.
   - **preview: pull requests only** — no deletion, no force push, a pull request required, and
     "Check, build and audit" must pass.
-  - Both let the **repository admin** (the owner, the only collaborator) bypass them, so the user
-    can still push directly when needed.
+  - Both let the **repository admin** (the owner, the only collaborator) bypass them, so a direct
+    push is still possible when needed.
 - **"Only from preview" is a CI check**, because rulesets can't name a pull request's source
   branch. The "Release source" job fails a PR into `main` unless its head is this repository's
   `preview` (a fork's branch called `preview` doesn't count). Branch names reach the script
   through environment variables, so a crafted name can't inject shell commands.
 - **Pull requests need no approving review**: GitHub doesn't let you approve your own PR, and
-  there is one maintainer. The user's "yes" in conversation is the approval (CLAUDE.md).
-- **Limit:** GitHub can't tell the user from Claude, since `gh` is signed in as the owner, who can
+  there is one maintainer. The owner's "yes" in conversation is the approval (CLAUDE.md).
+- **Limit:** GitHub can't tell the owner from Claude, since `gh` is signed in as the owner, who can
   bypass. So the rule for Claude is written in CLAUDE.md: never push to `main` or `preview`,
   always a pull request.
 - **A preview site for `preview`:** Cloudflare Worker Previews (Wrangler 4.135+). `wrangler.jsonc`
@@ -637,7 +637,7 @@ Accepted · 29 Oct 2026 · replaces the committed `.env` of D-019
 
 - **Context:** since D-019, `.env` was committed. It held only public values: the Supabase URL
   and the publishable key, which ship in the site's JavaScript anyway. A check refused anything
-  secret-looking. The user objected, rightly: a tracked `.env` normalises the most common way
+  secret-looking. The owner objected, rightly: a tracked `.env` normalises the most common way
   secrets leak, and one check is a thin wall against a future mistake.
 - **Decision:** no env file is ever tracked. `.env` and `.env.*` are ignored, except
   `.env.example`, which lists the names with placeholder values. The hosted builds get the values
@@ -652,3 +652,36 @@ Accepted · 29 Oct 2026 · replaces the committed `.env` of D-019
 - **History:** the old commit still shows the two public values. They're public by design, so the
   history wasn't rewritten. No secret was ever committed: the whole history of every env file was
   searched for secret-shaped values on 29 Oct.
+
+## D-036 Open source under MIT; the owner's log stays for the story only
+Accepted · 29 Oct 2026
+
+- **Licence:** MIT, chosen by the owner, who has no plans to make money from Eightfold. AGPL was
+  considered: it would only force hosted copies to publish their source, which doesn't stop a copy
+  with ads or trackers. MIT is simpler and friendlier to contributors. Contributions come in under
+  the same licence.
+- **Not licensed:** the name "Eightfold", onemorefold.com, the crane mark and wordmark, and the app
+  icons. They're reserved so a copy can't pass as this one. "The design concept" isn't reserved:
+  ideas and styles can't be, and the concrete design is the licensed code.
+- **The owner's habit log stays, for the landing page only:** it tells the owner's own story there,
+  which they're happy to share. It moved from `seed.js` to `src/data/story.js`, and it's excluded
+  from the licence by name: it's personal data, not code to reuse. `check-story.mjs` still checks
+  the transcription against the sheet.
+- **The checks no longer use it:** tests shouldn't depend on anyone's personal data. They run on
+  `src/data/sample.js`, an invented year with everyday habits. It was generated once from a seeded
+  random walk and written out as plain data. The counts the checks rely on are pinned, so every
+  check kept its meaning: September's walk at 13 of 30, October's 80 of 132 boxes, January's 270%
+  goal, and a few perfect days.
+
+## D-037 Two sets of docs: public in git, private on the owner's computer
+Accepted · 29 Oct 2026
+
+- **Context:** the repository is public (D-036). Some notes shouldn't be: open security weaknesses
+  (a public list of what isn't fixed is a map for attackers) and the owner's personal notes.
+- **Decision:** public docs stay in `docs/` and the repository root. Private ones go in `private/`
+  at the root, which `.gitignore` excludes and `check-security.mjs` refuses to see tracked. The
+  first file is `private/security-open.md`. A fixed weakness moves from there to the public audit
+  log. CLAUDE.md tells Claude to keep private things there and never quote them anywhere public.
+- **Cost:** the private folder lives on one computer, outside git, so it has no history or backup
+  unless the owner keeps one (for example a copy in a private cloud folder).
+

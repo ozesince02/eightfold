@@ -13,6 +13,8 @@ Dates are when the work landed.
 - Eightfold can be added to the Home Screen as an app (a web app manifest).
 
 ### Changed
+- The checks run on an invented example year instead of oze's own log. The log stays, renamed
+  `story.js`, for the landing page's story, and is kept out of the open-source licence. (D-036)
 - The Privacy page says what closed-app reminders keep and that the browser's push service
   delivers them, encrypted.
 
@@ -22,6 +24,8 @@ Dates are when the work landed.
   tracker's panels. (D-033)
 
 ### Tooling
+- Docs come in two sets: public ones in git, and the owner's private ones (open security
+  weaknesses, personal notes) in a `private/` folder that git ignores. (D-037)
 - **`.env` is no longer in git.** It only ever held public values, but no env file belongs in the
   repository. `.env.example` lists the settings; Cloudflare and GitHub provide them to the builds
   as variables. (D-035)
@@ -30,6 +34,11 @@ Dates are when the work landed.
   directly. (D-034)
 - The `preview` branch gets its own preview site on Cloudflare (Worker Previews), so changes can
   be tried before they go live. Other branches don't make one. (D-034)
+
+### Docs
+- Eightfold is open source under the MIT licence. The name and branding aren't part of it. (D-036)
+- A new README, a contributing guide with the rules every change follows, a security policy for
+  reporting problems privately, and a pull request template.
 
 ## 0.10.0 — 28 October 2026
 
