@@ -466,7 +466,7 @@ Accepted · 25 Oct 2026
 
 
 ## D-028 Notifications with the app closed: a job every 30 minutes
-Accepted · 28 Oct 2026 · not built yet · plan: [buddies-and-notifications.md](buddies-and-notifications.md)
+Accepted · 28 Oct 2026 · reminders built 28 Oct (summaries next) · plan: [buddies-and-notifications.md](buddies-and-notifications.md), setup: [push-setup.md](push-setup.md)
 
 - **Decision (the user's):** Web Push sent by a Supabase Edge Function that Supabase Cron starts
   every 30 minutes, not every minute. Each run reminds habits due in the next half hour, so a
@@ -479,6 +479,24 @@ Accepted · 28 Oct 2026 · not built yet · plan: [buddies-and-notifications.md]
   Sunday, each switched on separately, all off by default. At most 30 notifications a person a day.
 - **Why not every minute:** exact times aren't needed for habits; the interval can shrink later
   without changing anything else.
+- **As built (28 Oct):**
+  - **No Web Push library.** `supabase/functions/_shared/webpush.js` does RFC 8291 encryption and
+    RFC 8292 VAPID with WebCrypto alone, checked byte for byte against RFC 8291's worked example.
+  - **One set of rules.** The sender runs exact copies of the app's own `dates`, `schedule`,
+    `reminders-core` and `sync/rows` modules (`npm run shared`; a check fails if a copy drifts), so
+    it and the tracker agree on what's due. It reads each person's clock in their own time zone.
+  - **Tables** (`20261028120000_push_reminders.sql`): `push_settings` (on or off, habits off, time
+    zone), `push_subscriptions` (one row per device, added only through `register_push()`, ten at
+    most, and only addresses at the browsers' own push services, so the sender can't be pointed at
+    anything else), and `push_log` (server only, kept two weeks). The sender claims each reminder in
+    the log before sending, so two overlapping runs can't both send it.
+  - **Per device:** each device opts in. Signing out, "remove my folds from this browser" and
+    deleting the account take the device off first. A device that gets closed-app reminders stops
+    sending its own system notifications from the tab; the paper note on an open page stays.
+  - **The notification** names the time ("Next up: German at 07:00") and opens the tracker. Done
+    and Later buttons on it come later: they need a single-use token from the server.
+  - **Secrets** (VAPID private key, cron secret) are made by `npm run vapid` on the owner's
+    computer into git-ignored files, and live as Edge Function secrets and in Supabase Vault.
 
 ## D-029 Buddies: invite links, three sharing levels, user tags
 Accepted · 28 Oct 2026 · not built yet · plan: [buddies-and-notifications.md](buddies-and-notifications.md)

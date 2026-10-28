@@ -5,6 +5,7 @@
 // The project URL and publishable key come from .env through config.js. Both are public by design:
 // what a signed-in person can read or write is decided by row-level security (D-018).
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, ACCOUNTS_ENABLED, APP_PATH } from '../config.js';
+import { leaveDevice } from './push.js';
 
 const EMAIL = /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']{2,}$/;
 export const isEmail = (s) => typeof s === 'string' && s.length <= 254 && EMAIL.test(s);
@@ -70,9 +71,11 @@ export async function sendSignInLink(email) {
   throw new Error('The link couldn\'t be sent. Try again in a moment.');
 }
 
-// Signs out on this device only; other devices stay signed in.
+// Signs out on this device only; other devices stay signed in. This device stops getting the
+// account's closed-app reminders first (D-028), while the session can still remove its address.
 export async function signOut() {
   const sb = await client();
+  await leaveDevice(sb);
   await sb.auth.signOut({ scope: 'local' });
 }
 
@@ -80,6 +83,7 @@ export async function signOut() {
 // this device. The database function deletes only the caller.
 export async function deleteAccount() {
   const sb = await client();
+  await leaveDevice(sb);
   const { error } = await sb.rpc('delete_my_account');
   if (error) throw new Error("Your account couldn't be deleted just now. Nothing was removed; try again in a moment.");
   // The account is gone, and so are its sessions on the server. Forget this browser's copy too;

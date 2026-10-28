@@ -40,3 +40,13 @@ export const minutesOf = (time) => {
   const [h, mm] = time.split(':').map(Number);
   return h * 60 + (mm || 0);
 };
+
+// The time on someone's wall clock, as a Date whose local fields (getHours, getDate...) read it.
+// For the closed-app sender (D-028), which runs in UTC but reminds people in their own time zone.
+// An unknown zone name throws a RangeError; the caller falls back to UTC.
+export function wallClock(instant, timeZone) {
+  const parts = {};
+  const fmt = new Intl.DateTimeFormat('en-GB', { timeZone, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
+  for (const p of fmt.formatToParts(instant)) parts[p.type] = Number(p.value);
+  return new Date(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute);
+}

@@ -173,6 +173,33 @@ Who can see a person's habits, checked end to end. Other accounts and signed-out
 | 3 | Low | Google Fonts sees every visitor's IP address on every page load. | Fonts served from our own site (Fontsource, woff2 only); CSP `font-src 'self'`, Google origins removed from `style-src`. (branch `chore/self-host-fonts`, D-027) | `check-security.mjs` (fonts); production build: no font requests leave the site, no CSP violations |
 | 4 | Info | The owner (dashboard, secret key) can read everyone's rows; RLS protects users from each other, not from the operator. | Stated in the privacy policy; two-factor sign-in on every admin account. End-to-end encryption is a possible later "private mode" (docs/vision.md). | — |
 
+### 28 October 2026 — reminders with the app closed (branch `feature/closed-app-reminders`)
+
+New inputs: a device's push address and keys, reminder settings and a time zone, all written by
+signed-in people; and the sender, which runs with the service role and posts to those addresses.
+- **The sender can't be aimed elsewhere:** `push_subscriptions.endpoint` must be an https address at
+  Google's, Mozilla's, Apple's or Microsoft's push service; the sender never follows redirects.
+- **Devices only through `register_push()`** (SECURITY DEFINER, signed-in only): it may take over an
+  address from another account, because the address is an unguessable secret of that browser; ten
+  devices a person at most. People can read and delete only their own rows; `push_log` has no
+  policies and no grants.
+- **Every column checked by the database:** key and secret lengths, time zone names, and the list of
+  habits switched off (ids only; a test caught that one element could hide a comma, so the list
+  must also split back into exactly as many ids).
+- **The sender** is called only with the cron secret (compared by hash, so timing says nothing),
+  deployed without JWT checks for that reason. It logs counts only, never names or addresses, sends
+  at most 30 notifications a person a day, and claims each reminder in the log before sending.
+- **Messages** are encrypted per device (RFC 8291) and signed (VAPID); the service worker still
+  checks every field before showing it.
+- **Leaving:** signing out, removing folds from a browser and deleting the account take the device's
+  address off before the session ends, so a shared computer stops getting someone's reminders.
+- **Secrets:** made on the owner's computer by `npm run vapid` into git-ignored files, never printed.
+  `.env` may hold only the VAPID *public* key, and `check-security.mjs` and the build refuse
+  anything shaped like the private one.
+- Tests: `check-push.mjs` (RFC 8291 byte for byte, a browser-side decrypt, VAPID signature, the
+  planner across time zones, daily cap, copies in sync), `check-schema.mjs` (RLS, register_push,
+  every refused value, cascade on account deletion), `check-reminders.mjs` (the half-hour windows).
+
 ### Accepted risks (owner's decision, 24 Oct 2026, D-016)
 
 - The repository is public, and its history contains the owner's January–October 2026 habit data

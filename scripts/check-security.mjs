@@ -78,11 +78,13 @@ console.log('security: all checks pass');
 // Supabase settings, never anything that looks like a secret.
 import { readFileSync } from 'node:fs';
 const envLines = readFileSync(new URL('../.env', import.meta.url), 'utf8').split(/\r?\n/).filter((l) => l.trim() && !l.trim().startsWith('#'));
-const ALLOWED_ENV = new Set(['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY']);
+const ALLOWED_ENV = new Set(['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY', 'VITE_VAPID_PUBLIC_KEY']);
 for (const line of envLines) {
   const [name, ...rest] = line.split('=');
   assert.ok(ALLOWED_ENV.has(name.trim()), `.env may only hold public settings; found ${name.trim()}`);
   assert.doesNotMatch(rest.join('='), /sb_secret_|service_role|eyJhbGci|-----BEGIN|re_[A-Za-z0-9]{20,}|GOCSPX-/, `.env value for ${name.trim()} looks like a secret`);
+  // A VAPID public key is a 65-byte point (87 characters). The private half is 43: never here.
+  if (name.trim() === 'VITE_VAPID_PUBLIC_KEY') assert.match(rest.join('=').trim(), /^B[A-Za-z0-9_-]{86}$/, 'VITE_VAPID_PUBLIC_KEY must be the public key (87 characters, starting with B)');
 }
 console.log('env: only public settings');
 

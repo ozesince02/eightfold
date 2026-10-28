@@ -226,6 +226,11 @@ td.is-today .cell:not([aria-pressed="true"]) { outline: 2px solid var(--sumi); o
 .wish-form { display: grid; gap: 10px; }
 .wish-form textarea, .fold-form textarea { min-height: 88px; resize: vertical; }
 .backup-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+/* Reminders with the app closed (D-028): its own corner of the Reminders panel. */
+.push-box { margin-top: 18px; padding-top: 16px; border-top: 2px dashed var(--washi-3); }
+.push-box h3 { font-family: var(--text); font-weight: 900; font-size: 15px; }
+.push-box .note { margin-top: 6px; }
+.push-box .backup-actions { margin-top: 12px; }
 .backup-actions .btn { min-height: 44px; padding: 0 18px; font-size: 15px; }
 .danger { background: var(--washi-2); color: var(--shu-ink); }
 .danger:hover { background: var(--sakura); }

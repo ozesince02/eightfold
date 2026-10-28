@@ -1,0 +1,14 @@
+{
+  "name": "Eightfold",
+  "short_name": "Eightfold",
+  "description": "A paper-craft habit tracker. Fall seven times, rise eight.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#E6E5E1",
+  "theme_color": "#E6E5E1",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
