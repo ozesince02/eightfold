@@ -147,8 +147,8 @@ section { scroll-margin-top: 24px; }
 }
 .panel:nth-child(odd) { transform-origin: right center; }
 .panel:nth-child(even) { transform-origin: left center; background: var(--bg-2); }
-.panel:nth-child(3n) { background: var(--sakura); }
-.panel:nth-child(5) { background: var(--sora); }
+.zine > .panel:nth-child(3n) { background: var(--sakura); }
+.zine > .panel:nth-child(5) { background: var(--sora); }
 .panel h3 { font-size: 24px; line-height: 1.08; }
 .panel p { font-size: 16px; }
 .panel-viz { margin-top: auto; }

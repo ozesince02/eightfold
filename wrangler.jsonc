@@ -11,5 +11,8 @@
     // /app.html is served at /app; the old /app.html links redirect there.
     "html_handling": "auto-trailing-slash",
     "not_found_handling": "404-page"
-  }
+  },
+  // Worker Previews (D-034): the preview branch is built as a Preview, at a stable address,
+  // with the same static files. Nothing here differs from production (no bindings or vars).
+  "previews": {}
 }
