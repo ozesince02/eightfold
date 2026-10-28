@@ -11,10 +11,12 @@ dist/
 # Local tool settings (paths on this machine)
 .claude/
 
-# Env files: .env holds public build settings and is committed (Vite's convention); its contents
-# are checked by scripts/check-security.mjs. Every other env file (.env.local, .env.production...)
-# may hold secrets and never reaches git.
+# Env files never reach git (D-035), not even .env with its public build settings: a tracked .env
+# invites a secret into it one day. The build reads the settings from the environment (Cloudflare
+# and GitHub variables); .env.example lists their names.
+.env
 .env.*
+!.env.example
 # SQL with a secret filled in (scripts/make-vapid-keys.mjs writes supabase/schedule.local.sql)
 *.local.sql
 # Wrangler's local secrets file

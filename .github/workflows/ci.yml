@@ -43,6 +43,12 @@ jobs:
         run: npm run check
 
       - name: Build the site
+        # The public build settings come from GitHub repository variables, not a file in the repo
+        # (D-035). An unset one arrives empty, and the build stops with a message saying which.
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_VAPID_PUBLIC_KEY: ${{ vars.VITE_VAPID_PUBLIC_KEY }}
         run: npm run build
 
       - name: Audit dependencies

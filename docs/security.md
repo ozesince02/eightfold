@@ -36,7 +36,8 @@ the rules every change follows, and the record of what has been checked.
 3. **No inline scripts, no `eval`, no new third-party scripts.** The Content-Security-Policy in
    [public/_headers](../public/_headers) forbids them. A new external origin (fonts, Supabase) is
    added to the policy deliberately, with a note here.
-4. **Secrets never in git.** Keys live in `.env` files (ignored). The Supabase *anon* key is
+4. **Secrets never in git, and no env file in git at all** (D-035). Build settings are variables
+   in Cloudflare and GitHub; `.env.example` lists their names. The Supabase *publishable* key is
    public by design; the *service-role* key never reaches the browser or the repository.
 5. **Least privilege in the database.** Every table has row-level security on, with
    `user_id = auth.uid()` policies. Buddy access is read-only and exposes only what was shared.
@@ -143,8 +144,8 @@ redirects only to this page (and Supabase accepts only the listed redirect URLs)
 descriptions from the URL are never shown; email checked for shape and length before sending;
 the signed-in email is escaped; the client loads from our own origin (bundled, no CDN). The strict
 CSP (no inline or third-party scripts) is what keeps the session token out of reach of injected
-script, so it stays non-negotiable. `.env` is committed with public values only, guarded by
-`check-security.mjs`; the build refuses a non-publishable key.
+script, so it stays non-negotiable. `.env` was committed with public values only, guarded by
+`check-security.mjs` (no longer: D-035); the build refuses a non-publishable key.
 
 ### 24 October 2026 — sync (branch `feature/accounts-sync`)
 
@@ -216,6 +217,14 @@ signed-in people; and the sender, which runs with the service role and posts to 
 - Tests: `check-push.mjs` (RFC 8291 byte for byte, a browser-side decrypt, VAPID signature, the
   planner across time zones, daily cap, copies in sync), `check-schema.mjs` (RLS, register_push,
   every refused value, cascade on account deletion), `check-reminders.mjs` (the half-hour windows).
+### 29 October 2026 — `.env` out of git (branch `chore/untrack-env`)
+
+The owner flagged that `.env` was tracked. It held only the Supabase URL and publishable key, both
+public, and a search of every env file's history for secret-shaped values found none. It's now
+untracked and ignored; `.env.example` lists the names, and the hosted builds read Cloudflare and
+GitHub variables (D-035). `check-security.mjs` now fails if any env or push-secret file is
+tracked. The ignore rule for `*.local.sql` (the cron SQL with its secret) is added here too, so it
+holds on every branch.
 
 ### Accepted risks (owner's decision, 24 Oct 2026, D-016)
 
@@ -224,7 +233,7 @@ signed-in people; and the sender, which runs with the service role and posts to 
 - Until accounts ship, onemorefold.com shows that data to any visitor with nothing saved.
 
 ### Still to do (tracked)
-- Before accounts: Supabase row-level security on every table, the anon key in `.env`, the Supabase
+- Before accounts: Supabase row-level security on every table, the publishable key as a build setting, the Supabase
   URL in `connect-src`, auth redirect URLs locked to our domain, rate limits on magic-link email.
 - When hosting: confirm the headers on the live site (securityheaders.com), enable Cloudflare's
   "Always use HTTPS".
