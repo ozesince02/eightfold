@@ -5,6 +5,11 @@ Dates are when the work landed.
 
 ## Unreleased
 
+### Fixed
+- In Dark (and slightly in Warm), the tracker's "This month", "Daily score" and "Weeks" cards
+  had dark text on a dark card. A landing-page rule for coloured zine panels was also matching the
+  tracker's panels. (D-033)
+
 ### Tooling
 - Work now reaches the live site in two steps: into `preview` first, then from `preview` into
   `main`. GitHub rulesets and a new CI check enforce it; only the owner can push to `main`
