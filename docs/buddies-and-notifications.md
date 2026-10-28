@@ -1,6 +1,6 @@
 # Buddies, challenges and notifications
 
-Status: **agreed 28 October 2026, not built yet.** Written 27 October 2026 from the user's ideas;
+Status: **agreed 28 October 2026, not built yet.** Written 27 October 2026 from the owner's ideas;
 the open questions were settled on 28 October (D-028 to D-031 in [decisions.md](decisions.md)).
 Builds on [data-storage.md](data-storage.md) (accounts, sync, the tables) and
 [security.md](security.md).
@@ -40,7 +40,7 @@ with notifications.
   and later). We'll need a web app manifest (there isn't one yet) and a short "add to Home Screen"
   guide shown on iPhones.
 
-### Every 30 minutes, not every minute (the user's call)
+### Every 30 minutes, not every minute (the owner's call)
 The job runs at :00 and :30. Each run sends reminders for habits due in the next 30 minutes, so a
 reminder arrives up to 30 minutes early:
 
@@ -136,7 +136,7 @@ share my habits with you while you share only your consistency with me.
 - **Tags, not emails:** buddies see your user tag (below). Your email is never shown to them.
 - **Figures, not grids:** buddies see totals and trends, never day-by-day grids, times or wishes.
   This changes an earlier rule ("misses are never shown to buddies", [data-storage.md](data-storage.md)):
-  the user wants a buddy to notice when someone is struggling, so consistency is shown, but only as
+  the owner wants a buddy to notice when someone is struggling, so consistency is shown, but only as
   a total over days, never as a list of the days that were missed.
 
 ### User tags
@@ -275,7 +275,7 @@ wish, exact-time reminders, end-to-end encryption.
 
 ## 8. Settled on 28 October 2026
 
-The user agreed to all seven recommendations:
+The owner agreed to all seven recommendations:
 
 1. Reminders arrive up to 30 minutes early and name the time ("German at 7:00").
 2. "Later" instead of "In 10 minutes" on closed-app reminders.

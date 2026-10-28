@@ -11,7 +11,7 @@ missed day as a fall to get up from, never a failure.
 
 ## Ideas
 
-### A month you fold into an origami (23 Oct 2026, from the user)
+### A month you fold into an origami (23 Oct 2026, from the owner)
 As you tick habits through the month, a 3D origami model assembles in the Month view: each tick a
 fold, each week a stage, the full model at month end. How full it is shows how the month went.
 - Let people pick their origami from a set (crane, frog, lotus, fox, boat, butterfly), or cycle
@@ -34,7 +34,7 @@ habits.
 Sign in with an email link or Google; the same data on phone and laptop. Plan in
 [data-storage.md](data-storage.md).
 
-### Opt-in buddies and challenges (23 Oct 2026, from the user; planned 27 Oct 2026)
+### Opt-in buddies and challenges (23 Oct 2026, from the owner; planned 27 Oct 2026)
 Accounts start private. Add several buddies you know in real life, by invite link (no search, no
 community, no chat), and choose for each how much they see: nothing, how consistent you are, or
 chosen habits by name. A buddy who sees you struggling can reach out in person. Remove a buddy at
@@ -43,12 +43,12 @@ week, a month or a year, each ticking their own. Design:
 [buddies-and-notifications.md](buddies-and-notifications.md).
 - Later still: a family circle with one shared thousand-crane wish.
 
-### Nudges between buddies (27 Oct 2026, from the user; not in the first version)
+### Nudges between buddies (27 Oct 2026, from the owner; not in the first version)
 A buddy could send a nudge when a habit isn't ticked yet. Left out for now: the other person may
 already be doing it and just hasn't ticked, and repeated nudges would irritate more than help.
 Buddies know each other and can reach out directly.
 
-### Weekly and monthly goals, and habits on chosen days (23 Oct 2026, from the user) — built 24 Oct 2026, D-013
+### Weekly and monthly goals, and habits on chosen days (23 Oct 2026, from the owner) — built 24 Oct 2026, D-013
 Daily habits are short-term goals; weekly and monthly ones are the long-term goals. And some habits
 only belong on certain days.
 - **Habit cadence:**
@@ -72,7 +72,7 @@ only belong on certain days.
   [data-storage.md](data-storage.md), data model.
 - Reminders follow the schedule: no nudge on a day the habit isn't due.
 
-### Private names: end-to-end encryption (25 Oct 2026, from the user) — parked 26 Oct 2026
+### Private names: end-to-end encryption (25 Oct 2026, from the owner) — parked 26 Oct 2026
 Habit names, wishes and times encrypted in the browser before they sync, so nobody with database
 access, the owner included, can read them. Until then the Privacy page says plainly that the owner
 can technically reach the data and looks only on request.
@@ -95,7 +95,7 @@ once a week. Fall seven times, rise eight, as a mechanic.
 A paper card every Sunday: folds made, best habit, the week's crane, ready to save or share.
 Announced by the weekly recap notification ([buddies-and-notifications.md](buddies-and-notifications.md)).
 
-### Year in folds: a recap, and years side by side (24 Oct 2026, from the user)
+### Year in folds: a recap, and years side by side (24 Oct 2026, from the owner)
 A year-end recap in the spirit of Spotify Wrapped, made of paper: a short sequence of cards to tap
 through in December, ending on the wish. Ideas for cards: total cranes and what that is in paper
 (a stack as tall as...), the habit you folded most, the longest run and when it happened, the best
@@ -108,7 +108,7 @@ look back; the data is ready for this (habit ids stay the same across years).
 ### Wish at 1,000
 When crane 1,000 is folded, the wish written on the Habits page is revealed on a big paper scroll.
 
-### A quote for the day (27 Oct 2026, from the user)
+### A quote for the day (27 Oct 2026, from the owner)
 A motivating quote, phrase or statement on the tracker, each with a small picture of what it
 stands for, in paper art or pixel art.
 - **A finite, hand-picked list.** The words already in D-015 are a natural start: "thoughts become

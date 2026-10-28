@@ -49,8 +49,8 @@ Two long-lived branches, and work flows one way: **work branch → `preview` →
 - Lower-case, words joined by hyphens, short.
 - **Branch from an up-to-date `preview`**; push the branch.
 - **Open the PR into `preview`** (`gh pr create --base preview`) with what changed, why, and how it
-  was tested. Merge it only when the user agrees and CI passes. Delete the work branch after.
-- **Releasing:** when the user says so, open a PR from `preview` into `main` listing what it
+  was tested. Merge it only when the owner agrees and CI passes. Delete the work branch after.
+- **Releasing:** when the owner says so, open a PR from `preview` into `main` listing what it
   ships; merge it with a merge commit once CI passes. Never delete `preview` (the ruleset blocks it).
   Afterwards bring `preview` level with `main` by opening a PR from `main` into `preview` (or the
   owner fast-forwards it).
@@ -89,7 +89,7 @@ Two long-lived branches, and work flows one way: **work branch → `preview` →
   ([src/data/patch-notes.js](src/data/patch-notes.js), D-032): plain, warm, a little funny, no
   technical detail.
 - Add or update a decision in docs/decisions.md when a choice would surprise a later reader.
-- Add new ideas the user mentions to docs/vision.md.
+- Add new ideas the owner mentions to docs/vision.md.
 - Add to the audit log in docs/security.md when you find or fix a security issue.
 - Every percentage on screen must say what it counts (D-006).
 - Colours come from role tokens only (`--bg`, `--sheet`, `--ink`, `--accent`, `--link` ...; see

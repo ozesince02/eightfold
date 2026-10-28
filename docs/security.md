@@ -236,9 +236,17 @@ holds on every branch.
 - ~~Until accounts ship, onemorefold.com shows that data to any visitor with nothing saved.~~ No
   longer: new trackers start empty (D-020); only the landing page shows it.
 
-### Still to do (tracked)
-- Before accounts: Supabase row-level security on every table, the publishable key as a build setting, the Supabase
-  URL in `connect-src`, auth redirect URLs locked to our domain, rate limits on magic-link email.
-- When hosting: confirm the headers on the live site (securityheaders.com), enable Cloudflare's
-  "Always use HTTPS".
-- ~~Consider self-hosting the two fonts~~: done 25 Oct 2026 (D-027).
+### Earlier to-do list, closed 29 October 2026
+
+Done, and checked on 29 October where it can be checked from outside. Anything left from the old
+list moved to the owner's private list (see below):
+
+- Row-level security on every table, the publishable key as a build setting, Supabase in
+  `connect-src`, and sign-in redirect URLs limited to our own addresses (D-018, D-019, D-035).
+- The live site's headers: HSTS, the CSP above, `X-Frame-Options: DENY`, `nosniff`, the referrer and
+  permissions policies, all served on onemorefold.com. Plain `http://` redirects to `https://` (301).
+- The fonts are self-hosted (D-027).
+
+**Open weaknesses aren't listed here.** A public list of what isn't fixed yet is a map for
+attackers. Fixed problems go in the audit log above, in the open; open ones are tracked privately
+by the owner until they're fixed.
