@@ -16,6 +16,18 @@ Dates are when the work landed.
 - The Privacy page says what closed-app reminders keep and that the browser's push service
   delivers them, encrypted.
 
+### Fixed
+- In Dark (and slightly in Warm), the tracker's "This month", "Daily score" and "Weeks" cards
+  had dark text on a dark card. A landing-page rule for coloured zine panels was also matching the
+  tracker's panels. (D-033)
+
+### Tooling
+- Work now reaches the live site in two steps: into `preview` first, then from `preview` into
+  `main`. GitHub rulesets and a new CI check enforce it; only the owner can push to `main`
+  directly. (D-034)
+- The `preview` branch gets its own preview site on Cloudflare (Worker Previews), so changes can
+  be tried before they go live. Other branches don't make one. (D-034)
+
 ## 0.10.0 — 28 October 2026
 
 ### Added

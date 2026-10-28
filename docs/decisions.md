@@ -590,3 +590,43 @@ Accepted · 28 Oct 2026
 - **Kept honest by a check:** scripts/check-themes.mjs (in `npm run check`) tests contrast for
   every text pair in every theme, that Warm has less blue, that each theme sets every role, that
   every page loads theme.js before its stylesheets, and that no stylesheet hard-codes a colour.
+
+## D-034 Work goes through preview before main
+Accepted · 28 Oct 2026
+
+- **Context:** until now every branch went straight into `main`, which Cloudflare serves to
+  everyone. The user wants a stage between work and the live site, and only themselves able to
+  push to `main` directly.
+- **Decision:** a long-lived **`preview`** branch. Work branches open pull requests into
+  `preview`; `main` takes pull requests only from `preview`. Two GitHub rulesets enforce it:
+  - **main: releases from preview** — no deletion, no force push, a pull request required, and the
+    CI checks "Check, build and audit" and "Release source" must pass.
+  - **preview: pull requests only** — no deletion, no force push, a pull request required, and
+    "Check, build and audit" must pass.
+  - Both let the **repository admin** (the owner, the only collaborator) bypass them, so the user
+    can still push directly when needed.
+- **"Only from preview" is a CI check**, because rulesets can't name a pull request's source
+  branch. The "Release source" job fails a PR into `main` unless its head is this repository's
+  `preview` (a fork's branch called `preview` doesn't count). Branch names reach the script
+  through environment variables, so a crafted name can't inject shell commands.
+- **Pull requests need no approving review**: GitHub doesn't let you approve your own PR, and
+  there is one maintainer. The user's "yes" in conversation is the approval (CLAUDE.md).
+- **Limit:** GitHub can't tell the user from Claude, since `gh` is signed in as the owner, who can
+  bypass. So the rule for Claude is written in CLAUDE.md: never push to `main` or `preview`,
+  always a pull request.
+- **A preview site for `preview`:** Cloudflare Worker Previews (Wrangler 4.135+). `wrangler.jsonc`
+  has a `previews` block (empty: same static files, no bindings), and the dashboard's Preview
+  command is `npm run deploy:preview` (`scripts/deploy-preview.mjs`), which makes a Preview named
+  `preview` only when `WORKERS_CI_BRANCH` is `preview` and skips every other branch, so work
+  branches don't use up the account's Previews (100 on the free plan). The address is stable:
+  `https://preview-onemorefold.<account subdomain>.workers.dev` (`/app` for the tracker).
+  Production still deploys only from `main` with `npx wrangler deploy`.
+  - workers.dev Preview URLs are public and send `X-Robots-Tag: noindex`; Cloudflare Access can
+    put them behind a sign-in if that's ever wanted.
+  - **The preview uses the live Supabase project** (same `.env`). Signing in there reads and
+    writes real accounts, so try risky changes there with a throwaway account. A separate
+    Supabase project for previews is the fix if that becomes a problem.
+  - Sign-in returns to `location.origin + /app`, so the preview address must be on Supabase's
+    redirect list, or Supabase sends people to the live site instead.
+  - Earlier branch builds (before 24 Oct) failed under the old preview model, and branch builds
+    were then switched off; the dashboard steps are in CLAUDE.md under "Hosting".

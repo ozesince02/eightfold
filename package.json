@@ -12,7 +12,8 @@
     "images": "node scripts/resize-images.mjs",
     "icons": "node scripts/make-icons.mjs",
     "shared": "node scripts/copy-shared.mjs",
-    "vapid": "node scripts/make-vapid-keys.mjs"
+    "vapid": "node scripts/make-vapid-keys.mjs",
+    "deploy:preview": "node scripts/deploy-preview.mjs"
   },
   "dependencies": {
     "@fontsource/dela-gothic-one": "5.3.0",
