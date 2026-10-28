@@ -13,6 +13,8 @@ Dates are when the work landed.
 - Eightfold can be added to the Home Screen as an app (a web app manifest).
 
 ### Changed
+- The landing page's numbers now come from an invented example year, and say so; the real
+  habit data that used to sit in the code is gone. (D-036)
 - The Privacy page says what closed-app reminders keep and that the browser's push service
   delivers them, encrypted.
 
@@ -32,6 +34,7 @@ Dates are when the work landed.
   be tried before they go live. Other branches don't make one. (D-034)
 
 ### Docs
+- Eightfold is open source under the MIT licence. The name and branding aren't part of it. (D-036)
 - A new README, a contributing guide with the rules every change follows, a security policy for
   reporting problems privately, and a pull request template.
 

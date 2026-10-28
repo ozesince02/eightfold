@@ -1,21 +1,21 @@
 // Feeds hostile and broken data to the validator that guards backups and stored data.
 import assert from 'node:assert/strict';
 import { cleanState, parseBackup, esc, LIMITS } from '../src/lib/sanitize.js';
-import { SEED_MONTHS, HABIT_COLORS } from '../src/data/seed.js';
+import { SAMPLE_MONTHS, SAMPLE_COLORS } from '../src/data/sample.js';
 
-const seedState = () => ({
+const exampleState = () => ({
   version: 1,
-  colors: { ...HABIT_COLORS },
-  months: Object.fromEntries(Object.entries(SEED_MONTHS).map(([k, hs]) => [k, {
+  colors: { ...SAMPLE_COLORS },
+  months: Object.fromEntries(Object.entries(SAMPLE_MONTHS).map(([k, hs]) => [k, {
     habits: hs.map(({ id, name, goal, time, start }) => ({ id, name, goal, time: time || '', start: start || 1 })),
     checks: Object.fromEntries(hs.map((h) => [h.id, [...h.days]])),
   }])),
   years: {},
 });
 
-// The real data passes through unchanged.
-const seed = seedState();
-assert.deepEqual(cleanState(seed), seed, 'the imported sheet data survives validation untouched');
+// A real-looking year passes through unchanged.
+const seed = exampleState();
+assert.deepEqual(cleanState(seed), seed, 'the example year survives validation untouched');
 
 // Hostile values are neutralised.
 const evil = cleanState({

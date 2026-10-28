@@ -103,7 +103,7 @@ npm audit
 ```
 
 `npm run check` covers a lot:
-- the statistics against the original spreadsheet;
+- the statistics against hand-counted cases;
 - reminder timing;
 - hostile input to the backup loader;
 - secrets and env files;
@@ -186,6 +186,12 @@ Commits it helped write carry a `Co-Authored-By: Claude` line.
 
 If you use an AI assistant too, you're responsible for what it writes. Read it, run the checks,
 and make sure it follows this guide. A pull request is judged the same way whoever typed it.
+
+## Licence of contributions
+
+Eightfold's code is [MIT licensed](LICENSE). By opening a pull request you agree that your
+contribution is licensed the same way. The name and branding aren't part of the licence (see the
+[README](README.md#licence)), so a fork needs its own.
 
 ## Be kind
 

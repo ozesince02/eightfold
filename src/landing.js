@@ -10,8 +10,8 @@ import { featuredMonth, daysLeftInYear } from './ui/insights.js';
 import { createCraneStage } from './three/stage.js';
 import { startReminders } from './ui/reminders.js';
 import { esc, safeColor } from './lib/sanitize.js';
-import { seedState, STORY_DATE, STORY_SPAN } from './data/seed.js';
-import { DEMO_HABITS, STORY_ALIASES } from './data/demo.js';
+import { sampleState, STORY_DATE, STORY_SPAN } from './data/sample.js';
+import { DEMO_HABITS } from './data/demo.js';
 import { createAccountMenu } from './ui/account-menu.js';
 import { startAuth } from './lib/auth.js';
 import { watchTheme } from './lib/theme.js';
@@ -23,16 +23,9 @@ watchTheme();
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-// The page tells the story of the sheet this app grew from (D-016, D-021): oze's real numbers up
-// to 22 October 2026, the day before Eightfold was born, under everyday habit names.
-function storyState() {
-  const s = seedState();
-  for (const month of Object.values(s.months)) {
-    for (const h of month.habits) Object.assign(h, STORY_ALIASES[h.id] || { name: 'A habit', time: '' });
-  }
-  return s;
-}
-const state = storyState();
+// The page shows its features with an invented example year (D-036), under everyday habit names.
+// Nobody's real habits are in the code; the story of the sheet Eightfold grew from is told in words.
+const state = sampleState();
 const now = STORY_DATE;
 const feat = featuredMonth(state, now);
 const year = yearStats(state, now.y, now);
@@ -140,7 +133,7 @@ new IntersectionObserver((entries, io) => {
   note.classList.add('is-seen');
 }, { threshold: 0.9 }).observe(note);
 
-// ---------- Why: real numbers from the sheet ----------
+// ---------- Why: the sheet's story, the example's numbers ----------
 const monthsWithData = year.months.filter((x) => x.rate !== null).length;
 const fs = feat.stats;
 $('[data-why-numbers]').innerHTML = [
@@ -183,7 +176,7 @@ const nWord = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eig
 $('[data-year-title]').textContent = `${nWord} months, ${year.cranes} cranes.`;
 const rated = year.months.filter((x) => x.rate !== null && !(x.m === now.m && now.y === year.year));
 const worst = rated.reduce((a, b) => (b.rate < a.rate ? b : a), rated[0]);
-$('[data-year-lede]').textContent = `An example from oze's own year, ${STORY_SPAN}. Each mountain is a month, as tall as its success rate. ${monthName(year.best.m)} was the best at ${percent(year.best.rate)}, ${monthName(worst.m)} the dip at ${percent(worst.rate)}. ${monthName(now.m)} was still being folded when Eightfold was born on 23 October.`;
+$('[data-year-lede]').textContent = `An example year, ${STORY_SPAN}. Each mountain is a month, as tall as its success rate. ${monthName(year.best.m)} was the best at ${percent(year.best.rate)}, ${monthName(worst.m)} the dip at ${percent(worst.rate)}. ${monthName(now.m)} was still being folded when Eightfold was born on 23 October.`;
 $('[data-range]').innerHTML = mountains(year.months, { current: now.m });
 $('[data-range-labels]').innerHTML = year.months.map((x) => `<li class="${x.rate === null ? 'muted' : ''}"><span class="long">${monthShort(x.m)}</span><span class="short">${monthShort(x.m)[0]}</span><b>${x.rate === null ? '—' : `${Math.round(x.rate * 100)}<span class="pct">%</span>`}</b></li>`).join('');
 
@@ -191,8 +184,8 @@ $('[data-range-labels]').innerHTML = year.months.map((x) => `<li class="${x.rate
 const remaining = Math.max(0, CRANE_GOAL - year.cranes);
 const daysLeft = daysLeftInYear(now);
 $('[data-wish-text]').textContent = remaining > 0
-  ? `Every tick folds one crane, and legend says a thousand grant a wish. By 22 October oze had folded ${year.cranes}: ${remaining} more by 31 December is about ${Math.ceil(remaining / daysLeft)} a day.`
-  : `Every tick folds one crane, and legend says a thousand grant a wish. oze passed ${CRANE_GOAL_TEXT} this year.`;
+  ? `Every tick folds one crane, and legend says a thousand grant a wish. In the example, ${year.cranes} were folded by 22 October: ${remaining} more by 31 December is about ${Math.ceil(remaining / daysLeft)} a day.`
+  : `Every tick folds one crane, and legend says a thousand grant a wish. The example passed ${CRANE_GOAL_TEXT} this year.`;
 $('[data-wish-figure]').textContent = `${year.cranes} of ${CRANE_GOAL_TEXT}`;
 
 const dayHabits = [...feat.month.habits].filter((h) => h.time).sort((a, b) => minutesOf(a.time) - minutesOf(b.time));
@@ -214,7 +207,7 @@ $('[data-sched]').innerHTML = schedules.map((s) => `<li style="--c:${s.c}">
   <span class="sched-week" aria-hidden="true">${s.days.map((d, i) => `<i class="${d}" title="${WEEK[i]}: ${dayWord[d]}"></i>`).join('')}</span>
   <span class="sched-note">${esc(s.note)}</span></li>`).join('');
 const perfectYear = year.months.reduce((s, x) => s + (x.perfectDays || 0), 0);
-$('[data-perfect-text]').textContent = `Tick every habit in a day and the crane takes off. oze's ${mName} had ${fs.perfectDays} by the 22nd; the year, ${perfectYear}.`;
+$('[data-perfect-text]').textContent = `Tick every habit in a day and the crane takes off. In the example, ${mName} had ${fs.perfectDays} by the 22nd; the year, ${perfectYear}.`;
 $('[data-confetti]').addEventListener('click', (e) => { confetti(); sfxPop(e.clientX, e.clientY - 10, 'パーフェクト!'); });
 
 // Who made this (config.js): plain text and two fixed link shapes, nothing from outside.

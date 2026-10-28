@@ -84,7 +84,7 @@ That's enough for most work.
 | `src/lib/` | The logic, all plain functions: `store.js` (data), `stats.js` (every number), `schedule.js`, `reminders-core.js`, `sanitize.js` (validation and `esc()`), `sync/` (sync engine), `auth.js`, `push.js` |
 | `src/ui/` | Paper pieces: torn edges, charts, the account menu, the crane story scroll, crane notes, reminders |
 | `src/three/` | The Three.js crane that folds from a flat square |
-| `src/data/` | The seed sheet, the patch notes and the crane notes' text |
+| `src/data/` | The example year the landing page and checks use (made up), the demo habits, the patch notes and the crane notes' text |
 | `src/styles/` | CSS, with every colour a role token in `tokens.css` |
 | `public/` | Static files: the service worker, icons, `_headers` (security headers and CSP) |
 | `supabase/migrations/` | The database, as SQL, run by hand in order |
@@ -118,6 +118,13 @@ Found a security problem? Please don't open a public issue; see [SECURITY.md](SE
 
 ## Licence
 
-**Not chosen yet.** Until a licence is added, the code is visible but all rights are reserved by
-the author. The pictures are public-domain prints and photos; their sources are in
-[public/img/credits.json](public/img/credits.json) and in the site's footer.
+The code is [MIT licensed](LICENSE): use it, change it, build on it.
+
+**The name and branding are not part of the licence.** "Eightfold", onemorefold.com, the crane
+mark and the wordmark (`public/favicon.svg`, the app icons in `public/`, and the mark drawn in the
+code) belong to the author. If you run your own copy, give it its own name and look, so nobody
+mistakes it for this one.
+
+The pictures are public-domain prints and photos, not covered by the licence; their sources are in
+[public/img/credits.json](public/img/credits.json) and in the site's footer. The example year in
+`src/data/sample.js` is made up.
