@@ -98,7 +98,20 @@ npm audit
 ```
 
 `npm run dev` serves on http://localhost:5173 (landing) and /app.html (tracker).
-Hosting: Cloudflare Worker serving `dist/` ([wrangler.jsonc](wrangler.jsonc), D-014); on the live site the tracker is `/app`.
+
+## Hosting
+
+- **Live:** Cloudflare Worker `onemorefold` serving `dist/` ([wrangler.jsonc](wrangler.jsonc),
+  D-014), deployed from `main` by Workers Builds (`npx wrangler deploy`). The tracker is `/app`.
+- **Preview:** the `preview` branch is a Worker Preview at
+  `https://preview-onemorefold.<account subdomain>.workers.dev` (D-034), made by
+  `npm run deploy:preview`, which skips every other branch. It uses the **live** Supabase project:
+  sign in there with a throwaway account when trying risky changes.
+- **Dashboard settings this relies on** (the owner sets them; Claude never handles tokens):
+  Workers & Pages → onemorefold → Settings → Build: production branch `main`; Build command
+  `npm run build`; Deploy command `npx wrangler deploy`; Branch control → **Enable Preview
+  Builds** on, Preview command `npm run deploy:preview`. Supabase → Authentication → URL
+  Configuration → Redirect URLs includes the preview address with `/app`.
 `npm run build && npx wrangler dev` runs the real Cloudflare runtime locally with the production headers.
 `npm run build && node scripts/serve-dist.mjs` serves the production build with the real security
 headers on http://localhost:4173.

@@ -9,6 +9,8 @@ Dates are when the work landed.
 - Work now reaches the live site in two steps: into `preview` first, then from `preview` into
   `main`. GitHub rulesets and a new CI check enforce it; only the owner can push to `main`
   directly. (D-034)
+- The `preview` branch gets its own preview site on Cloudflare (Worker Previews), so changes can
+  be tried before they go live. Other branches don't make one. (D-034)
 
 ## 0.10.0 — 28 October 2026
 

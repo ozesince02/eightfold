@@ -596,5 +596,19 @@ Accepted · 28 Oct 2026
 - **Limit:** GitHub can't tell the user from Claude, since `gh` is signed in as the owner, who can
   bypass. So the rule for Claude is written in CLAUDE.md: never push to `main` or `preview`,
   always a pull request.
-- **Later:** a Cloudflare preview deployment of `preview` (a separate URL to try changes on) is
-  worth setting up; earlier attempts at non-production builds on Cloudflare failed.
+- **A preview site for `preview`:** Cloudflare Worker Previews (Wrangler 4.135+). `wrangler.jsonc`
+  has a `previews` block (empty: same static files, no bindings), and the dashboard's Preview
+  command is `npm run deploy:preview` (`scripts/deploy-preview.mjs`), which makes a Preview named
+  `preview` only when `WORKERS_CI_BRANCH` is `preview` and skips every other branch, so work
+  branches don't use up the account's Previews (100 on the free plan). The address is stable:
+  `https://preview-onemorefold.<account subdomain>.workers.dev` (`/app` for the tracker).
+  Production still deploys only from `main` with `npx wrangler deploy`.
+  - workers.dev Preview URLs are public and send `X-Robots-Tag: noindex`; Cloudflare Access can
+    put them behind a sign-in if that's ever wanted.
+  - **The preview uses the live Supabase project** (same `.env`). Signing in there reads and
+    writes real accounts, so try risky changes there with a throwaway account. A separate
+    Supabase project for previews is the fix if that becomes a problem.
+  - Sign-in returns to `location.origin + /app`, so the preview address must be on Supabase's
+    redirect list, or Supabase sends people to the live site instead.
+  - Earlier branch builds (before 24 Oct) failed under the old preview model, and branch builds
+    were then switched off; the dashboard steps are in CLAUDE.md under "Hosting".
