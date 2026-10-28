@@ -15,6 +15,13 @@ data, storage, rendering, auth or headers. Say plainly when something is a risk.
 
 ## Read before working
 
+**Two sets of docs (D-037).** Public ones live in `docs/` and the repository root, in git, for
+everyone. Private ones live in `private/`, which git ignores: they exist only on the owner's
+computer. Put **open security weaknesses** (`private/security-open.md`) and anything personal the
+owner doesn't want published there, never in a public doc, commit message, PR or issue. When a
+weakness is fixed, move it to the public audit log in docs/security.md and delete it from the
+private file. Read `private/` when it exists; it may hold context the public docs don't.
+
 - [CONTRIBUTING.md](CONTRIBUTING.md): the rules for everyone, human or AI; keep it in step with
   this file when a rule changes. [README.md](README.md) and [SECURITY.md](SECURITY.md) are the
   public face: update them when setup, scripts or reporting change.
