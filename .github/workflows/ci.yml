@@ -1,11 +1,12 @@
 # Runs the same checks as a local `npm run check && npm run build && npm audit` on every pull
-# request and on every push to main (which is what gets hosted). See CLAUDE.md and docs/security.md.
+# request and on every push to preview and main (main is what gets hosted). Also checks that main
+# only takes pull requests from preview (D-034). See CLAUDE.md and docs/security.md.
 name: CI
 
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, preview]
 
 # Least privilege: the job only reads the code. Nothing here can push, comment or deploy.
 permissions:
@@ -46,3 +47,24 @@ jobs:
 
       - name: Audit dependencies
         run: npm audit
+
+  # main only takes pull requests from this repository's preview branch (D-034). GitHub's rules
+  # can't name a source branch, so this job does, and the main ruleset requires it to pass.
+  # Branch names come in through env, never pasted into the script, so a crafted name can't run.
+  release-source:
+    name: Release source
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Pull requests into main come from preview
+        env:
+          BASE: ${{ github.base_ref }}
+          HEAD: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          THIS_REPO: ${{ github.repository }}
+        run: |
+          if [ "$BASE" = "main" ] && { [ "$HEAD" != "preview" ] || [ "$HEAD_REPO" != "$THIS_REPO" ]; }; then
+            echo "::error::Pull requests into main must come from this repository's preview branch (D-034). Open this one into preview instead."
+            exit 1
+          fi
+          echo "OK"
