@@ -86,7 +86,7 @@ export function inkOn(hex) {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.22 ? '#1E1B18' : '#FAF9F6';
 }
 
-export const craneMark =(a = 'var(--shu)', b = 'var(--sumi)') => `
+export const craneMark =(a = 'var(--accent)', b = 'var(--ink)') => `
 <svg viewBox="0 0 64 48" aria-hidden="true" class="crane-mark">
   <path d="M22 34 L5 13 L29 31 Z" fill="${b}"/>
   <path d="M41 34 L56 9 L35 31 Z" fill="${b}"/>
@@ -109,7 +109,7 @@ export function sfxPop(x, y, text = 'パタ', { size = 28, color } = {}) {
   el.textContent = text;
   Object.assign(el.style, {
     position: 'fixed', left: `${x}px`, top: `${y}px`, fontSize: `${size}px`,
-    zIndex: 60, transformOrigin: '50% 100%', color: color || 'var(--white-paper)',
+    zIndex: 60, transformOrigin: '50% 100%', color: color || 'var(--on-color)',
   });
   document.body.appendChild(el);
   const rot = gsap.utils.random(-18, 18);

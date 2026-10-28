@@ -11,6 +11,7 @@ import { gsap } from 'gsap';
 import { Crane } from '../three/crane.js';
 import { NOTES, NOTE_SIGN } from '../data/notes.js';
 import { esc } from '../lib/sanitize.js';
+import { token } from '../lib/theme.js';
 
 const COLOR = '#C8302C';            // shu, like every crane on the site
 const FOV = 35;                     // degrees
@@ -88,12 +89,6 @@ function makeStage() {
   // with the screen once it lies flat.
   const crane = new Crane({ color: COLOR, sheetY: 0 });
   crane.lines.material.opacity = 0.35;
-  // The white side becomes the letter, so it should look like the letter's paper, not warm beige.
-  for (const m of [crane.back, crane.sheet.children[1].material]) {
-    m.color.set('#FFFFFF');
-    m.emissive.set('#FAF9F6');
-    m.emissiveIntensity = 0.35;
-  }
   crane.group.rotation.y = Math.PI / 4;
   const holder = new THREE.Group();
   holder.add(crane.group);
@@ -102,6 +97,17 @@ function makeStage() {
   scene.add(pivot);
 
   return { renderer, scene, camera, crane, holder, pivot, raf: 0, step: -1 };
+}
+
+// The back of the paper becomes the letter, so it takes the letter's paper colour in the current
+// theme (D-033): near white in daylight, cream under the lamp, charcoal at night.
+function tint() {
+  const sheet = token('sheet') || '#FAF9F6';
+  for (const m of [stage.crane.back, stage.crane.sheet.children[1].material]) {
+    m.color.set(sheet);
+    m.emissive.set(sheet);
+    m.emissiveIntensity = 0.35;
+  }
 }
 
 // World units per CSS pixel on the plane the paper lands on.
@@ -185,6 +191,7 @@ export function openCraneNote(id, from) {
   }
   state = 'opening';
   sizeStage();
+  tint();
 
   const sq = square();
   const mark = (from?.querySelector('.crane-mark') || from)?.getBoundingClientRect?.();
