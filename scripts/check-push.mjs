@@ -77,6 +77,13 @@ assert.equal(seen.url, endpoint, 'posts to the browser\'s own address');
 assert.equal(seen.init.headers['Content-Encoding'], 'aes128gcm');
 assert.equal(seen.init.headers.TTL, '1800', 'a reminder older than 30 minutes is not worth delivering');
 assert.equal(seen.init.redirect, 'error', 'never follows a redirect somewhere else');
+assert.ok(seen.init.signal instanceof AbortSignal, 'gives up on a push service that doesn\'t answer');
+const awake = setTimeout(() => {}, 1000); // Node doesn't wait for AbortSignal.timeout by itself
+await assert.rejects(sendPush({ endpoint, p256dh: b64u(uaRaw), auth: b64u(authSecret) }, message, vapid, {
+  timeoutMs: 20,
+  fetchImpl: (url, init) => new Promise((_, reject) => init.signal.addEventListener('abort', () => reject(init.signal.reason))),
+}), /TimeoutError|timed out|aborted/i, 'a hanging push service times out');
+clearTimeout(awake);
 assert.ok(seen.init.headers.Authorization.startsWith('vapid t='));
 
 // ---------- The sender's copies of the app's modules ----------
@@ -108,5 +115,8 @@ const full = Array.from({ length: DAILY_CAP }, (_, i) => ({ user_id: A, slug: `h
 assert.equal(planReminders({ people: people.slice(0, 1), habitMonths, ticks: [], sent: full }).length, 0, `at most ${DAILY_CAP} a day`);
 assert.equal(clocks([{ user_id: A, off: [], time_zone: 'Mars/Olympus' }], new Date(run))[0].clock.getHours(), 1, 'an unknown time zone falls back to UTC');
 assert.equal(logCutoff(new Date(run)), '2026-10-14', 'the log keeps two weeks');
+const odd = [{ ...hm(B, 'gym', '19:15:00'), time: 1915 }, ...habitMonths]; // B's row makes planning B throw
+const survived = planReminders({ people, habitMonths: odd, ticks: [], sent: [] });
+assert.deepEqual(survived.map((x) => x.user_id), [A], "one person's odd data skips only them, never anyone else");
 
 console.log('push: all checks pass');

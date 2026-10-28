@@ -87,8 +87,9 @@ export async function vapidHeader(endpoint, vapid, now = Date.now()) {
 }
 
 // Sends one message. Returns the push service's status: 201 is delivered to the service; 404 and
-// 410 mean the browser's address is gone for good and should be forgotten.
-export async function sendPush(subscription, payload, vapid, { ttl = 1800, fetchImpl = fetch } = {}) {
+// 410 mean the browser's address is gone for good and should be forgotten. A service that doesn't
+// answer in time throws, so one slow service can't hold up everyone else's reminders.
+export async function sendPush(subscription, payload, vapid, { ttl = 1800, timeoutMs = 10000, fetchImpl = fetch } = {}) {
   const body = await encrypt(JSON.stringify(payload), subscription);
   const res = await fetchImpl(subscription.endpoint, {
     method: 'POST',
@@ -101,6 +102,7 @@ export async function sendPush(subscription, payload, vapid, { ttl = 1800, fetch
     },
     body,
     redirect: 'error',
+    signal: AbortSignal.timeout(timeoutMs),
   });
   return res.status;
 }

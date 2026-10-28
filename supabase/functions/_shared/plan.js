@@ -24,28 +24,35 @@ export function clocks(settings, now) {
 export function planReminders({ people, habitMonths, ticks, sent }) {
   const out = [];
   for (const p of people) {
-    const tables = {
-      months: [{ month: p.month }],
-      habit_months: habitMonths.filter((r) => r.user_id === p.user_id && r.month === p.month),
-      ticks: ticks.filter((t) => t.user_id === p.user_id && t.day.startsWith(p.month.slice(0, 8))),
-    };
-    if (!tables.habit_months.length) continue;
-    const state = rowsToState(tables);
-    const already = sent.filter((r) => r.user_id === p.user_id && r.day === p.day);
-    let room = DAILY_CAP - already.length;
-    const off = Object.fromEntries(p.off.map((slug) => [slug, true]));
-    for (const habit of upcomingReminders(state, p.clock, off)) {
-      if (room <= 0) break;
-      if (already.some((r) => r.slug === habit.id)) continue;
-      room--;
-      out.push({
-        user_id: p.user_id,
-        slug: habit.id,
-        day: p.day,
-        // What the service worker shows. Encrypted for each device; only that browser reads it.
-        payload: { ...pushText(habit), tag: `${p.day}:${habit.id}`, habitId: habit.id, date: p.day },
-      });
-    }
+    // One person's odd data skips only that person, never the whole run.
+    try { out.push(...planOne(p, habitMonths, ticks, sent)); } catch { /* left out of this run */ }
+  }
+  return out;
+}
+
+function planOne(p, habitMonths, ticks, sent) {
+  const out = [];
+  const tables = {
+    months: [{ month: p.month }],
+    habit_months: habitMonths.filter((r) => r.user_id === p.user_id && r.month === p.month),
+    ticks: ticks.filter((t) => t.user_id === p.user_id && t.day.startsWith(p.month.slice(0, 8))),
+  };
+  if (!tables.habit_months.length) return out;
+  const state = rowsToState(tables);
+  const already = sent.filter((r) => r.user_id === p.user_id && r.day === p.day);
+  let room = DAILY_CAP - already.length;
+  const off = Object.fromEntries(p.off.map((slug) => [slug, true]));
+  for (const habit of upcomingReminders(state, p.clock, off)) {
+    if (room <= 0) break;
+    if (already.some((r) => r.slug === habit.id)) continue;
+    room--;
+    out.push({
+      user_id: p.user_id,
+      slug: habit.id,
+      day: p.day,
+      // What the service worker shows. Encrypted for each device; only that browser reads it.
+      payload: { ...pushText(habit), tag: `${p.day}:${habit.id}`, habitId: habit.id, date: p.day },
+    });
   }
   return out;
 }

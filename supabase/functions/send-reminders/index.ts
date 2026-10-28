@@ -16,6 +16,9 @@ import { createClient } from 'npm:@supabase/supabase-js@2.117.3';
 import { sendPush } from '../_shared/webpush.js';
 import { clocks, planReminders, logCutoff } from '../_shared/plan.js';
 
+const PAGE = 1000;  // the API's most rows per request
+const BATCH = 100;  // people per round
+
 const env = (name: string) => {
   const value = Deno.env.get(name);
   if (!value) throw new Error(`missing secret ${name}`);
@@ -37,49 +40,70 @@ async function run(now: Date) {
   const vapid = { publicKey: env('VAPID_PUBLIC_KEY'), privateKey: env('VAPID_PRIVATE_KEY'), subject: env('VAPID_SUBJECT') };
   const check = <T>({ data, error }: { data: T | null; error: unknown }) => { if (error) throw error; return data as T; };
 
-  const settings = check(await db.from('push_settings').select('user_id, off, time_zone').eq('reminders', true).limit(5000)) as any[];
-  if (!settings.length) return { people: 0, sent: 0 };
-  const subs = check(await db.from('push_subscriptions').select('id, user_id, endpoint, p256dh, auth').in('user_id', settings.map((s) => s.user_id))) as any[];
-  const people = clocks(settings.filter((s) => subs.some((d) => d.user_id === s.user_id)), now);
-  if (!people.length) return { people: 0, sent: 0 };
+  // The API returns at most PAGE rows per request, even to the service role, and drops the rest
+  // without saying so. Every list is read page by page, in a fixed order so pages don't overlap.
+  const all = async (page: (from: number, to: number) => PromiseLike<{ data: any; error: unknown }>) => {
+    const rows: any[] = [];
+    for (let from = 0; ; from += PAGE) {
+      const got = check(await page(from, from + PAGE - 1)) as any[];
+      rows.push(...got);
+      if (got.length < PAGE) return rows;
+    }
+  };
 
-  const ids = people.map((p) => p.user_id);
-  const months = [...new Set(people.map((p) => p.month))];
-  const days = [...new Set(people.map((p) => p.day))];
-  const [habitMonths, ticks, sent] = await Promise.all([
-    db.from('habit_months').select('user_id, slug, month, name, goal, time, start_day, cadence, weekdays, times_per_week, position')
-      .in('user_id', ids).in('month', months).not('time', 'is', null).then(check),
-    db.from('ticks').select('user_id, slug, day').in('user_id', ids).in('month', months).then(check),
-    db.from('push_log').select('user_id, slug, day').in('user_id', ids).in('day', days).eq('kind', 'remind').then(check),
-  ]) as any[][];
+  const settings = await all((a, b) => db.from('push_settings').select('user_id, off, time_zone')
+    .eq('reminders', true).order('user_id').range(a, b));
+  const total = { people: 0, reminders: 0, delivered: 0, gone: 0, failed: 0 };
 
-  const plan = planReminders({ people, habitMonths, ticks, sent });
-  let delivered = 0, gone = 0, failed = 0;
-  for (const item of plan) {
-    // Claim it first: if another run got there, the row exists and nothing is returned.
-    const claimed = check(await db.from('push_log')
-      .upsert({ user_id: item.user_id, kind: 'remind', slug: item.slug, day: item.day }, { onConflict: 'user_id,kind,slug,day', ignoreDuplicates: true })
-      .select('slug')) as any[];
-    if (!claimed.length) continue;
-    await Promise.all(subs.filter((d) => d.user_id === item.user_id).map(async (device) => {
-      try {
-        const status = await sendPush(device, item.payload, vapid);
-        if (status === 404 || status === 410) {
-          gone++;
-          await db.from('push_subscriptions').delete().eq('id', device.id);
-        } else if (status >= 200 && status < 300) {
-          delivered++;
-          await db.from('push_subscriptions').update({ last_ok_at: now.toISOString() }).eq('id', device.id);
-        } else {
-          failed++;
+  // A hundred people at a time keeps every request (and its list of ids) small.
+  for (let at = 0; at < settings.length; at += BATCH) {
+    const batch = settings.slice(at, at + BATCH);
+    const subs = await all((a, b) => db.from('push_subscriptions').select('id, user_id, endpoint, p256dh, auth')
+      .in('user_id', batch.map((s) => s.user_id)).order('id').range(a, b));
+    const people = clocks(batch.filter((s) => subs.some((d) => d.user_id === s.user_id)), now);
+    if (!people.length) continue;
+
+    const ids = people.map((p) => p.user_id);
+    const months = [...new Set(people.map((p) => p.month))];
+    const days = [...new Set(people.map((p) => p.day))];
+    const [habitMonths, ticks, sent] = await Promise.all([
+      all((a, b) => db.from('habit_months').select('user_id, slug, month, name, goal, time, start_day, cadence, weekdays, times_per_week, position')
+        .in('user_id', ids).in('month', months).not('time', 'is', null).order('user_id').order('month').order('slug').range(a, b)),
+      all((a, b) => db.from('ticks').select('user_id, slug, day')
+        .in('user_id', ids).in('month', months).order('user_id').order('slug').order('day').range(a, b)),
+      all((a, b) => db.from('push_log').select('user_id, slug, day')
+        .in('user_id', ids).in('day', days).eq('kind', 'remind').order('user_id').order('day').order('slug').range(a, b)),
+    ]);
+
+    const plan = planReminders({ people, habitMonths, ticks, sent });
+    total.people += people.length;
+    total.reminders += plan.length;
+    for (const item of plan) {
+      // Claim it first: if another run got there, the row exists and nothing is returned.
+      const claimed = check(await db.from('push_log')
+        .upsert({ user_id: item.user_id, kind: 'remind', slug: item.slug, day: item.day }, { onConflict: 'user_id,kind,slug,day', ignoreDuplicates: true })
+        .select('slug')) as any[];
+      if (!claimed.length) continue;
+      await Promise.all(subs.filter((d) => d.user_id === item.user_id).map(async (device) => {
+        try {
+          const status = await sendPush(device, item.payload, vapid);
+          if (status === 404 || status === 410) {
+            total.gone++;
+            await db.from('push_subscriptions').delete().eq('id', device.id);
+          } else if (status >= 200 && status < 300) {
+            total.delivered++;
+            await db.from('push_subscriptions').update({ last_ok_at: now.toISOString() }).eq('id', device.id);
+          } else {
+            total.failed++;
+          }
+        } catch {
+          total.failed++; // includes a push service that didn't answer within sendPush's timeout
         }
-      } catch {
-        failed++;
-      }
-    }));
+      }));
+    }
   }
   await db.from('push_log').delete().lt('day', logCutoff(now));
-  return { people: people.length, reminders: plan.length, delivered, gone, failed };
+  return total;
 }
 
 Deno.serve(async (req) => {

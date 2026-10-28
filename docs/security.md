@@ -196,6 +196,14 @@ signed-in people; and the sender, which runs with the service role and posts to 
 - **Secrets:** made on the owner's computer by `npm run vapid` into git-ignored files, never printed.
   `.env` may hold only the VAPID *public* key, and `check-security.mjs` and the build refuse
   anything shaped like the private one.
+- **Review (28 Oct), fixed before merging:** the API returns at most 1,000 rows per request, even
+  to the service role, and drops the rest silently; with a few people's ticks that would have meant
+  reminders for habits already done. The sender now reads every list page by page, a hundred people
+  at a time. Also: each push gives up after 10 seconds, one person's odd data skips only them, and
+  deleting an account takes the device off only after the delete succeeds.
+- Not done, judged unlikely: if signing out fails both to remove the device's address and to
+  unsubscribe (offline), that browser could keep getting the last person's reminders until the
+  sender finds the address dead. Browsers unsubscribe locally even offline.
 - Tests: `check-push.mjs` (RFC 8291 byte for byte, a browser-side decrypt, VAPID signature, the
   planner across time zones, daily cap, copies in sync), `check-schema.mjs` (RLS, register_push,
   every refused value, cascade on account deletion), `check-reminders.mjs` (the half-hour windows).

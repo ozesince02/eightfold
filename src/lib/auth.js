@@ -83,9 +83,10 @@ export async function signOut() {
 // this device. The database function deletes only the caller.
 export async function deleteAccount() {
   const sb = await client();
-  await leaveDevice(sb);
   const { error } = await sb.rpc('delete_my_account');
   if (error) throw new Error("Your account couldn't be deleted just now. Nothing was removed; try again in a moment.");
+  // The device's address went with the account; stop the browser's subscription too.
+  await leaveDevice(sb);
   // The account is gone, and so are its sessions on the server. Forget this browser's copy too;
   // if Supabase can't (the server no longer knows the user), remove its saved session directly.
   let out;
