@@ -11,6 +11,9 @@ Dates are when the work landed.
   tracker's panels. (D-033)
 
 ### Tooling
+- **`.env` is no longer in git.** It only ever held public values, but no env file belongs in the
+  repository. `.env.example` lists the settings; Cloudflare and GitHub provide them to the builds
+  as variables. (D-035)
 - Work now reaches the live site in two steps: into `preview` first, then from `preview` into
   `main`. GitHub rulesets and a new CI check enforce it; only the owner can push to `main`
   directly. (D-034)

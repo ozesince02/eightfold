@@ -74,17 +74,29 @@ assert.ok(parseBackup(JSON.stringify(seed)).months['2026-10'], 'a real backup ro
 
 console.log('security: all checks pass');
 
-// .env is committed and its values are built into the site (D-019): it may hold only the public
-// Supabase settings, never anything that looks like a secret.
-import { readFileSync } from 'node:fs';
-const envLines = readFileSync(new URL('../.env', import.meta.url), 'utf8').split(/\r?\n/).filter((l) => l.trim() && !l.trim().startsWith('#'));
-const ALLOWED_ENV = new Set(['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY']);
-for (const line of envLines) {
-  const [name, ...rest] = line.split('=');
-  assert.ok(ALLOWED_ENV.has(name.trim()), `.env may only hold public settings; found ${name.trim()}`);
-  assert.doesNotMatch(rest.join('='), /sb_secret_|service_role|eyJhbGci|-----BEGIN|re_[A-Za-z0-9]{20,}|GOCSPX-/, `.env value for ${name.trim()} looks like a secret`);
+// Build settings (D-035): .env is never in git; .env.example lists the names. Both files, when
+// present, may hold only the public settings, and nothing shaped like a secret.
+import { readFileSync, existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+const ALLOWED_ENV = new Set(['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY', 'VITE_VAPID_PUBLIC_KEY']);
+const SECRET_SHAPES = /sb_secret_|service_role|eyJhbGci|-----BEGIN|re_[A-Za-z0-9]{20,}|GOCSPX-|VAPID_PRIVATE|CRON_SECRET/;
+for (const file of ['.env.example', '.env']) {
+  const url = new URL(`../${file}`, import.meta.url);
+  if (file === '.env' && !existsSync(url)) continue;
+  const lines = readFileSync(url, 'utf8').split(/\r?\n/).filter((l) => l.trim() && !l.trim().startsWith('#'));
+  for (const line of lines) {
+    const [name, ...rest] = line.split('=');
+    const value = rest.join('=').trim();
+    assert.ok(ALLOWED_ENV.has(name.trim()), `${file} may only hold public settings; found ${name.trim()}`);
+    assert.doesNotMatch(value, SECRET_SHAPES, `${file} value for ${name.trim()} looks like a secret`);
+    // A VAPID public key is a 65-byte point (87 characters). The private half is 43: never here.
+    if (name.trim() === 'VITE_VAPID_PUBLIC_KEY' && value) assert.match(value, /^B[A-Za-z0-9_-]{86}$/, `${file}: VITE_VAPID_PUBLIC_KEY must be the public key (87 characters, starting with B)`);
+  }
 }
-console.log('env: only public settings');
+// .env must never be tracked again (CI checks out a clean copy, so this holds there too).
+const tracked = execFileSync('git', ['ls-files', '--', '.env', '.env.local', '.env.production', 'supabase/.env.functions', 'supabase/schedule.local.sql'], { encoding: 'utf8' }).trim();
+assert.equal(tracked, '', `env and secret files must not be in git: ${tracked}`);
+console.log('env: only public settings, and no env file in git');
 
 // No third-party origins for styles or fonts (D-027): every page uses the self-hosted fonts, and
 // the CSP allows fonts only from this site. Nothing on a page may reach Google Fonts again.
