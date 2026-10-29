@@ -3,7 +3,7 @@
 What changed, for people using the app. Why it changed lives in [docs/decisions.md](docs/decisions.md).
 Dates are when the work landed.
 
-## 0.12.0 — unreleased
+## 0.12.0 — 30 October 2026
 
 ### Changed
 - **Eightfold is now One More Fold.** "Eightfold" is shared by several large companies, so people
