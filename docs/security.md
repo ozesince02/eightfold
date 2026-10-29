@@ -9,7 +9,7 @@ the rules every change follows, and the record of what has been checked.
   sensitive ("therapy", "medication"). Today it lives in one browser; after accounts (D-008) it lives
   in Supabase too.
 - **Their accounts and sessions**, once sign-in exists.
-- **The integrity of the app:** nobody else's code should ever run on an Eightfold page.
+- **The integrity of the app:** nobody else's code should ever run on a One More Fold page.
 
 ## Where attacks could come from
 
@@ -169,7 +169,7 @@ Who can see a person's habits, checked end to end. Other accounts and signed-out
 
 | # | Severity | Finding | Fix | Test |
 | --- | --- | --- | --- | --- |
-| 1 | Medium | On a shared computer, signing out left the folds in the browser, and a later account's sign-in parked the earlier person's copy there too. The next person at that computer could read them. | "Sign out and remove my folds from this browser" in the account chit removes every Eightfold key (tracker, sync queue, copies kept aside, old name); asks first if changes haven't reached the account. Sync `stop()` is now safe to call twice and writes nothing to a cleared browser. (branch `fix/sign-out-clears-browser`) | `check-sync.mjs` scenarios 10b, 12b and 13. Review follow-up: a sync read still in flight when the person signs out is now thrown away instead of written back into the cleared browser. |
+| 1 | Medium | On a shared computer, signing out left the folds in the browser, and a later account's sign-in parked the earlier person's copy there too. The next person at that computer could read them. | "Sign out and remove my folds from this browser" in the account chit removes every One More Fold key (tracker, sync queue, copies kept aside, old name); asks first if changes haven't reached the account. Sync `stop()` is now safe to call twice and writes nothing to a cleared browser. (branch `fix/sign-out-clears-browser`) | `check-sync.mjs` scenarios 10b, 12b and 13. Review follow-up: a sync read still in flight when the person signs out is now thrown away instead of written back into the cleared browser. |
 | 2 | Medium | No way for a person to delete their account and data; only the owner could, from the dashboard. | "Delete my account" in the account chit calls `public.delete_my_account()`: SECURITY DEFINER, empty search_path, deletes only `auth.uid()`'s auth user (everything cascades); not callable by anon. The browser then stops syncing, forgets its copy and reloads signed out. (branch `feature/delete-account`, D-025) | `check-schema.mjs`: anon can't call it, B deleting removes only B, A's rows all go, an old token can't write afterwards |
 | 3 | Low | Google Fonts sees every visitor's IP address on every page load. | Fonts served from our own site (Fontsource, woff2 only); CSP `font-src 'self'`, Google origins removed from `style-src`. (branch `chore/self-host-fonts`, D-027) | `check-security.mjs` (fonts); production build: no font requests leave the site, no CSP violations |
 | 4 | Info | The owner (dashboard, secret key) can read everyone's rows; RLS protects users from each other, not from the operator. | Stated in the privacy policy; two-factor sign-in on every admin account. End-to-end encryption is a possible later "private mode" (docs/vision.md). | — |

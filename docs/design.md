@@ -1,4 +1,4 @@
-# Eightfold design system
+# One More Fold design system
 
 The reference for keeping the look, the words and the behaviour consistent. Read it before
 changing any screen. When a rule here changes, change it here first and note it in

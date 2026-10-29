@@ -7,7 +7,7 @@ Builds on [data-storage.md](data-storage.md) (accounts, sync, the tables) and
 
 ## The idea, in short
 
-Eightfold helps people build habits together, without becoming a social network.
+One More Fold helps people build habits together, without becoming a social network.
 
 - **Buddies:** add several people you already know. For each buddy, choose how much they see:
   nothing, how consistent you are, or chosen habits by name. Everyone appears by a **user tag**,
@@ -16,7 +16,7 @@ Eightfold helps people build habits together, without becoming a social network.
   challenge**) take on together ("run every day in November"), each ticking their own progress,
   everyone seeing everyone's progress on that one habit.
 - **A note from the folding table:** each of these features carries a small crane. Tap it and a
-  paper crane flies in and unfolds into a note from the person who made Eightfold, on why the
+  paper crane flies in and unfolds into a note from the person who made One More Fold, on why the
   feature exists (section 5).
 - **Notifications with the app closed:** habit reminders, a daily summary and a weekly recap, each
   switched on or off separately.
@@ -30,13 +30,13 @@ with notifications.
 ## 1. Notifications with the app closed
 
 ### How they reach a closed app
-- **Web Push.** When someone turns on "remind me even when Eightfold is closed", the browser gives
+- **Web Push.** When someone turns on "remind me even when One More Fold is closed", the browser gives
   us an address for that device (a push subscription). It's stored in their account, one row per
   device. Our server sends a message to that address; the browser's push service (Google, Apple
   or Mozilla, depending on the browser) delivers it, and our service worker (`public/sw.js`) shows
   it. The message is encrypted for that device on the way, so the push service can't read it.
 - **The sender:** a Supabase Edge Function, started by Supabase Cron.
-- **iPhone and iPad:** Web Push works only after Eightfold is added to the Home Screen (iOS 16.4
+- **iPhone and iPad:** Web Push works only after One More Fold is added to the Home Screen (iOS 16.4
   and later). We'll need a web app manifest (there isn't one yet) and a short "add to Home Screen"
   guide shown on iPhones.
 
@@ -212,14 +212,14 @@ has more.
 The app's standard way of explaining itself (D-031). Buddies and gangs get one each, written as a
 note from oze on why the feature exists; any later feature can carry one too.
 
-- **The way in:** a small paper crane (the Eightfold mark, in shu) beside a feature's heading, with
+- **The way in:** a small paper crane (the One More Fold mark, in shu) beside a feature's heading, with
   a short label such as "Why buddies?". It hops now and then, so it's noticed without shouting.
   Like the folded note on the landing page, it says there's a story here if you want it.
 - **Opening:** a paper crane flies in from the little crane, across the page, to the middle. It
   unfolds in the air back into a square sheet, the sheet turns over to its white side, and the
   square opens downwards into the note.
 - **Reading:** a white paper letter showing the crane's creases faintly, a heading, a few short
-  paragraphs, signed "oze, who made Eightfold". One button ("Fold it back") and an ✕.
+  paragraphs, signed "oze, who made One More Fold". One button ("Fold it back") and an ✕.
 - **Closing:** the reverse: the letter folds up into the square, turns over, folds into a crane, and
   the crane flies off the page.
 - **Built from the same fold engine** as today's crane ([crane.js](../src/three/crane.js)), so the
@@ -231,7 +231,7 @@ note from oze on why the feature exists; any later feature can carry one too.
 - **Notes are written in the code,** never taken from stored data.
 
 **Draft for buddies** (for oze to rewrite in his own words):
-> I built Eightfold for my eighth try, and the tries that lasted were never the ones I made alone.
+> I built One More Fold for my eighth try, and the tries that lasted were never the ones I made alone.
 > A friend who notices you've gone quiet and asks "everything okay?" is worth more than any streak.
 > So buddies aren't followers and this isn't a feed. Add the people you'd text anyway. Share as
 > much or as little as you like. If you see a friend's folds slowing down, don't nudge them here:

@@ -3,7 +3,15 @@
 What changed, for people using the app. Why it changed lives in [docs/decisions.md](docs/decisions.md).
 Dates are when the work landed.
 
-## 0.11.0 — unreleased
+## 0.12.0 — unreleased
+
+### Changed
+- **Eightfold is now One More Fold.** "Eightfold" is shared by several large companies, so people
+  searching for the tracker found them instead; the new name matches the address, onemorefold.com.
+  The story stays: fall seven, rise eight, always one more fold. Saved folds, accounts, reminders
+  and backups carry on unchanged. Backups are now saved as `onemorefold-backup-....json`. (D-038)
+
+## 0.11.0 — 28 October 2026
 
 ### Added
 - **Reminders with Eightfold closed.** Signed in, turn them on for each device under Habits →

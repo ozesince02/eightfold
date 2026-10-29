@@ -49,7 +49,7 @@ const themeRow = () => {
 
 // A message that has to survive the page reloading (after an account is deleted). Fixed texts only.
 const PARTING = 'eightfold:parting';
-const PARTING_TEXT = { deleted: 'Your account and everything in it are deleted. Eightfold still works on this device, starting empty.' };
+const PARTING_TEXT = { deleted: 'Your account and everything in it are deleted. One More Fold still works on this device, starting empty.' };
 
 // slot: an element in the header. page: 'landing' | 'app'. onChoose(kind): the tracker's sync
 // choice. onLeave(): called before this browser's folds are removed, so the page stops syncing.
@@ -80,7 +80,7 @@ export function createAccountMenu(slot, { page = 'app', onChoose, onLeave, toast
     btn.dataset.state = signedIn ? 'in' : 'out';
     btn.setAttribute('aria-label', signedIn
       ? `Account: signed in as ${account.email || 'you'}${SYNC_WORDS[sync.state] ? `. ${SYNC_WORDS[sync.state]}` : ''}`
-      : 'Account: not signed in. Sign in or keep using Eightfold on this device');
+      : 'Account: not signed in. Sign in or keep using One More Fold on this device');
     btn.setAttribute('aria-expanded', String(open));
   }
 
@@ -89,7 +89,7 @@ export function createAccountMenu(slot, { page = 'app', onChoose, onLeave, toast
     let body;
     if (a.status === 'signed-in' && confirmDelete) {
       body = `<h2 id="acct-h">Delete your account?</h2>
-        <p class="note">This deletes your account and every habit, fold and wish in it, from Eightfold's servers and from this browser. It can't be undone.</p>
+        <p class="note">This deletes your account and every habit, fold and wish in it, from One More Fold's servers and from this browser. It can't be undone.</p>
         <p class="note">Other devices keep their own copy until you choose "remove my folds from this browser" there.</p>
         <div class="acct-actions"><button class="btn btn--quiet" type="button" data-acct-backup>Save a backup first</button></div>
         <div class="acct-actions">
@@ -189,7 +189,7 @@ export function createAccountMenu(slot, { page = 'app', onChoose, onLeave, toast
     }
   });
 
-  // Sign out, then remove everything Eightfold keeps in this browser. Changes that haven't reached
+  // Sign out, then remove everything One More Fold keeps in this browser. Changes that haven't reached
   // the account yet would be lost, so that needs a yes first.
   async function forget() {
     const unsent = store.unsentChanges();
@@ -204,7 +204,7 @@ export function createAccountMenu(slot, { page = 'app', onChoose, onLeave, toast
     const removed = store.forgetDevice();
     toast(removed
       ? 'Signed out. Your folds are removed from this browser and still in your account.'
-      : "Signed out, but this browser wouldn't let Eightfold remove your folds. Clear this site's data in the browser settings.");
+      : "Signed out, but this browser wouldn't let One More Fold remove your folds. Clear this site's data in the browser settings.");
     setOpen(false);
   }
 
@@ -212,7 +212,7 @@ export function createAccountMenu(slot, { page = 'app', onChoose, onLeave, toast
   function saveBackup() {
     store.markBackedUp();
     const blob = new Blob([store.exportJSON()], { type: 'application/json' });
-    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `eightfold-backup-${new Date().toISOString().slice(0, 10)}.json` });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `onemorefold-backup-${new Date().toISOString().slice(0, 10)}.json` });
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     toast('Backup saved to your downloads. Keep it somewhere safe.');

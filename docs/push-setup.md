@@ -9,7 +9,7 @@ or in your own dashboard: no secret ever goes into git, chat or the site.
 - **The tables:** each device's notification address, your reminder settings and time zone, and a
   log of what was sent.
 - **A key pair (VAPID):** the public half goes in `.env` and the site; the private half signs every
-  message, so push services know it's really from Eightfold.
+  message, so push services know it's really from One More Fold.
 - **The sender:** a Supabase Edge Function, `send-reminders`.
 - **A cron job** that calls the sender at :00 and :30, with a secret only the two of them know.
 
@@ -72,9 +72,9 @@ or in your own dashboard: no secret ever goes into git, chat or the site.
 - Supabase → Edge Functions → `send-reminders` → Logs: every half hour a line like
   `{"people":1,"reminders":1,"delivered":1,"gone":0,"failed":0}`. It never logs names or addresses.
 - In Chrome, Firefox or Edge on a computer or Android: sign in, Habits → Reminders → "Remind me when
-  Eightfold is closed", give a habit a time about 40 minutes from now, close every Eightfold tab and
+  One More Fold is closed", give a habit a time about 40 minutes from now, close every One More Fold tab and
   wait for the next :00 or :30.
-- On iPhone or iPad (iOS 16.4 or later): Safari → Share → Add to Home Screen, open Eightfold from
+- On iPhone or iPad (iOS 16.4 or later): Safari → Share → Add to Home Screen, open One More Fold from
   the Home Screen, then turn it on there.
 
 ## If something's wrong
