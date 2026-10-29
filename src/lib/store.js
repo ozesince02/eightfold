@@ -284,7 +284,7 @@ export const store = {
   keepAsideCopy() { adapter.keepAside(JSON.stringify(state)); },
   // Changes made here that haven't reached the account yet (the sync queue, D-020).
   unsentChanges() { return Object.keys(adapter.loadSync().ops || {}).length; },
-  // Signing out on a shared computer: remove everything Eightfold stored in this browser and show
+  // Signing out on a shared computer: remove everything One More Fold stored in this browser and show
   // an empty tracker. Only after signing out, so the account still has the folds. True if removed.
   forgetDevice() {
     const ok = adapter.clearAll();

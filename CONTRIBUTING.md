@@ -1,6 +1,6 @@
-# Contributing to Eightfold
+# Contributing to One More Fold
 
-Thank you for wanting to help. Eightfold is small and personal: a habit tracker that real people
+Thank you for wanting to help. One More Fold is small and personal: a habit tracker that real people
 trust with their routines, made by one person ([oze](https://github.com/ozesince02)) with Claude
 Code as a pair programmer. This guide is the deal we all work by, human or AI.
 
@@ -141,7 +141,7 @@ reduced motion too.
 
 ## Design and words
 
-Eightfold looks like a paper-cut collage: washi sheets, torn edges, tape, origami, a few anime
+One More Fold looks like a paper-cut collage: washi sheets, torn edges, tape, origami, a few anime
 touches. Cute, never childish. [docs/design.md](docs/design.md) is the reference; the essentials:
 
 - **Colours come from role tokens only** (`--bg`, `--sheet`, `--ink`, `--accent`, `--link`, and
@@ -173,7 +173,7 @@ Part of the change, in the same pull request:
 
 ## Working with Claude
 
-Much of Eightfold is written with [Claude Code](https://claude.com/claude-code) as a pair
+Much of One More Fold is written with [Claude Code](https://claude.com/claude-code) as a pair
 programmer. [CLAUDE.md](CLAUDE.md) is its standing brief, and it holds Claude to the same rules as
 everyone else:
 - Claude never pushes to `main` or `preview`, and never merges without the owner's yes.
@@ -189,11 +189,11 @@ and make sure it follows this guide. A pull request is judged the same way whoev
 
 ## Licence of contributions
 
-Eightfold's code is [MIT licensed](LICENSE). By opening a pull request you agree that your
+One More Fold's code is [MIT licensed](LICENSE). By opening a pull request you agree that your
 contribution is licensed the same way. The name and branding aren't part of the licence (see the
 [README](README.md#licence)), so a fork needs its own.
 
 ## Be kind
 
 Assume good intent, explain rather than dismiss, and remember there's one person on the other
-end. Eightfold is about getting up after falling; the same goes for pull requests.
+end. One More Fold is about getting up after falling; the same goes for pull requests.

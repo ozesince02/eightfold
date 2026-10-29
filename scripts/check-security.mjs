@@ -66,7 +66,7 @@ assert.equal({}.polluted, undefined, 'no prototype pollution');
 
 // Broken files are refused with a readable reason, and nothing half-loads.
 assert.throws(() => parseBackup('not json'), /not valid JSON/);
-assert.throws(() => parseBackup('[]'), /not an Eightfold backup/);
+assert.throws(() => parseBackup('[]'), /not a One More Fold backup/);
 assert.throws(() => parseBackup('{"version":2,"months":{}}'), /version/);
 assert.throws(() => parseBackup('{"version":1}'), /no months/);
 assert.throws(() => parseBackup(' '.repeat(LIMITS.backupBytes + 1)), /too large/);

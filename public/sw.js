@@ -1,4 +1,4 @@
-// Eightfold service worker: reminders carry "Done" and "In 10 minutes" buttons that reach the open
+// One More Fold service worker: reminders carry "Done" and "In 10 minutes" buttons that reach the open
 // tab, and reminders sent with the app closed (D-028) are shown from here. No caching yet.
 
 self.addEventListener('install', () => self.skipWaiting());
@@ -25,7 +25,7 @@ self.addEventListener('notificationclick', (event) => {
   })());
 });
 
-// A reminder sent while Eightfold was closed (D-028). Only our sender can reach this device (the
+// A reminder sent while One More Fold was closed (D-028). Only our sender can reach this device (the
 // push service checks its VAPID key), and the message is encrypted for this browser; it's still
 // checked field by field before anything is shown.
 const ID = /^[a-z0-9][a-z0-9-]{0,63}$/;
@@ -37,7 +37,7 @@ self.addEventListener('push', (event) => {
   try { msg = event.data ? event.data.json() : {}; } catch { msg = {}; }
   const habitId = ID.test(msg.habitId || '') ? msg.habitId : '';
   const date = DAY.test(msg.date || '') ? msg.date : '';
-  event.waitUntil(self.registration.showNotification(text(msg.title, 140) || 'Eightfold', {
+  event.waitUntil(self.registration.showNotification(text(msg.title, 140) || 'One More Fold', {
     body: text(msg.body, 300) || 'A habit is coming up.',
     tag: habitId && date ? `${date}:${habitId}` : 'eightfold',
     renotify: true,

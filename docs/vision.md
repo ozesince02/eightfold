@@ -1,6 +1,6 @@
 # Vision
 
-Where Eightfold could go. These are ideas, not promises: add freely, date them, and move one into
+Where One More Fold could go. These are ideas, not promises: add freely, date them, and move one into
 [decisions.md](decisions.md) and the [CHANGELOG](../CHANGELOG.md) when it gets built.
 
 ## North star
@@ -79,7 +79,7 @@ can technically reach the data and looks only on request.
 - **How:** the browser's own AES-256-GCM (WebCrypto), with a key made on the device that never
   reaches the server. Encoding (Base64) or encrypting on the server with a key we hold were ruled
   out: neither stops the person who runs the service.
-- **Why parked:** people use Eightfold on several devices at once, and every device needs the same
+- **Why parked:** people use One More Fold on several devices at once, and every device needs the same
   key without the server ever having it (a recovery code, scanning a QR code from a signed-in
   device, or later passkeys). That's too much for now.
 - **Costs to settle when it comes back:** a lost key and lost devices mean lost names (ticks

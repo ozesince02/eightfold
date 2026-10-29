@@ -51,11 +51,11 @@ export function cleanSchedule(h) {
   return {};
 }
 
-// Returns a clean copy of an Eightfold state object, or throws BackupError with a plain reason.
+// Returns a clean copy of a One More Fold state object, or throws BackupError with a plain reason.
 // Unknown keys are dropped; bad values are corrected or dropped, never passed through.
 export function cleanState(input) {
-  if (!isObject(input)) throw new BackupError('This file is not an Eightfold backup.');
-  if (input.version !== 1) throw new BackupError('This backup is from a version of Eightfold this one can\'t read.');
+  if (!isObject(input)) throw new BackupError('This file is not a One More Fold backup.');
+  if (input.version !== 1) throw new BackupError('This backup is from a version of One More Fold this one can\'t read.');
   if (!isObject(input.months)) throw new BackupError('This backup has no months in it.');
 
   const keys = Object.keys(input.months).filter((k) => MONTH.test(k)).sort().slice(-LIMITS.months);
@@ -143,7 +143,7 @@ function cleanYears(input, monthKeys) {
 
 export function parseBackup(text) {
   if (typeof text !== 'string') throw new BackupError('That file could not be read.');
-  if (text.length > LIMITS.backupBytes) throw new BackupError('That file is too large to be an Eightfold backup.');
+  if (text.length > LIMITS.backupBytes) throw new BackupError('That file is too large to be a One More Fold backup.');
   let parsed;
   try { parsed = JSON.parse(text); } catch { throw new BackupError('That file is not valid JSON.'); }
   return cleanState(parsed);

@@ -417,3 +417,16 @@ section { scroll-margin-top: 24px; }
   .later { grid-template-columns: 1fr; }
   .foot-row { grid-template-columns: 1fr; }
 }
+
+/* "onemorefold" is two letters longer than the old wordmark (D-038): on the narrowest phones it
+   steps down a size so the bar's button and account paper still fit. */
+@media (max-width: 420px) {
+  .wordmark { font-size: 20px; gap: 8px; }
+  .wordmark .crane-mark { width: 38px; }
+}
+
+/* The narrowest phones (an old iPhone SE is 320px): the crane mark alone, the name kept for screen
+   readers, so the bar never scrolls sideways (D-038). */
+@media (max-width: 359px) {
+  .wordmark-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}

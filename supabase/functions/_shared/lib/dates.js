@@ -1,4 +1,4 @@
-// Small date helpers. Months are 1-based everywhere in Eightfold ("2026-10" is October).
+// Small date helpers. Months are 1-based everywhere in One More Fold ("2026-10" is October).
 
 export const pad = (n) => String(n).padStart(2, '0');
 export const monthKey = (y, m) => `${y}-${pad(m)}`;

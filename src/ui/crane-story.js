@@ -38,8 +38,8 @@ const CHAPTERS = [
     <p><i>Nanakorobi yaoki</i>, 七転び八起き. You fall seven times and get up eight. The daruma doll
     is weighted at the bottom so that it rights itself every time it is knocked over. The proverb
     doesn't count your falls against you. It only asks for one more rise than fall.</p>`],
-  ['六', 'How Eightfold folds', `
-    <p>Eightfold is named for the eighth try. Here every tick folds a crane: tick a day's habits and
+  ['六', 'One more fold', `
+    <p>One More Fold is named for that one more rise. Here every tick folds a crane: tick a day's habits and
     you watch today's crane take shape, and the year's ticks become your strand. At ${CRANE_GOAL_TEXT},
     the wish you wrote is yours to make.</p>
     <p>A missed day doesn't unfold anything. It is only a fall, and tomorrow you fold again.</p>`],

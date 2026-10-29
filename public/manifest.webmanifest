@@ -1,6 +1,6 @@
 {
-  "name": "Eightfold",
-  "short_name": "Eightfold",
+  "name": "One More Fold",
+  "short_name": "onemorefold",
   "description": "A paper-craft habit tracker. Fall seven times, rise eight.",
   "start_url": "/app",
   "scope": "/",
