@@ -3,7 +3,7 @@
 What changed, for people using the app. Why it changed lives in [docs/decisions.md](docs/decisions.md).
 Dates are when the work landed.
 
-## Unreleased
+## 0.12.1 — 30 October 2026
 
 ### Fixed
 - The big "onemorefold" at the foot of the landing page ran off the right edge (it was sized for
