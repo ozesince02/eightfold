@@ -223,6 +223,17 @@ GitHub variables (D-035). `check-security.mjs` now fails if any env or push-secr
 tracked. The ignore rule for `*.local.sql` (the cron SQL with its secret) is added here too, so it
 holds on every branch.
 
+### 30 October 2026 — follow-ups (owner, in the dashboards)
+
+- **Sign-in email rate limits** in Supabase (Authentication → Rate Limits) checked and set low by
+  the owner. Not visible from outside; recorded on the owner's word.
+- **Dependabot alerts and security updates** are on (confirmed through the GitHub API). Its
+  security pull requests open against `main`, the default branch, which only takes pull requests
+  from `preview`: retarget each one to `preview` (`gh pr edit <n> --base preview`) and it follows
+  the normal road.
+- **Closed-app reminders verified end to end** by the owner on the live site: the half-hourly
+  `send-reminders` runs log as expected, and a reminder arrived with Eightfold closed (D-028).
+
 ### Accepted risks (owner's decision, 24 Oct 2026, D-016)
 
 - The repository is public and holds the owner's January–October 2026 habit log (names, times,
