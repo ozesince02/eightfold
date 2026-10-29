@@ -44,8 +44,8 @@ No ads, no analytics, no trackers. See the [Privacy page](https://onemorefold.co
 You need **Node 24** and npm.
 
 ```bash
-git clone https://github.com/ozesince02/eightfold.git
-cd eightfold
+git clone https://github.com/ozesince02/onemorefold.git
+cd onemorefold
 npm ci
 npm run dev
 ```

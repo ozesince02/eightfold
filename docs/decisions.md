@@ -703,7 +703,8 @@ Accepted · 30 Oct 2026 · replaces D-015
   - **History:** older decisions, changelog entries, released patch notes, and SQL migrations that
     already ran keep the name they had.
   - **The GitHub repository** stays `ozesince02/eightfold` until the owner renames it (GitHub
-    redirects the old address).
+    redirects the old address). **Update, 30 Oct:** renamed to `ozesince02/onemorefold`; the
+    links in the current docs follow it.
 - **Changed:** every page, title and description, the wordmark, the web app manifest, the backup
   file name (`onemorefold-backup-...`; old files still load, since the content is checked, not the
   name), the Privacy and Terms pages (which say it was called Eightfold until 30 October 2026), the
