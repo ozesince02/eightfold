@@ -1,10 +1,22 @@
-// Patch notes (D-032): what's new in each version, for people using Eightfold. User-facing only,
+// Patch notes (D-032): what's new in each version, for people using One More Fold. User-facing only,
+// Older patches say Eightfold, the name at the time (D-038).
 // newest first; the technical record stays in CHANGELOG.md. Fixed text written here, rendered with
 // esc(). The first patch is the newest, and the account chit marks it until it's been read.
 // Voice: warm and a little silly, but the design rules still hold (sentence case, no exclamation
 // marks outside katakana stickers, every number says what it counts).
 
 export const PATCHES = [
+  {
+    version: '0.12',
+    date: '2026-10-30',
+    title: 'One more fold',
+    sticker: 'カイメイ',
+    notes: [
+      ['A new name.', 'Eightfold is now One More Fold. Same paper, same cranes, same folds. Search for "Eightfold" and you got a lot of very serious companies; search for us and you should now get us.'],
+      ['Why this one.', 'Fall seven times, rise eight: always one more rise than fall. Every tick is one more fold, so the name was hiding in plain sight, at onemorefold.com, all along.'],
+      ['Nothing to do.', "Your folds, account, reminders and backups carry on exactly as they were. Old backup files still load."],
+    ],
+  },
   {
     version: '0.11',
     date: '2026-10-28',

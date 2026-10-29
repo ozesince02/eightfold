@@ -24,7 +24,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 // The page tells the story of the sheet this app grew from (D-016, D-021): oze's real numbers up
-// to 22 October 2026, the day before Eightfold was born, under everyday habit names.
+// to 22 October 2026, the day before One More Fold was born, under everyday habit names.
 function storyState() {
   const s = sheetState();
   for (const month of Object.values(s.months)) {
@@ -183,7 +183,7 @@ const nWord = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eig
 $('[data-year-title]').textContent = `${nWord} months, ${year.cranes} cranes.`;
 const rated = year.months.filter((x) => x.rate !== null && !(x.m === now.m && now.y === year.year));
 const worst = rated.reduce((a, b) => (b.rate < a.rate ? b : a), rated[0]);
-$('[data-year-lede]').textContent = `An example from oze's own year, ${STORY_SPAN}. Each mountain is a month, as tall as its success rate. ${monthName(year.best.m)} was the best at ${percent(year.best.rate)}, ${monthName(worst.m)} the dip at ${percent(worst.rate)}. ${monthName(now.m)} was still being folded when Eightfold was born on 23 October.`;
+$('[data-year-lede]').textContent = `An example from oze's own year, ${STORY_SPAN}. Each mountain is a month, as tall as its success rate. ${monthName(year.best.m)} was the best at ${percent(year.best.rate)}, ${monthName(worst.m)} the dip at ${percent(worst.rate)}. ${monthName(now.m)} was still being folded when this tracker was born on 23 October.`;
 $('[data-range]').innerHTML = mountains(year.months, { current: now.m });
 $('[data-range-labels]').innerHTML = year.months.map((x) => `<li class="${x.rate === null ? 'muted' : ''}"><span class="long">${monthShort(x.m)}</span><span class="short">${monthShort(x.m)[0]}</span><b>${x.rate === null ? '—' : `${Math.round(x.rate * 100)}<span class="pct">%</span>`}</b></li>`).join('');
 

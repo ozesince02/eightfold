@@ -11,7 +11,7 @@ const SW = '/sw.js';
 export const pushSupported = () => PUSH_ENABLED && typeof window !== 'undefined' && window.isSecureContext
   && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 
-// iPhone and iPad deliver Web Push only to Eightfold added to the Home Screen and opened from there.
+// iPhone and iPad deliver Web Push only to One More Fold added to the Home Screen and opened from there.
 export const needsHomeScreen = () => /iPhone|iPad|iPod/.test(navigator.userAgent)
   && !navigator.standalone && !matchMedia('(display-mode: standalone)').matches;
 
@@ -39,7 +39,7 @@ export async function pushState(sb) {
 // Asks for permission, signs this device up and switches reminders on for the account.
 // off: the habits switched off in the Reminders panel. Throws a readable message on failure.
 export async function enablePush(sb, userId, off) {
-  if (!pushSupported()) throw new Error('This browser can\'t get reminders with Eightfold closed.');
+  if (!pushSupported()) throw new Error('This browser can\'t get reminders with One More Fold closed.');
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') throw new Error('Notifications are blocked for this site, so reminders can\'t arrive. Allow them in the browser\'s site settings.');
   const reg = await navigator.serviceWorker.register(SW);
@@ -56,7 +56,7 @@ export async function enablePush(sb, userId, off) {
   const { error } = await sb.rpc('register_push', { p_endpoint: endpoint, p_p256dh: keys?.p256dh, p_auth: keys?.auth });
   if (error) {
     await sub.unsubscribe().catch(() => {});
-    throw new Error('This browser\'s notification service isn\'t one Eightfold can use yet.');
+    throw new Error('This browser\'s notification service isn\'t one One More Fold can use yet.');
   }
   await saveSettings(sb, userId, off, true);
 }

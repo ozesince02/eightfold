@@ -21,7 +21,7 @@ export const TERMS_PATH = env.DEV ? '/terms.html' : '/terms';
 export const PATCH_NOTES_PATH = env.DEV ? '/patch-notes.html' : '/patch-notes';
 
 // ---------- Product ----------
-export const APP_NAME = 'Eightfold';
+export const APP_NAME = 'One More Fold';
 // A thousand cranes grant a wish (senbazuru). Every tick folds one.
 export const CRANE_GOAL = 1000;
 export const CRANE_GOAL_TEXT = CRANE_GOAL.toLocaleString('en-GB'); // "1,000"
@@ -37,7 +37,8 @@ export const AUTHOR = {
 };
 
 // ---------- Storage ----------
+// Storage keys keep the product's first name (D-038): renaming them would lose everyone's saved folds.
 export const STORE_KEY = 'eightfold:v1';
-export const LEGACY_STORE_KEY = 'orizuru:v1'; // the app's working name before it became Eightfold
+export const LEGACY_STORE_KEY = 'orizuru:v1'; // the working name before Eightfold, which became One More Fold (D-038)
 // The reader's paper: light, warm or dark (D-033). Per device; public/theme.js reads it too.
 export const THEME_KEY = `${STORE_KEY}:theme`;

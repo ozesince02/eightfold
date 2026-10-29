@@ -21,7 +21,7 @@ function checkEnv(env) {
 // are filled in after the build: __SUPABASE_ORIGIN__ (https) and __SUPABASE_WS__ (wss).
 function headersFromEnv(supabase) {
   return {
-    name: 'eightfold-headers-from-env',
+    name: 'onemorefold-headers-from-env',
     apply: 'build',
     writeBundle(options) {
       const file = resolve(options.dir, '_headers');
@@ -34,12 +34,12 @@ function headersFromEnv(supabase) {
   };
 }
 
-// Fontsource lists a .woff fallback after each .woff2 (D-027). Every browser Eightfold supports
+// Fontsource lists a .woff fallback after each .woff2 (D-027). Every browser One More Fold supports
 // reads woff2, so drop the fallback and don't ship ~10 MB of files nobody downloads.
 // The stylesheet is finished by then (imports inlined), so it's edited in the bundle.
 function woff2Only() {
   return {
-    name: 'eightfold-woff2-only',
+    name: 'onemorefold-woff2-only',
     apply: 'build',
     generateBundle(options, bundle) {
       const fallback = /,\s*url\(([^)]+\.woff)\)\s*format\(['"]woff['"]\)/g;

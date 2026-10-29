@@ -5,7 +5,7 @@ The three open questions were settled the same day; see [Decided](#decided).
 
 ## Where things stand
 
-Eightfold is a static site: HTML, CSS and JavaScript built by Vite, with no server of its own.
+One More Fold is a static site: HTML, CSS and JavaScript built by Vite, with no server of its own.
 All data lives in the browser's `localStorage` as one JSON object under `eightfold:v1`
 ([src/lib/store.js](../src/lib/store.js)). That object holds every month's habits and ticks, the
 wish, colours, reminder settings and display preferences. Backups are manual JSON files.
@@ -221,7 +221,7 @@ Settled with the owner on 23 October 2026.
   points of presence across India.
 - **Supabase project in the Mumbai region** (`ap-south-1`) so the database sits close to the users.
 - Vercel was the runner-up; its free Hobby plan is "restricted to non-commercial personal use only".
-- **Domain:** `onemorefold.com`, bought 24 October 2026 (the product keeps the name Eightfold, D-015).
+- **Domain:** `onemorefold.com`, bought 24 October 2026 (the product's name too since 30 October 2026, D-038).
 - **Deploys (updated 24 Oct 2026, D-014):** Cloudflare now connects a repository as a *Worker*
   rather than a Pages project. `wrangler.jsonc` makes it a static-assets Worker serving `dist/`;
   Cloudflare runs `npm run build`, then `npx wrangler deploy`. Each push to `main` deploys.

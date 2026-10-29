@@ -1,9 +1,11 @@
-# Eightfold
+# One More Fold
 
 A paper-collage habit tracker ("fall seven times, rise eight"). Static site: Vite, plain JavaScript,
-Three.js, GSAP. Landing page `index.html`, tracker `app.html`. Data in localStorage (`eightfold:v1`),
+Three.js, GSAP. Called Eightfold until 30 October 2026 (D-038): storage keys (`eightfold:v1...`)
+and the service worker's message names keep that name on purpose, so nobody's
+saved folds are lost. Landing page `index.html`, tracker `app.html`. Data in localStorage (`eightfold:v1`),
 synced to Supabase when signed in (`src/lib/sync/`, D-020); SQL in `supabase/migrations/`.
-Repository: https://github.com/ozesince02/eightfold
+Repository: https://github.com/ozesince02/onemorefold
 
 ## Priorities
 
@@ -64,7 +66,7 @@ Two long-lived branches, and work flows one way: **work branch → `preview` →
 - **Hotfixes** take the same road, quickly: PR into `preview`, then straight on to `main`.
 - Rules are GitHub rulesets ("main: releases from preview", "preview: pull requests only"): no
   deleting, no force pushes, a PR required, CI required. Check them with
-  `gh api repos/ozesince02/eightfold/rulesets`.
+  `gh api repos/ozesince02/onemorefold/rulesets`.
 - CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs `npm ci`, `npm run check`,
   `npm run build` and `npm audit` on every PR and on pushes to `preview` and `main`, plus the
   "Release source" check. Keep its permissions read-only and its actions pinned to commit SHAs;

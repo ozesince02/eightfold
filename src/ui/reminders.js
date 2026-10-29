@@ -1,6 +1,6 @@
 // Reminders: checks every 20 seconds whether a habit is due, then nudges with a system
 // notification when the tab is in the background, or a paper note on the page when it
-// is in front. Browsers only run this while an Eightfold tab is open.
+// is in front. Browsers only run this while a One More Fold tab is open.
 import { gsap } from 'gsap';
 import { store } from '../lib/store.js';
 import { monthKey, minutesOf } from '../lib/dates.js';

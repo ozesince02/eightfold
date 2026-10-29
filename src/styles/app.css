@@ -367,3 +367,9 @@ td.is-today .cell:not([aria-pressed="true"]) { outline: 2px solid var(--ink); ou
 }
 .range-labels .short { display: none; }
 @media (max-width: 760px) { .range-labels .short { display: inline; } }
+
+/* The narrowest phones (an old iPhone SE is 320px): the crane mark alone, the name kept for screen
+   readers, so the bar never scrolls sideways (D-038). */
+@media (max-width: 359px) {
+  .wordmark-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}

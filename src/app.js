@@ -764,11 +764,11 @@ async function togglePush(on) {
     if (on) {
       await enablePush(sb, account.id, store.reminders().off);
       setPush('on');
-      toast('Reminders will reach this device, even with Eightfold closed.');
+      toast('Reminders will reach this device, even with One More Fold closed.');
     } else {
       await disablePush(sb, account.id);
       setPush('off');
-      toast('This device won\'t get reminders while Eightfold is closed.');
+      toast('This device won\'t get reminders while One More Fold is closed.');
     }
   } catch (err) {
     setPush(Notification.permission === 'denied' ? 'denied' : 'off');
@@ -781,20 +781,20 @@ function closedAppReminders() {
   if (!pushSupported()) return '';
   let body;
   if (ui.account.status !== 'signed-in') {
-    body = '<p class="note">Sign in from the paper ball at the top, and reminders can reach this device even with Eightfold closed.</p>';
+    body = '<p class="note">Sign in from the paper ball at the top, and reminders can reach this device even with One More Fold closed.</p>';
   } else if (needsHomeScreen()) {
-    body = '<p class="note">On iPhone and iPad, reminders reach Eightfold only from the Home Screen. In Safari, tap Share, then Add to Home Screen, open Eightfold from there and turn this on.</p>';
+    body = '<p class="note">On iPhone and iPad, reminders reach One More Fold only from the Home Screen. In Safari, tap Share, then Add to Home Screen, open One More Fold from there and turn this on.</p>';
   } else if (ui.push === 'on') {
-    body = `<p class="note">On for this device. Each reminder arrives up to 30 minutes before its habit's time, even with Eightfold closed, for the habits ticked below.</p>
+    body = `<p class="note">On for this device. Each reminder arrives up to 30 minutes before its habit's time, even with One More Fold closed, for the habits ticked below.</p>
       <div class="backup-actions"><button class="btn btn--quiet" type="button" data-push="off">Turn off on this device</button></div>`;
   } else if (ui.push === 'denied') {
     body = '<p class="note">Notifications are blocked for this site. Allow them in the browser\'s site settings, then come back here.</p>';
   } else {
     const busy = ui.push === 'busy' || ui.push === 'unknown';
-    body = `<p class="note">Get a reminder up to 30 minutes before each habit's time, even when Eightfold isn't open. Each device you turn it on for gets them.</p>
-      <div class="backup-actions"><button class="btn" type="button" data-push="on" ${busy ? 'disabled' : ''}>${ui.push === 'busy' ? 'Turning on…' : 'Remind me when Eightfold is closed'}</button></div>`;
+    body = `<p class="note">Get a reminder up to 30 minutes before each habit's time, even when One More Fold isn't open. Each device you turn it on for gets them.</p>
+      <div class="backup-actions"><button class="btn" type="button" data-push="on" ${busy ? 'disabled' : ''}>${ui.push === 'busy' ? 'Turning on…' : 'Remind me when One More Fold is closed'}</button></div>`;
   }
-  return `<div class="push-box"><h3>When Eightfold is closed</h3>${body}</div>`;
+  return `<div class="push-box"><h3>When One More Fold is closed</h3>${body}</div>`;
 }
 
 function remindersPanel(month) {
@@ -821,7 +821,7 @@ function remindersPanel(month) {
     <fieldset class="rem-list"><legend>Nudge me for</legend>
       ${timed.map((h) => `<label style="--c:${store.color(h.id)}"><input type="checkbox" data-rem-habit="${h.id}" ${rem.off[h.id] ? '' : 'checked'}><i></i><time>${esc(h.time)}</time><span>${esc(h.name)}</span></label>`).join('') || '<p class="note">No habit has a time yet.</p>'}
     </fieldset>
-    <p class="note">${untimed ? `${untimed} habit${untimed === 1 ? ' has' : 's have'} no time, so ${untimed === 1 ? 'it gets' : 'they get'} no nudge. ` : ''}${ui.push === 'on' ? 'With a tab open in front, nudges also show as a note on the page.' : 'Without the setting below, browsers only send nudges while an Eightfold tab is open; it can sit in the background. A missed nudge still arrives for two hours after its time.'}</p>
+    <p class="note">${untimed ? `${untimed} habit${untimed === 1 ? ' has' : 's have'} no time, so ${untimed === 1 ? 'it gets' : 'they get'} no nudge. ` : ''}${ui.push === 'on' ? 'With a tab open in front, nudges also show as a note on the page.' : 'Without the setting below, browsers only send nudges while a One More Fold tab is open; it can sit in the background. A missed nudge still arrives for two hours after its time.'}</p>
     ${closedAppReminders()}
   </section>`;
 }
@@ -922,7 +922,7 @@ view.addEventListener('click', (e) => {
   if (e.target.closest('[data-export]')) {
     store.markBackedUp();
     const blob = new Blob([store.exportJSON()], { type: 'application/json' });
-    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `eightfold-backup-${monthKey(now.y, now.m)}-${String(now.d).padStart(2, '0')}.json` });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `onemorefold-backup-${monthKey(now.y, now.m)}-${String(now.d).padStart(2, '0')}.json` });
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     return toast('Backup saved to your downloads. Keep it somewhere safe.');

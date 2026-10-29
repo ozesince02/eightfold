@@ -1,11 +1,11 @@
 # Security policy
 
-Eightfold holds people's habits, routines and wishes. If you find a way to read, change or delete
+One More Fold holds people's habits, routines and wishes. If you find a way to read, change or delete
 someone else's data, or to run code in someone's browser, please tell us privately first.
 
 ## Reporting a problem
 
-- **Email** hashtechpulkit@gmail.com (the address in the site's footer), with "Eightfold
+- **Email** hashtechpulkit@gmail.com (the address in the site's footer), with "One More Fold
   security" in the subject.
 - **Please don't** open a public issue, pull request or discussion about it until it's fixed.
 - **Include:**
@@ -17,7 +17,7 @@ someone else's data, or to run code in someone's browser, please tell us private
 
 ## What to expect
 
-Eightfold is run by one person, so this is best effort, but security comes before features here:
+One More Fold is run by one person, so this is best effort, but security comes before features here:
 
 - **A reply within a few days,** to say the report arrived and whether it's understood.
 - **A fix in the open** once it's safe to talk about, with a line in the audit log in

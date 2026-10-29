@@ -193,7 +193,7 @@ Accepted · 24 Oct 2026 · refines D-008's "Cloudflare Pages"
 - **Note:** the Worker name in `wrangler.jsonc` must match the Worker's name in the dashboard.
 
 ## D-015 The product stays Eightfold; onemorefold.com is the domain
-Accepted · 24 Oct 2026 · replaces the earlier plan (same day) to rename the product to One More Fold
+Replaced by D-038 (30 Oct 2026) · was accepted 24 Oct 2026 · replaces the earlier plan (same day) to rename the product to One More Fold
 
 - **Context:** `eightfold.com` and `eightfold.app` are taken. The owner bought **onemorefold.com**,
   and the Cloudflare Worker is called `onemorefold`. The first plan was to rename the product to
@@ -684,4 +684,31 @@ Accepted · 29 Oct 2026
   log. CLAUDE.md tells Claude to keep private things there and never quote them anywhere public.
 - **Cost:** the private folder lives on one computer, outside git, so it has no history or backup
   unless the owner keeps one (for example a copy in a private cloud folder).
+
+## D-038 The product is called One More Fold
+Accepted · 30 Oct 2026 · replaces D-015
+
+- **Context:** "Eightfold" is shared by several large products, so searching for it buried the
+  tracker, and the name didn't match its address, onemorefold.com. D-015 had kept Eightfold for its
+  story; in use, being found mattered more.
+- **Decision:** the product is **One More Fold** in text and **onemorefold** as the wordmark (lower
+  case, like the old one, and the same as the domain). The story carries over: fall seven times,
+  rise eight is always one more rise than fall, and every tick is one more fold.
+- **Kept on purpose:**
+  - **Storage keys** (`eightfold:v1` and everything under it, `eightfold:parting`). Renaming them
+    would make every browser's saved folds look empty; a migration would be risk for no visible
+    gain.
+  - **The service worker's message type** (`eightfold-remind`) and notification tag, so an old
+    service worker and a new page still understand each other.
+  - **History:** older decisions, changelog entries, released patch notes, and SQL migrations that
+    already ran keep the name they had.
+  - **The GitHub repository** stays `ozesince02/eightfold` until the owner renames it (GitHub
+    redirects the old address). **Update, 30 Oct:** renamed to `ozesince02/onemorefold`; the
+    links in the current docs follow it.
+- **Changed:** every page, title and description, the wordmark, the web app manifest, the backup
+  file name (`onemorefold-backup-...`; old files still load, since the content is checked, not the
+  name), the Privacy and Terms pages (which say it was called Eightfold until 30 October 2026), the
+  crane story's last chapter, and the public docs.
+- **Outside the code** (the owner's dashboards): the Google sign-in consent screen's app name, the
+  Supabase sign-in email templates and sender name, the repository's name and description.
 

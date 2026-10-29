@@ -285,7 +285,7 @@ assert.deepEqual(odd.saved.value.ops, {}, 'and the queue is empty');
   assert.equal(shared.saved.value, null, 'not even the queue');
 }
 
-// 13. "Sign out and remove my folds from this browser" removes every Eightfold key, including
+// 13. "Sign out and remove my folds from this browser" removes every One More Fold key, including
 // copies kept aside and the old name's data, and nothing that belongs to anyone else.
 {
   const items = new Map([
@@ -300,7 +300,7 @@ assert.deepEqual(odd.saved.value.ops, {}, 'and the queue is empty');
     removeItem: (k) => items.delete(k),
   };
   assert.equal(localAdapter.clearAll(), true, 'clearAll reports success');
-  assert.deepEqual([...items.keys()].sort(), ['other-site-thing', 'sb-txmseoofjrvsmxyaiwps-auth-token'], "only Eightfold's own keys are removed");
+  assert.deepEqual([...items.keys()].sort(), ['other-site-thing', 'sb-txmseoofjrvsmxyaiwps-auth-token'], "only One More Fold's own keys are removed");
   delete globalThis.localStorage;
 }
 

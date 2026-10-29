@@ -1,4 +1,4 @@
-# Eightfold
+# One More Fold
 
 **Fall seven times, rise eight.** A paper-craft habit tracker for people who have started over
 more times than they can count. Tick a habit and it becomes a fold; tick a day's habits and a paper
@@ -8,7 +8,7 @@ crane folds itself; a thousand cranes make a wish.
 [onemorefold.com/app](https://onemorefold.com/app) · what's new:
 [patch notes](https://onemorefold.com/patch-notes)
 
-Eightfold began as *oze's Habit Tracker v2*, a Google Sheet held together with COUNTIFs, and was
+One More Fold began as *oze's Habit Tracker v2*, a Google Sheet held together with COUNTIFs, and was
 folded into something lighter. It's made by one person, [oze](https://github.com/ozesince02),
 with Claude Code as a pair programmer.
 
@@ -21,7 +21,7 @@ with Claude Code as a pair programmer.
 - **A crane a day, a wish a year:** a 3D origami crane folds as you tick, and a thousand of them
   grant the wish you wrote. In December and January you can fold the year and set the next wish.
 - **Reminders:** at each habit's time while a tab is open, and, if you sign in and turn them on,
-  even with Eightfold closed (Web Push, encrypted for your device).
+  even with One More Fold closed (Web Push, encrypted for your device).
 - **Your data, your call:** works fully without an account, with everything kept in your browser.
   Sign in (Google or an email link) only if you want it on several devices. Backups, "remove my
   folds from this browser", and delete-my-account are all one tap.
@@ -44,8 +44,8 @@ No ads, no analytics, no trackers. See the [Privacy page](https://onemorefold.co
 You need **Node 24** and npm.
 
 ```bash
-git clone https://github.com/ozesince02/eightfold.git
-cd eightfold
+git clone https://github.com/ozesince02/onemorefold.git
+cd onemorefold
 npm ci
 npm run dev
 ```
@@ -110,7 +110,7 @@ That's enough for most work.
 ## Contributing
 
 Ideas, bug reports and pull requests are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md)
-first: Eightfold puts security and people's data ahead of features, and the guide explains the
+first: One More Fold puts security and people's data ahead of features, and the guide explains the
 branch flow, the checks and the design rules. For anything bigger than a small fix, open an issue
 first so we can talk it through.
 
@@ -120,7 +120,8 @@ Found a security problem? Please don't open a public issue; see [SECURITY.md](SE
 
 The code is [MIT licensed](LICENSE): use it, change it, build on it.
 
-**The name and branding are not part of the licence.** "Eightfold", onemorefold.com, the crane
+**The name and branding are not part of the licence.** "One More Fold" (and its former name,
+"Eightfold"), onemorefold.com, the crane
 mark and the wordmark (`public/favicon.svg`, the app icons in `public/`, and the mark drawn in the
 code) belong to the author. If you run your own copy, give it its own name and look, so nobody
 mistakes it for this one.
